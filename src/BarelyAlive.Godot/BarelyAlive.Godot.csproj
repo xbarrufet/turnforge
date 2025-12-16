@@ -1,0 +1,12 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <ItemGroup>
+    <ProjectReference Include="..\TurnForge.Engine\TurnForge.Engine.csproj" />
+    <ProjectReference Include="..\TurnForge.Rules.BarelyAlive\TurnForge.Rules.BarelyAlive.csproj" />
+    <ProjectReference Include="..\TurnForge.Adapters.Godot\TurnForge.Adapters.Godot.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+</Project>

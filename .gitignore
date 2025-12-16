@@ -1,0 +1,123 @@
+############################################
+# GLOBAL
+############################################
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+############################################
+# .NET / C#
+############################################
+
+# Build outputs
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.rsuser
+
+# Rider
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+############################################
+# Godot 4
+############################################
+
+# Godot cache & imports
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot Mono / C#
+.mono/
+mono_crash.*.json
+
+# Godot builds
+build/
+dist/
+exports/
+
+############################################
+# Godot editor backups
+############################################
+
+*.tmp
+*.bak
+*.old
+*.orig
+
+############################################
+# Assets generated at runtime
+############################################
+
+# Screenshots / captures
+screenshots/
+captures/
+
+# Runtime saves (if any)
+saves/
+replays/
+
+############################################
+# Test artifacts
+############################################
+
+TestResults/
+*.trx
+
+############################################
+# Documentation tooling (optional)
+############################################
+
+# MkDocs / Docusaurus / etc
+site/
+docs/.cache/
+
+############################################
+# Environment / secrets
+############################################
+
+.env
+.env.*
+secrets.json
+appsettings.Development.json
+
+############################################
+# Packaging / CI
+############################################
+
+artifacts/
+publish/
+
+############################################
+# TEMP / SCRATCH
+############################################
+
+tmp/
+temp/
+scratch/
