@@ -1,4 +1,4 @@
-namespace TurnForge.Engine.Commands.Game.Definitions;
+namespace TurnForge.Engine.Commands.LoadGame.Descriptors;
 
 public sealed record BoundsDescriptor(
     int Width,

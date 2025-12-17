@@ -1,25 +1,16 @@
 using System.Reflection;
 using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Core.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
-public sealed class CommandBus
+public sealed class CommandBus(
+    IGameLoop gameLoop,
+    ICommandHandlerResolver handlerResolver,
+    IEffectSink effectSink)
 {
-    private readonly IGameLoop _gameLoop;
-    private readonly ICommandHandlerResolver _handlerResolver;
-    private readonly EventBus _eventBus;
 
     private bool _waitingForAck;
-
-    public CommandBus(
-        IGameLoop gameLoop,
-        ICommandHandlerResolver handlerResolver,
-        EventBus eventBus)
-    {
-        _gameLoop = gameLoop;
-        _handlerResolver = handlerResolver;
-        _eventBus = eventBus;
-    }
 
     public void Send(ICommand command)
     {
@@ -27,18 +18,14 @@ public sealed class CommandBus
             throw new InvalidOperationException("Waiting for ACK");
 
         // 1️⃣ Validación del GameLoop (turnos, estado, etc.)
-        var loopResult = _gameLoop.Validate(command);
+        var loopResult = gameLoop.Validate(command);
 
         if (!loopResult.IsAllowed)
             throw new InvalidOperationException(loopResult.Reason);
 
         // 2️⃣ Ejecutar el handler correspondiente
         DispatchToHandler(command);
-
-        // 3️⃣ Publicar resultado de dominio (si existe)
-        if (loopResult.DomainResult is not null)
-            _eventBus.Publish(loopResult.DomainResult);
-
+        
         // 4️⃣ Gestión de ACK
         _waitingForAck = loopResult.RequiresAck;
     }
@@ -58,7 +45,7 @@ public sealed class CommandBus
     private void DispatchGeneric<TCommand>(TCommand command)
         where TCommand : ICommand
     {
-        var handler = _handlerResolver.Resolve<TCommand>();
+        var handler = handlerResolver.Resolve<TCommand>();
         handler.Handle(command);
     }
 

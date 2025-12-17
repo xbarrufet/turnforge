@@ -1,6 +1,7 @@
+using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Commands.Game.Definitions;
+namespace TurnForge.Engine.Commands.LoadGame.Descriptors;
 
 public sealed record DiscreteSpatialDescriptor(
     IReadOnlyList<Position> Nodes,

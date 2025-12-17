@@ -1,6 +1,3 @@
 namespace TurnForge.GodotAdapter.Dto;
 
-public class PositionDto
-{
-    
-}
+public readonly record struct PositionDto(int X, int Y);

@@ -1,10 +1,22 @@
+// csharp
+using System.Collections.Generic;
+using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public sealed class Hostile(
+public class Hostile(
     ActorId id,
     Position position,
-    int health = 5,
-    int actionPoints = 2)
-    : Npc(id, position, health, actionPoints);
+    IReadOnlyList<IActorTrait>? traits = null,
+    string? customType = "Hostile") : Actor(id, position, traits, customType)
+{
+    public Hostile(HostileDescriptor hostileDescriptor, Position position)
+        : this(
+            hostileDescriptor.Id,
+            position,
+            ActorTraitConverter.ToTraits(hostileDescriptor.Traits),
+            hostileDescriptor.CustomType)
+    { }
+}

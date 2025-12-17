@@ -1,4 +1,6 @@
-namespace TurnForge.Engine.Commands.Game.Definitions;
+using TurnForge.Engine.Commands.LoadGame.Descriptors;
+
+namespace TurnForge.Engine.Commands.Game.Descriptors;
 
 using TurnForge.Engine.ValueObjects;
 

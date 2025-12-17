@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace TurnForge.GodotAdapter.Dto.MissionDefinition
+namespace BarelyAlive.Godot.Infrastructure.Dto
 {
 
     public sealed class MissionDto

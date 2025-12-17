@@ -1,4 +1,5 @@
-using TurnForge.Engine.Commands.Game.Definitions;
+using TurnForge.Engine.Commands.Game.Descriptors;
+using TurnForge.Engine.Entities.Actors.Definitions;
 
 namespace TurnForge.Engine.Entities.Actors.Interfaces;
 
@@ -6,5 +7,18 @@ using TurnForge.Engine.ValueObjects;
 
 public interface IActorFactory
 {
-    Actor CreateActor(ActorDefinition definition);
+    Hostile BuildHostile(
+        HostileDescriptor hostileDescriptor,
+        Position position
+    );
+
+    Unit BuildUnit(
+        UnitDescriptor unitDescriptor,
+        Position position
+    );
+
+    Prop BuildProp(
+        PropDescriptor propDescriptor,
+        Position position
+    );
 }

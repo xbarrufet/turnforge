@@ -3,19 +3,20 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public abstract class Actor(ActorId id, Position position)
-{
-    public ActorId Id { get; } = id;
-    public Position Position { get; protected set; } = position;
-    
-    private readonly HashSet<IActorTrait> _traits = new();
-    
-    public void AddTrait(IActorTrait trait)
-        => _traits.Add(trait);
+public abstract class Actor(
+        ActorId id,
+        Position position,
+        IReadOnlyList<IActorTrait>? traits = null,
+        string? customType = "")
+    {
+        public ActorId Id { get; } = id;
+        public Position Position { get; set; } = position;
+        public string CustomType { get; protected set; } = customType ?? "";
+        public IReadOnlyList<IActorTrait> Traits = traits?? new List<IActorTrait>();
+        
+   
+        public bool HasTrait<TTrait>()
+            where TTrait : IActorTrait
+            => Traits.Any(t => t is TTrait);
 
-    public bool HasTrait<TTrait>()
-        where TTrait : IActorTrait
-        => _traits.Any(t => t is TTrait);
-
-    public IEnumerable<IActorTrait> Traits => _traits;
 }

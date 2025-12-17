@@ -1,15 +1,11 @@
-using TurnForge.Engine.Entities.Actors.Definitions;
+
+
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Rules.BarelyAlive.Actors;
 
-namespace TurnForge.Rules.BarelyAlive.Strategies.Spawn;
-
-public sealed class BAPropSpawnStrategy:IPropSpawnStrategy
-{ 
-    
-
+public class TestPropSpawnStrategy:IPropSpawnStrategy
+{
     public IReadOnlyList<PropSpawnDecision> Decide(PropSpawnContext context)
     {
         List<PropSpawnDecision> decisions = new();
@@ -20,5 +16,6 @@ public sealed class BAPropSpawnStrategy:IPropSpawnStrategy
                 descriptor.Position ?? new Position(0, 0)));
         }
         return decisions;
+        
     }
 }

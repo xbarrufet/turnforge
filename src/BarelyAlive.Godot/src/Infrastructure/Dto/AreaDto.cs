@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace urnForge.GodotAdapter.Dto.MissionDefinition
+namespace BarelyAlive.Godot.Infrastructure.Dto
 {
 
     public sealed class AreaDto

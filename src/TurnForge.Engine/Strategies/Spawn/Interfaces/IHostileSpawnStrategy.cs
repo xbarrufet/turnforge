@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.Strategies.Spawn.Interfaces;
 
-public class IHostileSpawnStrategy
+public interface IHostileSpawnStrategy
 {
-    
+    IReadOnlyList<HostileSpawnDecision> Decide();
 }

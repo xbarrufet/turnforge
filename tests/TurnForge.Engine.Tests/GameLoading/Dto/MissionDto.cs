@@ -11,6 +11,8 @@ namespace TurnForge.Engine.Tests.GameLoading.Dto
 
         [JsonPropertyName("areas")] public List<AreaDto> Areas { get; set; } = [];
 
-        [JsonPropertyName("areaConnections")] public List<ConnectionDto> Connections { get; set; } = [];
+        [JsonPropertyName("Connections")] public List<ConnectionDto> Connections { get; set; } = [];
+        
+        [JsonPropertyName("Actors")] public List<ActorDto> Actors { get; set; } = [];
     }
 }

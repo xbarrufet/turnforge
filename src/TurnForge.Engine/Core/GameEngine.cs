@@ -1,5 +1,7 @@
 using TurnForge.Engine.Commands.Game;
-using TurnForge.Engine.Commands.Game.Definitions;
+using TurnForge.Engine.Commands.Game.Descriptors;
+using TurnForge.Engine.Commands.LoadGame;
+using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Board;
@@ -21,23 +23,23 @@ public sealed class GameEngine(CommandBus commandBus)
     }
 
     private ISpatialModel BuildSpatialModel(
-        SpatialDefinition definition)
+        SpatialDescriptor descriptor)
     {
-        return definition switch
+        return descriptor switch
         {
-            DiscreteSpatialDefinition discrete =>
+            DiscreteSpatialDescriptor discrete =>
                 BuildDiscreteSpatialModel(discrete),
 
-            ContinuousSpatialDefinition =>
+            ContinuousSpatialDescriptior =>
                 throw new NotImplementedException(
                     "Continuous spatial model not implemented"),
 
             _ => throw new NotSupportedException(
-                $"Unsupported spatial definition {definition.GetType().Name}")
+                $"Unsupported spatial definition {descriptor.GetType().Name}")
         };
     }
     private ISpatialModel BuildDiscreteSpatialModel(
-        DiscreteSpatialDefinition def)
+        DiscreteSpatialDescriptor def)
     {
         var graph = new MutableTileGraph(
             def.Connections.Select(c => (c.From, c.To))

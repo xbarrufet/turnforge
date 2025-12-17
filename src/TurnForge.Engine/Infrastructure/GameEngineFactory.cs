@@ -1,8 +1,10 @@
 using TurnForge.Engine.Core;
+using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Repositories.Interfaces;
+using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace TurnForge.Engine.Infrastructure;
 
@@ -14,16 +16,17 @@ namespace TurnForge.Engine.Infrastructure;
 public static class GameEngineFactory
 {
     public static GameEngine Build(
-        IGameRepository gameRepository,
-        IActorFactory actorFactory)
+        GameEngineContext gameEngineContext)
     {
         // 1️⃣ ServiceProvider del engine
         var services = new SimpleServiceProvider();
 
         // 2️⃣ Dependencias externas (decididas por el host/juego)
-        services.RegisterSingleton<IGameRepository>(gameRepository);
-        services.RegisterSingleton<IActorFactory>(actorFactory);
-
+        services.RegisterSingleton<IGameRepository>(gameEngineContext.GameRepository);
+        services.RegisterSingleton<IActorFactory>(gameEngineContext.ActorFactory);
+        services.RegisterSingleton<IPropSpawnStrategy>(gameEngineContext.PropSpawnStrategy);
+        services.RegisterSingleton<IEffectSink>(new ObservableEffectSink());
+        
         // 3️⃣ Registro de comandos y handlers propios del engine
         EngineCommandRegistration.Register(services);
 
@@ -32,7 +35,7 @@ public static class GameEngineFactory
             new ServiceProviderCommandHandlerResolver(services);
 
         // 5️⃣ EventBus (engine infra)
-        var eventBus = new EventBus();
+        var effectSink = new ObservableEffectSink();
 
         // 6️⃣ GameLoop (engine infra)
         var gameLoop = new GameLoop();
@@ -41,7 +44,7 @@ public static class GameEngineFactory
         var commandBus = new CommandBus(
             gameLoop,
             resolver,
-            eventBus
+            effectSink
         );
 
         // 8️⃣ GameEngine (fachada pública)

@@ -1,13 +1,16 @@
-using TurnForge.Engine.Commands.Game.Definitions;
+using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Entities.Actors.Definitions;
 
-namespace TurnForge.Engine.Commands.Game;
+namespace TurnForge.Engine.Commands.LoadGame;
 
 public sealed class LoadGameCommand(
-    SpatialDefinition spatial,
-    IReadOnlyList<ActorDefinition> actors
+    SpatialDescriptor spatial,
+    IReadOnlyList<PropDescriptor> props
+    
 ) : ICommand
 {
-    public SpatialDefinition Spatial { get; } = spatial;
-    public IReadOnlyList<ActorDefinition> Actors { get; } = actors;
+    public SpatialDescriptor Spatial { get; } = spatial;
+    public IReadOnlyList<PropDescriptor> Props { get; } = props;
+    
 }

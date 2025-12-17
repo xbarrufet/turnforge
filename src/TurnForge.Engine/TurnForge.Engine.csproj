@@ -24,6 +24,7 @@
     <Folder Include="Events\Interfaces\" />
     <Folder Include="Results\" />
     <Folder Include="Snapshots\" />
+    <Folder Include="States\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,11 @@
+using TurnForge.Engine.Commands.GameStart.Definitions;
+using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Entities.Actors.Definitions;
+
 namespace TurnForge.Engine.Commands.GameStart;
 
-public class GameStartCommand
+public sealed record GameStartCommand(IReadOnlyList<UnitDescriptor> PlayerUnits):ICommand
 {
     
 }
+

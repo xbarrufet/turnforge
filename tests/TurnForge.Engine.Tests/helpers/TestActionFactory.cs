@@ -1,19 +1,25 @@
-using TurnForge.Engine.Commands.Game.Definitions;
+using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.ValueObjects;
 
-internal sealed class TestActorFactory : IActorFactory
+namespace TurnForge.Engine.Tests.helpers;
+
+public sealed class TestActorFactory : IActorFactory
 {
-    public Actor CreateActor(ActorDefinition def)
+    public Prop BuildProp(PropDescriptor def, Position position)
     {
-        return def.Kind switch
-        {
-            ActorKind.Prop =>
-                new Prop(def.ActorId, def.StartPosition),
+        return new Prop(def, position);
+    }
 
-            _ =>
-                throw new NotSupportedException(
-                    "Only Prop actors supported in engine tests")
-        };
+    public Unit BuildUnit(UnitDescriptor def, Position position)
+    {
+        return new Unit(ActorId.New(), position, customType: def.CustomType);
+    }
+
+    public Hostile BuildHostile(HostileDescriptor def, Position position)
+    {
+        return new Hostile(ActorId.New(), position, customType: def.CustomType);
     }
 }

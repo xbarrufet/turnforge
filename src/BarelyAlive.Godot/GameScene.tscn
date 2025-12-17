@@ -1,3 +1,66 @@
-[gd_scene format=3 uid="uid://xqeojmmwok6b"]
+[gd_scene load_steps=6 format=3 uid="uid://b5lnxxauxv6m6"]
 
-[node name="Root" type="Node"]
+[ext_resource type="Script" uid="uid://d18jkd5t8kjrw" path="res://src/controllers/RootController.cs" id="1_hvuor"]
+[ext_resource type="Script" uid="uid://dvgm3vhn6xht7" path="res://src/Infrastructure/MissionLoader.cs" id="2_b5kf5"]
+[ext_resource type="Script" uid="uid://dugsgspsqr3ld" path="res://src/Infrastructure/BarelyAliveBootstrap.cs" id="2_haeiw"]
+[ext_resource type="Script" uid="uid://c0637g03yp4oi" path="res://src/controllers/MapPresenter.cs" id="3_b5kf5"]
+[ext_resource type="Texture2D" uid="uid://bn4nkbi3tevk4" path="res://Assets/textures/avatar/z_fatty.png" id="5_0exr2"]
+
+[node name="Root" type="Node" node_paths=PackedStringArray("_gameWorldPanel", "_mapPresenter")]
+script = ExtResource("1_hvuor")
+_gameWorldPanel = NodePath("UI/MainContainer/GameWorldPanel")
+_mapPresenter = NodePath("GameScene/World/MapPresenter")
+
+[node name="Boot" type="Node" parent="."]
+script = ExtResource("2_haeiw")
+
+[node name="MissionLoader" type="Node" parent="Boot"]
+script = ExtResource("2_b5kf5")
+
+[node name="GameEngineAdapter" type="Node" parent="."]
+
+[node name="GodotGameAdapter" type="Node" parent="GameEngineAdapter"]
+
+[node name="GameScene" type="Node" parent="."]
+
+[node name="World" type="Node2D" parent="GameScene"]
+
+[node name="ModelsPresenter" type="Node2D" parent="GameScene/World"]
+
+[node name="MapPresenter" type="Node2D" parent="GameScene/World"]
+script = ExtResource("3_b5kf5")
+
+[node name="MapTexture" type="Sprite2D" parent="GameScene/World/MapPresenter"]
+scale = Vector2(1, 1.167)
+texture = ExtResource("5_0exr2")
+centered = false
+
+[node name="AreaHighlightNode" type="Node2D" parent="GameScene/World/MapPresenter"]
+
+[node name="Camera2D" type="Camera2D" parent="GameScene/World"]
+anchor_mode = 0
+
+[node name="UI" type="Node" parent="."]
+
+[node name="MainContainer" type="HBoxContainer" parent="UI"]
+offset_right = 2004.0
+offset_bottom = 1400.0
+mouse_filter = 2
+mouse_default_cursor_shape = 7
+
+[node name="GameWorldPanel" type="MarginContainer" parent="UI/MainContainer"]
+custom_minimum_size = Vector2(1400, 1400)
+layout_mode = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 15
+
+[node name="SidebarPanel" type="PanelContainer" parent="UI/MainContainer"]
+custom_minimum_size = Vector2(600, 1400)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Input" type="Node" parent="."]
+
+[node name="InteractionController" type="Node" parent="Input"]
+
+[node name="HoverDetectionService" type="Node" parent="Input"]

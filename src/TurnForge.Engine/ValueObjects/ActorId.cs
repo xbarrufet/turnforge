@@ -1,5 +1,6 @@
 namespace TurnForge.Engine.ValueObjects;
 
+
 public readonly record struct ActorId(Guid Value)
 {
     public static ActorId New()

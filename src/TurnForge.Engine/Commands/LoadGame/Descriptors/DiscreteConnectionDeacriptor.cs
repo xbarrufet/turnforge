@@ -1,6 +1,6 @@
-namespace TurnForge.Engine.Commands.Game.Definitions;
-
 using TurnForge.Engine.ValueObjects;
+
+namespace TurnForge.Engine.Commands.LoadGame.Descriptors;
 
 public sealed record DiscreteConnectionDeacriptor(
     Position From,

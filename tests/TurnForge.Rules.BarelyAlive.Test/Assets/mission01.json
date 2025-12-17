@@ -1,0 +1,15 @@
+{
+  "missionName": "mission01",
+  "scale": "250x250",
+  "areas": [
+    {"id":"A","x":0,"y":0,"width":10,"height":10,"isIndoor":false,"isDark":false}
+  ],
+  "Connections": [],
+  "Actors": [
+    { "actorKind":"Prop","position": "A","customType":"BarelyAlive.PartySpawn",  "traits": []},
+    { "actorId":"dddf277-2960-4974-8a29-e9e981d11ddd", "actorKind":"Prop", "position": "A","customType":"BarelyAlive.ZombieSpawn",
+      "traits": [{"type":"SpawnOrder", "Attributes": [{"name":"order","value":"1"}]}]
+    }
+  ]
+}
+

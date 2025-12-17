@@ -4,6 +4,17 @@
     <ProjectReference Include="..\TurnForge.Rules.BarelyAlive\TurnForge.Rules.BarelyAlive.csproj" />
     <ProjectReference Include="..\TurnForge.Adapters.Godot\TurnForge.Adapters.Godot.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scenes\main\" />
+    <Folder Include="Scenes\units\" />
+    <Folder Include="src\core\" />
+    <Folder Include="src\helpers\" />
+    <Folder Include="src\model\" />
+    <Folder Include="src\resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="memoryBank\GameAdapterDocumentation.md" />
+  </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>

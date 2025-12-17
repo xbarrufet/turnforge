@@ -2,24 +2,21 @@ using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Entities.Interfaces;
+using TurnForge.Engine.States;
 
 namespace TurnForge.Engine.Entities;
 
-public class Game
+public class Game : IGame
 {
     public GameId Id { get;  }
-    private readonly Dictionary<ActorId, Actor> _actors = new();
-    public IReadOnlyDictionary<ActorId, Actor> Actors => _actors;
-  
-    private readonly Dictionary<ActorId, Prop> _props = new();
-    public IReadOnlyDictionary<ActorId, Prop> Prop => _props;
+    
     public GameBoard GameBoard { get; }
+    private GameState _gameState = new GameState();
     
     public Game(GameBoard gameBoard)
     {
         Id = new GameId();
-        _actors = [];
-        _props = [];
         GameBoard = gameBoard;
     }
     public Game(
@@ -27,8 +24,6 @@ public class Game
         GameBoard gameBoard)
     {
         Id = id;
-        _actors = [];
-        _props = [];
         GameBoard = gameBoard;
     }
     
@@ -36,19 +31,31 @@ public class Game
         GameBoard gameBoard)
     {
         Id = new GameId();
-        _actors = [];
-        _props = [];
         GameBoard = gameBoard;
     }
     
-    public void AddActor(Actor actor)
+    public void AddUnit(Unit unit)
     {
-        _actors[actor.Id] = actor;
+        _gameState.AddUnit(unit);
+    }
+    public void AddHostile(Hostile hostile) 
+    {
+        _gameState.AddHostile(hostile);
     }
     
     public void AddProp(Prop prop)
     {
-        _props[prop.Id] = prop;
+        _gameState.AddProp(prop);
+    }
+    
+    public IReadOnlyGameState GetReadOnlyState()
+    {
+        return new ReadOnlyGameState(_gameState);
+    }
+    
+    public GameState GetGameState()
+    {
+        return _gameState;
     }
     
     

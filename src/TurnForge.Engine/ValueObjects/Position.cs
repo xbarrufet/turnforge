@@ -9,5 +9,6 @@ public readonly record struct Position(int X, int Y)
 
     public override string ToString()
         => $"({X}, {Y})";
-    
+    public static Position Empty { get; } = new Position(int.MinValue, int.MinValue);
+    public static bool IsEmpty(Position position) => position.Equals(Empty);
 } 

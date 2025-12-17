@@ -5,12 +5,6 @@ using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace TurnForge.Engine.Strategies.Spawn;
 
-public sealed class UnitSpawnContext(
-    IReadOnlyList<UnitDescriptor> playerUnits,
-    IReadOnlyGameState gameState,
-    ISpawnApplier spawner)
-{
-    public IReadOnlyList<UnitDescriptor> PlayerUnits { get; } = playerUnits;
-    public IReadOnlyGameState GameState { get; } = gameState;
-    public ISpawnApplier Spawner { get; } = spawner;
-}
+public sealed record PropSpawnContext(
+    IReadOnlyList<PropDescriptor> Descriptors,
+    IReadOnlyGameState GameState);
