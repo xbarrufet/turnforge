@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.Entities.Actors.Interfaces;
 
-public interface IActorTrait
+public interface IActorBehaviour
 {
     
 }

@@ -6,6 +6,6 @@ public interface IReadOnlyGameState
 {
     IReadOnlyCollection<Unit> Units { get; }
     IReadOnlyCollection<Prop> Props { get; }
-    IReadOnlyCollection<Hostile> Hostiles { get; }
+    IReadOnlyCollection<Npc> Npcs { get; }
     
 }

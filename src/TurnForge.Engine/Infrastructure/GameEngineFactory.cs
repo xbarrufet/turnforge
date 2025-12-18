@@ -1,7 +1,10 @@
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Infrastructure;
+using TurnForge.Engine.Infrastructure.Appliers;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
@@ -21,10 +24,28 @@ public static class GameEngineFactory
         // 1️⃣ ServiceProvider del engine
         var services = new SimpleServiceProvider();
 
+        // 1️⃣ Servicios internos del engine
+        services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
+        
         // 2️⃣ Dependencias externas (decididas por el host/juego)
         services.RegisterSingleton<IGameRepository>(gameEngineContext.GameRepository);
-        services.RegisterSingleton<IActorFactory>(gameEngineContext.ActorFactory);
+        
+        services.RegisterSingleton<IDefinitionRegistry<PropTypeId, PropDefinition>>(gameEngineContext.PropDefinitions);
+        services.RegisterSingleton<IDefinitionRegistry<UnitTypeId, UnitDefinition>>(gameEngineContext.UnitDefinitions);
+        services.RegisterSingleton<IDefinitionRegistry<NpcTypeId, NpcDefinition>>(gameEngineContext.NpcDefinitions);
+        services.RegisterSingleton<IActorFactory>(
+            new GenericActorFactory(
+                services.Resolve<IDefinitionRegistry<PropTypeId, PropDefinition>>(),
+                services.Resolve<IDefinitionRegistry<UnitTypeId, UnitDefinition>>(),
+                services.Resolve<IDefinitionRegistry<NpcTypeId, NpcDefinition>>()
+            )
+        );
+
+
+
+        
         services.RegisterSingleton<IPropSpawnStrategy>(gameEngineContext.PropSpawnStrategy);
+        services.RegisterSingleton<IUnitSpawnStrategy>(gameEngineContext.UnitSpawnStrategy);
         services.RegisterSingleton<IEffectSink>(new ObservableEffectSink());
         
         // 3️⃣ Registro de comandos y handlers propios del engine

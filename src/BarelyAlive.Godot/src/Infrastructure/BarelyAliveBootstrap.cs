@@ -1,7 +1,6 @@
 using BarelyAlive.Godot.Resources.Missions;
 using TurnForge.GodotAdapter;
 using Godot;
-using TurnForge.Adapters.Godot;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Repositories.InMemory;
 using TurnForge.GodotAdapter;

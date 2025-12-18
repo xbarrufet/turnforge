@@ -1,8 +1,6 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
   <ItemGroup>
     <ProjectReference Include="..\TurnForge.Engine\TurnForge.Engine.csproj" />
-    <ProjectReference Include="..\TurnForge.Rules.BarelyAlive\TurnForge.Rules.BarelyAlive.csproj" />
-    <ProjectReference Include="..\TurnForge.Adapters.Godot\TurnForge.Adapters.Godot.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scenes\main\" />
@@ -11,6 +9,8 @@
     <Folder Include="src\helpers\" />
     <Folder Include="src\model\" />
     <Folder Include="src\resources\" />
+    <Folder Include="TurnForge.GodotAdapter\Dto\" />
+    <Folder Include="TurnForge.GodotAdapter\Mappers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="memoryBank\GameAdapterDocumentation.md" />

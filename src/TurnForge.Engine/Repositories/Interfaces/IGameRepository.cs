@@ -1,5 +1,5 @@
+using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.States;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Repositories.Interfaces;
@@ -11,7 +11,7 @@ public interface IGameRepository
     Game LoadGame(GameId gameId);
     Game? GetCurrent();
     GameState Load();
-    void Save(GameState state);
+    void SaveGameState(GameState state);
     
     
 }

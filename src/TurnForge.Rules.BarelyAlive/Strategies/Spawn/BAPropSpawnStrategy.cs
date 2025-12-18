@@ -13,11 +13,12 @@ public sealed class BAPropSpawnStrategy:IPropSpawnStrategy
     public IReadOnlyList<PropSpawnDecision> Decide(PropSpawnContext context)
     {
         List<PropSpawnDecision> decisions = new();
-        foreach (var descriptor in context.Descriptors)
+        foreach (var descriptor in context.PropsToSpawn)
         {
             decisions.Add(new PropSpawnDecision(
-                descriptor,
-                descriptor.Position ?? new Position(0, 0)));
+                descriptor.TypeId,
+                descriptor.Position ?? Position.Zero,
+                descriptor.ExtraBehaviours ?? Array.Empty<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
         }
         return decisions;
     }

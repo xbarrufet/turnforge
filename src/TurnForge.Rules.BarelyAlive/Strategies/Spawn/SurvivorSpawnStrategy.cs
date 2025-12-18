@@ -12,8 +12,7 @@ public class SurvivorSpawnStrategy:IUnitSpawnStrategy
     {
         // Look for PartySpawnActor points
         var spawnPoint = ctx.GameState.Props
-            .OfType<PartySpawnProp>()
-            .FirstOrDefault();
+            .FirstOrDefault(p => p.Value.Definition.TypeId == BarelyAliveTypes.PartySpawn).Value;
         if (spawnPoint == null)
             throw new InvalidOperationException("No PartySpawnActor found.");
         return spawnPoint.Position;
@@ -21,12 +20,15 @@ public class SurvivorSpawnStrategy:IUnitSpawnStrategy
 
     public IReadOnlyList<UnitSpawnDecision> Decide(UnitSpawnContext ctx)
     {
-        var decision =new  List<UnitSpawnDecision>();
-        foreach (var unitDescriptor in ctx.PlayerUnits)
+        var decision = new List<UnitSpawnDecision>();
+        foreach (var unitDescriptor in ctx.UnitsToSpawn)
         {
             // For simplicity, spawn all units at the same position
             var spawnPosition = DetermineSpawnLocation(ctx);
-            decision.Add(new UnitSpawnDecision(unitDescriptor, spawnPosition));
+            decision.Add(new UnitSpawnDecision(
+                unitDescriptor.TypeId, 
+                spawnPosition,
+                unitDescriptor.ExtraBehaviours ?? Array.Empty<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
         }
         return decision;
     }

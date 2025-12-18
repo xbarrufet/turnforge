@@ -5,6 +5,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Actors\Traits\" />
+    <Folder Include="Dto\Mappers\" />
     <Folder Include="Loading\" />
   </ItemGroup>
 

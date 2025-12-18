@@ -1,22 +1,23 @@
 // csharp
 using System.Collections.Generic;
+using TurnForge.Engine.Entities.Actors.Components;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public class Unit(
-    ActorId id,
-    Position position,
-    IReadOnlyList<IActorTrait>? traits = null,
-    string? customType = "Unit") : Actor(id, position, traits, customType)
+public sealed class Unit : Agent
 {
-    public Unit(UnitDescriptor unitDescriptor, Position position)
-        : this(
-            unitDescriptor.Id,
-            position,
-            ActorTraitConverter.ToTraits(unitDescriptor.Traits),
-            unitDescriptor.CustomType)
-    { }
+    public UnitDefinition Definition { get; }
+
+    public Unit(
+        ActorId id,
+        Position position,
+        UnitDefinition definition,
+        IReadOnlyList<IActorBehaviour>? behaviours = null)
+        : base(id, position, new HealthComponent(definition.MaxHealth),behaviours)
+    {
+        Definition = definition;
+    }
 }

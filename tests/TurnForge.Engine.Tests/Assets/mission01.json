@@ -200,9 +200,9 @@
   ],
   "Actors": [
     { "actorKind":"Prop","position": "d7de841d-64a5-48b3-9662-0fe757a8950e","customType":"PartySpawnPoint",  
-      "traits": []},
+      "Behaviours": []},
     { "actorId":"dddf277-2960-4974-8a29-e9e981d11ddd", "actorKind":"Prop", "position": "1bd502ad-cfcd-4a07-94a7-93634651a1c3","customType":"ZombieSpawnPoint",
-      "traits": [{"type":"SpawnOrder", "Attributes": [{"name":"order","value":"1"}]}
+      "Behaviours": [{"type":"SpawnOrder", "Attributes": [{"name":"order","value":"1"}]}
       ]
     }
   ]

@@ -29,4 +29,7 @@ public sealed class SimpleServiceProvider : IServiceProvider
         throw new InvalidOperationException(
             $"Service not registered: {serviceType.Name}");
     }
+    
+    public T Resolve<T>() where T : notnull
+        => (T)GetService(typeof(T))!;
 }

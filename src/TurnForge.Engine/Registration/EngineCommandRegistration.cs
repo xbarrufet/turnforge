@@ -5,6 +5,7 @@ using TurnForge.Engine.Commands.LoadGame;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Infrastructure;
+using TurnForge.Engine.Infrastructure.Appliers;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
@@ -25,16 +26,17 @@ public static class EngineCommandRegistration
         // LoadGame
         // =====================================================
 
-        services.Register<LoadGameHandler>(sp =>
-            new LoadGameHandler(
+        services.Register<InitializeGameHandler>(sp =>
+            new InitializeGameHandler(
                 (IActorFactory)sp.GetService(typeof(IActorFactory))!,
+                (IGameFactory)sp.GetService(typeof(IGameFactory))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
                 (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!,
                 (IEffectSink)sp.GetService(typeof(IEffectSink))!
             )
         );
-        services.Register<ICommandHandler<LoadGameCommand>>(sp =>
-            (LoadGameHandler)sp.GetService(typeof(LoadGameHandler))!
+        services.Register<ICommandHandler<InitializeGameCommand>>(sp =>
+            (InitializeGameHandler)sp.GetService(typeof(InitializeGameHandler))!
         );
 
         // =====================================================
@@ -50,7 +52,7 @@ public static class EngineCommandRegistration
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
                 (IUnitSpawnStrategy)sp.GetService(typeof(IUnitSpawnStrategy))!,
                 (IActorFactory)sp.GetService(typeof(IActorFactory))!,
-                (IEffectSink)sp.GetService(typeof(IPropSpawnStrategy))!
+                (IEffectSink)sp.GetService(typeof(IEffectSink))!
             )
         );
         services.Register<ICommandHandler<GameStartCommand>>(sp =>

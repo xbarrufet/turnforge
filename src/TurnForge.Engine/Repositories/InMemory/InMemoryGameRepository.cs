@@ -1,6 +1,6 @@
+using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Repositories.Interfaces;
-using TurnForge.Engine.States;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Repositories.InMemory;
@@ -15,7 +15,6 @@ public class InMemoryGameRepository:IGameRepository
     {
         _games[game.Id] = game;
         _currentGame = game;
-        Save(_currentGame.GetGameState());
     }
 
     public Game LoadGame(GameId gameId)
@@ -34,7 +33,7 @@ public class InMemoryGameRepository:IGameRepository
         return _gameState;
     }
 
-    public void Save(GameState state)
+    public void SaveGameState(GameState state)
     {
         _gameState = state;
     }

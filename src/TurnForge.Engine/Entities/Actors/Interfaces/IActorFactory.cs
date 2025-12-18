@@ -7,18 +7,7 @@ using TurnForge.Engine.ValueObjects;
 
 public interface IActorFactory
 {
-    Hostile BuildHostile(
-        HostileDescriptor hostileDescriptor,
-        Position position
-    );
-
-    Unit BuildUnit(
-        UnitDescriptor unitDescriptor,
-        Position position
-    );
-
-    Prop BuildProp(
-        PropDescriptor propDescriptor,
-        Position position
-    );
+    Prop BuildProp(PropTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
+    Unit BuildUnit(UnitTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
+    Npc BuildNpc(NpcTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
 }

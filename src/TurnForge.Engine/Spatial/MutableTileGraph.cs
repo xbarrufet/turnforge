@@ -8,17 +8,31 @@ namespace TurnForge.Engine.Spatial;
 public sealed class MutableTileGraph : IMutableTileGraph
 {
     private readonly Dictionary<Position, HashSet<Position>> _adjacency;
+    private readonly HashSet<Position> _nodes;
 
+    public MutableTileGraph(HashSet<Position> nodes)
+    {
+        _adjacency = new();
+        _nodes = nodes;
+    }
+
+    public void AddAjacency(Position from, Position to)
+    {
+        EnableEdge(from, to);
+    }
+    
     public MutableTileGraph(IEnumerable<(Position A, Position B)> connections)
     {
         _adjacency = new();
-
         foreach (var (a, b) in connections)
         {
             EnableEdge(a, b);
             EnableEdge(b, a);
         }
     }
+    
+    
+    
 
     // ───────────────
     // MUTATIONS

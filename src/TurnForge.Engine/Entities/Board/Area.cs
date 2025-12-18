@@ -8,7 +8,7 @@ public sealed class Area
     public AreaId Id { get; }
     public Rectangle Bound { get; }
     
-    private readonly HashSet<IAreaTrait> _traits = [];
+    private readonly HashSet<IAreaBehaviour> _Behaviours = [];
     
     public Area(AreaId areaId, Rectangle bound)
     {
@@ -30,14 +30,14 @@ public sealed class Area
     public override string ToString()
         => $"Area {Id} [Bound: {Bound}]";
     
-    public void AddTrait(IAreaTrait trait)
-        => _traits.Add(trait);
+    public void AddBehaviour(IAreaBehaviour Behaviour)
+        => _Behaviours.Add(Behaviour);
 
-    public bool HasTrait<T>() where T : IAreaTrait
-        => _traits.Any(t => t is T);
+    public bool HasBehaviour<T>() where T : IAreaBehaviour
+        => _Behaviours.Any(t => t is T);
 
-    public T? GetTrait<T>() where T : class, IAreaTrait
-        => _traits.OfType<T>().FirstOrDefault();
+    public T? GetBehaviour<T>() where T : class, IAreaBehaviour
+        => _Behaviours.OfType<T>().FirstOrDefault();
     
     public bool Contains(Position position)
         => Bound.Contains(position);

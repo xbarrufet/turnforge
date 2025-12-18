@@ -10,14 +10,14 @@ public sealed class Connection(ConnectionId id, AreaId fromAreaId, AreaId toArea
     public AreaId ToAreaId { get; init; } = toAreaId;
     public bool IsOpen { get; set; } = isOpen;
 
-    private readonly HashSet<IConnectionTrait> _traits = [];
+    private readonly HashSet<IConnectionBehaviour> _Behaviours = [];
     
-    public void AddTrait(IConnectionTrait trait)
-        => _traits.Add(trait);
+    public void AddBehaviour(IConnectionBehaviour Behaviour)
+        => _Behaviours.Add(Behaviour);
 
-    public bool HasTrait<T>() where T : IConnectionTrait
-        => _traits.Any(t => t is T);
+    public bool HasBehaviour<T>() where T : IConnectionBehaviour
+        => _Behaviours.Any(t => t is T);
 
-    public T? GetTrait<T>() where T : class, IConnectionTrait
-        => _traits.OfType<T>().FirstOrDefault();
+    public T? GetBehaviour<T>() where T : class, IConnectionBehaviour
+        => _Behaviours.OfType<T>().FirstOrDefault();
 }

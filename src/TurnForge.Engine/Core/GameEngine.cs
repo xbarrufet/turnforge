@@ -1,5 +1,6 @@
 using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Commands.Game.Descriptors;
+using TurnForge.Engine.Commands.GameStart;
 using TurnForge.Engine.Commands.LoadGame;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities;
@@ -17,7 +18,12 @@ public sealed class GameEngine(CommandBus commandBus)
    
     private readonly CommandBus _commandBus= commandBus;
     
-    public void LoadGame(LoadGameCommand command)
+    public void LoadGame(InitializeGameCommand command)
+    {
+        _commandBus.Send(command);
+    }
+    
+    public void GameStart(GameStartCommand command)
     {
         _commandBus.Send(command);
     }

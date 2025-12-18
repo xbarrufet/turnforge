@@ -1,58 +1,94 @@
-using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Actors.Components;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Registration;
 
 namespace TurnForge.Rules.BarelyAlive.Actors;
 
-public class BarelyAliveActorFactory:IActorFactory
+public sealed class BarelyAliveActorFactory : IActorFactory
 {
-    
-    public Hostile BuildHostile(
-        HostileDescriptor hostileDescriptor,
-        Position position)
-        => BuildHostileInternal<Hostile>(
-            hostileDescriptor, position);
+    private readonly IDefinitionRegistry<NpcTypeId, NpcDefinition> _npcs;
+    private readonly IDefinitionRegistry<UnitTypeId, UnitDefinition> _units;
+    private readonly IDefinitionRegistry<PropTypeId, PropDefinition> _props;
+
+    public BarelyAliveActorFactory(
+        IDefinitionRegistry<NpcTypeId, NpcDefinition> npcs,
+        IDefinitionRegistry<UnitTypeId, UnitDefinition> units,
+        IDefinitionRegistry<PropTypeId, PropDefinition> props)
+    {
+        _npcs = npcs;
+        _units = units;
+        _props = props;
+    }
+
+    public Npc BuildNpc(
+        NpcTypeId typeId,
+        Position position,
+        IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
+    {
+        var definition = _npcs.Get(typeId);
+
+        var behaviours = definition.Behaviours;
+        if (extraBehaviours != null)
+        {
+            behaviours = behaviours.Concat(extraBehaviours).ToList();
+        }
+
+        return new Npc(
+            ActorId.New(),
+            position,
+            definition,
+            behaviours
+        );
+    }
 
     public Unit BuildUnit(
-        UnitDescriptor unitDescriptor,
-        Position position)
-        => BuildUnitInternal<Unit>(
-            unitDescriptor, position);
+        UnitTypeId typeId,
+        Position position,
+        IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
+    {
+        var definition = _units.Get(typeId);
+
+        var behaviours = definition.Behaviours;
+        if (extraBehaviours != null)
+        {
+            behaviours = behaviours.Concat(extraBehaviours).ToList();
+        }
+
+        return new Unit(
+            ActorId.New(),
+            position,
+            definition,
+            behaviours
+        );
+    }
 
     public Prop BuildProp(
-        PropDescriptor propDescriptor,
-        Position position)
-        => BuildPropInternal<Prop>(
-            propDescriptor, position);
-    public THostile BuildHostileInternal<THostile>(HostileDescriptor hostileDescriptor,Position position)
-        where THostile : Hostile
+        PropTypeId typeId,
+        Position position,
+        IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        return (THostile)Activator.CreateInstance(
-            typeof(THostile),
-            hostileDescriptor,
-            position
-        )!;
-    }
+        var definition = _props.Get(typeId);
 
-    public TUnit BuildUnitInternal<TUnit>(UnitDescriptor unitDescriptor,Position position)
-        where TUnit : Unit
-    {
-        return (TUnit)Activator.CreateInstance(
-            typeof(TUnit),
-            unitDescriptor,
-            position
-        )!;
-    }
+        HealthComponent? health =
+            definition.MaxHealth is not null
+                ? new HealthComponent(definition.MaxHealth.Value)
+                : null;
 
-    public TProp BuildPropInternal<TProp>(PropDescriptor propDescriptor, Position position)
-        where TProp : Prop
-    {
-        return (TProp)Activator.CreateInstance(
-            typeof(TProp),
-            propDescriptor,
-            position
-        )!;
+        var behaviours = definition.Behaviours;
+        if (extraBehaviours != null)
+        {
+            behaviours = behaviours.Concat(extraBehaviours).ToList();
+        }
+
+        return new Prop(
+            ActorId.New(),
+            position,
+            definition,
+            health,
+            behaviours
+        );
     }
 }

@@ -30,7 +30,7 @@ public partial class GodotAdapter:Node
         var spatial = MissionDefinitionMapper.FromDto(missionDefinitionDto);
         var actors = MissionDefinitionMapper.FromDto(missionDefinitionDto.Actors);
 
-        var command = new LoadGameCommand(
+        var command = new InitializeGameCommand(
             spatial: spatial,
             actors: actors
         );

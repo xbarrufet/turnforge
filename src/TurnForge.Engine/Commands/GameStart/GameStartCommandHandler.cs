@@ -2,6 +2,7 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Infrastructure.Appliers;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
@@ -30,22 +31,13 @@ public sealed class GameStartCommandHandler
 
     public CommandResult Handle(GameStartCommand command)
     {
-        var game = _repo.GetCurrent();
-        if (game is null)
-            return CommandResult.Fail("No current game to start");
-        var gameState = game.GetGameState();
-        if (gameState is null)
-            return CommandResult.Fail("Game state not available");
-
-        var context = new UnitSpawnContext(command.PlayerUnits, new ReadOnlyGameState(gameState));
+        var gameState = _repo.Load();
+        var context = new UnitSpawnContext(command.PlayerUnits, gameState);
         var decisions = _unitSpawnStrategy.Decide(context);
 
-        var spawner = new SpawnApplier(gameState, _actorFactory, _effectsSink);
-        foreach (var decision in decisions)
-        {
-            spawner.Spawn(decision);
-        }
-        _repo.SaveGame(game);
+        var spawner = new SpawnApplier(_actorFactory, _effectsSink);
+        var newState = spawner.Apply(decisions, gameState);
+        _repo.SaveGameState(newState);
         return CommandResult.Ok(tags: ["GameStarted"]);
     }
 }
