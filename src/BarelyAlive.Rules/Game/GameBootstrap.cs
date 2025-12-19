@@ -17,20 +17,14 @@ public sealed class GameBootstrap
 {
    
 
-    public static GameEngine GameEngineBootstrap()
+    public static TurnForge.Engine.Core.TurnForge GameEngineBootstrap()
     {
         // 1. Crear ServiceProvider
         var services = new SimpleServiceProvider();
             
-        InMemoryDefinitionRegistry<PropTypeId,PropDefinition> registryPropDefinitions = new InMemoryDefinitionRegistry<PropTypeId, PropDefinition>();
-        InMemoryDefinitionRegistry<UnitTypeId,UnitDefinition> registryUnitDefinitions = new InMemoryDefinitionRegistry<UnitTypeId, UnitDefinition>();
-        InMemoryDefinitionRegistry<NpcTypeId,NpcDefinition> registryNpcDefinitions = new InMemoryDefinitionRegistry<NpcTypeId, NpcDefinition>();
-
+        
         GameEngineContext gameEngineContext = new GameEngineContext(
             new InMemoryGameRepository(),
-            registryPropDefinitions,
-            registryUnitDefinitions,
-            registryNpcDefinitions,
             new BarelyAlivePropSpawnStrategy(),
             new SurvivorUnitsSpawnStrategy());
         return GameEngineFactory.Build(gameEngineContext);

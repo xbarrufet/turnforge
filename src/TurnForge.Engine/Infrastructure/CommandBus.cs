@@ -1,4 +1,5 @@
 using System.Reflection;
+using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 
@@ -12,22 +13,25 @@ public sealed class CommandBus(
 
     private bool _waitingForAck;
 
-    public void Send(ICommand command)
+    public CommandResult Send(ICommand command)
     {
-        if (_waitingForAck)
-            throw new InvalidOperationException("Waiting for ACK");
-
-        // 1️⃣ Validación del GameLoop (turnos, estado, etc.)
-        var loopResult = gameLoop.Validate(command);
-
-        if (!loopResult.IsAllowed)
-            throw new InvalidOperationException(loopResult.Reason);
-
-        // 2️⃣ Ejecutar el handler correspondiente
-        DispatchToHandler(command);
-        
-        // 4️⃣ Gestión de ACK
-        _waitingForAck = loopResult.RequiresAck;
+        try
+        {
+            if (_waitingForAck)
+                throw new InvalidOperationException("Waiting for ACK");
+            // 1️⃣ Validación del GameLoop (turnos, estado, etc.)
+            var loopResult = gameLoop.Validate(command);
+            if (!loopResult.IsAllowed)
+                throw new InvalidOperationException(loopResult.Reason);
+            // 2️⃣ Ejecutar el handler correspondiente
+            DispatchToHandler(command);
+            // 4️⃣ Gestión de ACK
+            _waitingForAck = loopResult.RequiresAck;
+            return CommandResult.Ok();
+        } catch (Exception ex)
+        {
+            return CommandResult.Fail(ex.Message);
+        }
     }
 
     private void DispatchToHandler(ICommand command)

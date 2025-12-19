@@ -72,10 +72,7 @@ public sealed class BarelyAliveActorFactory : IActorFactory
     {
         var definition = _props.Get(typeId);
 
-        HealthComponent? health =
-            definition.MaxHealth is not null
-                ? new HealthComponent(definition.MaxHealth.Value)
-                : null;
+        HealthComponent? health = new HealthComponent(definition.MaxHealth);
 
         var behaviours = definition.Behaviours;
         if (extraBehaviours != null)

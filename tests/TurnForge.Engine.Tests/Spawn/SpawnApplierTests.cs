@@ -27,7 +27,7 @@ namespace TurnForge.Engine.Tests.Spawn
             public Unit BuildUnit(TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new UnitDefinition(typeId, 10, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var def = new UnitDefinition(typeId, 10, 3, 2, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
                 var u = new Unit(id, position, def, behaviours?.ToList());
                 LastBuiltUnit = u;
                 return u;
@@ -36,7 +36,7 @@ namespace TurnForge.Engine.Tests.Spawn
             public Prop BuildProp(TurnForge.Engine.Entities.Actors.Definitions.PropTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new PropDefinition(typeId, null, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var def = new PropDefinition(typeId, 0, 0, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>(), 10);
                 var p = new Prop(id, position, def, null, behaviours?.ToList());
                 LastBuiltProp = p;
                 return p;

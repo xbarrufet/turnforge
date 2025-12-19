@@ -18,6 +18,9 @@
       <Folder Include="Core\Rules\" />
       <Folder Include="Core\Strategies\Combat\" />
       <Folder Include="Core\Strategies\Movement\" />
+      <Folder Include="Infrastructure\Factories\" />
+      <Folder Include="Registration\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,4 +29,9 @@
       <Content Include="Core\Behaviours\.DS_Store" />
     </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Units_BarelyAlive.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

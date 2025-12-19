@@ -9,4 +9,3 @@ public sealed class MissionDto
     public List<ZoneDto> Zones { get; init; } = new();
     public List<PropDto> Props { get; init; } = new();
 }
-

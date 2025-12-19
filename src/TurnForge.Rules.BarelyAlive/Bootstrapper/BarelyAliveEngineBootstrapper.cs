@@ -18,28 +18,25 @@ using TurnForge.Engine.Repositories.Interfaces;
 
 public static class BarelyAliveEngineBootstrapper
 {
-    public static GameEngine Boot()
+    public static global::TurnForge.Engine.Core.TurnForge Boot()
     {
-        // 1. Registries
-        var propRegistry = new TurnForge.Rules.BarelyAlive.Register.DefinitionRegistry<PropTypeId, PropDefinition>();
-        var unitRegistry = new TurnForge.Rules.BarelyAlive.Register.DefinitionRegistry<UnitTypeId, UnitDefinition>();
-        var npcRegistry = new TurnForge.Rules.BarelyAlive.Register.DefinitionRegistry<NpcTypeId, NpcDefinition>();
-
-        // 2. Preload definitions
-        unitRegistry.Register(BarelyAliveDefinitions.Survivor.TypeId, BarelyAliveDefinitions.Survivor);
-        npcRegistry.Register(BarelyAliveDefinitions.Zombie.TypeId, BarelyAliveDefinitions.Zombie);
-        propRegistry.Register(BarelyAliveDefinitions.Door.TypeId, BarelyAliveDefinitions.Door);
-        // Note: Spawn points like ZombieSpawn are dynamic props based on map data usually, but for bootstrapping we might register defaults if needed.
-        // For now, let's just register what we have static.
-
-        GameEngineContext context = new GameEngineContext(
+        // 1. Build Engine
+        global::TurnForge.Engine.Infrastructure.GameEngineContext context = new global::TurnForge.Engine.Infrastructure.GameEngineContext(
             new InMemoryGameRepository(),
-            propRegistry,
-            unitRegistry,
-            npcRegistry,
             new BAPropSpawnStrategy(),
             new SurvivorSpawnStrategy());
         
-        return GameEngineFactory.Build(context);
+        var turnForge = GameEngineFactory.Build(context);
+
+        // 2. Register definitions into the Catalog
+        // Note: We need to map the old "BarelyAliveDefinitions" to the expected definitions if possible, 
+        // or just register them using the new API.
+        // Assuming BarelyAliveDefinitions provides the Definition objects directly.
+        
+        turnForge.GameCatalog.RegisterUnitDefinition(BarelyAliveDefinitions.Survivor.TypeId, BarelyAliveDefinitions.Survivor);
+        turnForge.GameCatalog.RegiterNpcDefinition(BarelyAliveDefinitions.Zombie.TypeId, BarelyAliveDefinitions.Zombie);
+        turnForge.GameCatalog.RegisterPropDefinition(BarelyAliveDefinitions.Door.TypeId, BarelyAliveDefinitions.Door);
+        
+        return turnForge;
     }
 }

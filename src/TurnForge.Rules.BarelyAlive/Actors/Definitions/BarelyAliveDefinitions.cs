@@ -9,7 +9,9 @@ public static class BarelyAliveDefinitions
     public static readonly UnitDefinition Survivor =
         new(
             TypeId: BarelyAliveTypes.Survivor,
-            InitialMaxHealth: 5,
+            MaxHealth: 5,
+            MaxBaseMovement: 3,
+            MaxActionPoints: 2,
             Behaviours: Array.Empty<IActorBehaviour>()
         );
 
@@ -17,7 +19,8 @@ public static class BarelyAliveDefinitions
         new(
             TypeId: BarelyAliveTypes.Zombie,
             MaxHealth: 3,
-            BaseMovement: 1,
+            MaxBaseMovement: 1,
+            MaxActionPoints: 2,
             Behaviours: new IActorBehaviour[]
             {
                 new TraitTypes.FastTrait(1)
@@ -27,17 +30,21 @@ public static class BarelyAliveDefinitions
     public static PropDefinition ZombieSpawn(int order) =>
         new(
             TypeId: BarelyAliveTypes.ZombieSpawn,
-            MaxHealth: null,
+            MaxBaseMovement: 0,
+            MaxActionPoints: 0,
             Behaviours: new IActorBehaviour[]
             {
                 new TraitTypes.SpawnOrderTrait(order)
-            }
+            },
+            MaxHealth: 1
         );
 
     public static readonly PropDefinition Door =
         new(
             TypeId: BarelyAliveTypes.Door,
-            MaxHealth: 2,
-            Behaviours: Array.Empty<IActorBehaviour>()
+            MaxBaseMovement: 0,
+            MaxActionPoints: 0,
+            Behaviours: Array.Empty<IActorBehaviour>(),
+            MaxHealth: 2
         );
 }

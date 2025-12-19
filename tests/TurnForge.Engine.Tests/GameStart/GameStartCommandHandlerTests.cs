@@ -1,4 +1,5 @@
 using System.Collections.Generic;using NUnit.Framework;using TurnForge.Engine.Commands.GameStart;using TurnForge.Engine.Repositories.Interfaces;using TurnForge.Engine.Entities;using TurnForge.Engine.Entities.Actors;using TurnForge.Engine.ValueObjects;using TurnForge.Engine.Entities.Actors.Definitions;using TurnForge.Engine.Strategies.Spawn.Interfaces;using TurnForge.Engine.Strategies.Spawn;using TurnForge.Engine.Infrastructure.Appliers;using System.Linq;
+using TurnForge.Engine.Descriptors;
 
 namespace TurnForge.Engine.Tests.GameStart
 {
@@ -28,7 +29,7 @@ namespace TurnForge.Engine.Tests.GameStart
             public Unit BuildUnit(TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new UnitDefinition(typeId, 10, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var def = new UnitDefinition(typeId, 10, 3, 2, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
                 var u = new Unit(id, position, def, behaviours?.ToList());
                 BuiltUnits.Add(u);
                 return u;
@@ -37,14 +38,14 @@ namespace TurnForge.Engine.Tests.GameStart
             public Prop BuildProp(TurnForge.Engine.Entities.Actors.Definitions.PropTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new TurnForge.Engine.Entities.Actors.Definitions.PropDefinition(typeId, null, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var def = new TurnForge.Engine.Entities.Actors.Definitions.PropDefinition(typeId, 0, 0, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>(), 10);
                 return new Prop(id, position, def, null, behaviours?.ToList());
             }
 
             public Npc BuildNpc(TurnForge.Engine.Entities.Actors.Definitions.NpcTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new TurnForge.Engine.Entities.Actors.Definitions.NpcDefinition(typeId, 10, 2, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var def = new TurnForge.Engine.Entities.Actors.Definitions.NpcDefinition(typeId, 10, 3, 2, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
                 return new Npc(id, position, def, behaviours?.ToList());
             }
         }

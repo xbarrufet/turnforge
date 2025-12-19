@@ -1,15 +1,14 @@
 using TurnForge.Engine.Entities.Actors.Components;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
 public sealed class GenericActorFactory(
-    IDefinitionRegistry<PropTypeId, PropDefinition> props,
-    IDefinitionRegistry<UnitTypeId, UnitDefinition> units,
-    IDefinitionRegistry<NpcTypeId, NpcDefinition> npcs)
+    IGameCatalog gameCatalog)
     : IActorFactory
 {
     public Prop BuildProp(
@@ -17,13 +16,13 @@ public sealed class GenericActorFactory(
         Position position,
         IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        var def = props.Get(typeId);
+        var def = gameCatalog.GetPropDefinition(typeId);
 
         return new Prop(
             ActorId.New(),
             position,
             def,
-            def.MaxHealth.HasValue ? new HealthComponent(def.MaxHealth.Value) : null,
+            def.MaxHealth>0? new HealthComponent(def.MaxHealth) : null,
             Merge(def.Behaviours, extraBehaviours)
         );
     }
@@ -33,7 +32,7 @@ public sealed class GenericActorFactory(
         Position position,
         IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        var def = units.Get(typeId);
+        var def = gameCatalog.GetUnitDefinition(typeId);
 
         return new Unit(
             ActorId.New(),
@@ -48,7 +47,7 @@ public sealed class GenericActorFactory(
         Position position,
         IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        var def = npcs.Get(typeId);
+        var def = gameCatalog.GetNpcDefinition(typeId);
 
         return new Npc(
             ActorId.New(),

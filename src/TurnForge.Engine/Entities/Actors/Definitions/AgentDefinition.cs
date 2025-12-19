@@ -1,8 +1,11 @@
+using TurnForge.Engine.Entities.Actors.Interfaces;
+
 namespace TurnForge.Engine.Entities.Actors.Definitions;
 
-public abstract record AgentDefinition : ActorDefinition
-{
-    public int MaxHealth { get; init; }
-    public int MaxActionPoints { get; init; }
-    public int MaxBaseMovement  { get; init; }
-}
+public abstract record AgentDefinition(
+    int MaxHealth,
+    int MaxBaseMovement,
+    int MaxActionPoints,
+    IReadOnlyList<IActorBehaviour>? Behaviour) : ActorDefinition(Behaviour);
+
+

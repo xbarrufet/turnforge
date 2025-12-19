@@ -15,7 +15,7 @@ namespace TurnForge.Engine.Tests.Bootstrap;
 
 internal static class EngineTestBootstrapper
 {
-    public static (GameEngine Engine, IGameRepository Repository) Boot()
+    public static ( Core.TurnForge Engine, IGameRepository Repository) Boot()
     {
         
         // 2️⃣ Repository
@@ -29,17 +29,14 @@ internal static class EngineTestBootstrapper
         var npcDefs = new TestDefinitionRegistry<TurnForge.Engine.Entities.Actors.Definitions.NpcTypeId, TurnForge.Engine.Entities.Actors.Definitions.NpcDefinition>();
         
         // Register test definitions
-        unitDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor1"), new TurnForge.Engine.Entities.Actors.Definitions.UnitDefinition(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor1"), 100, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
-        unitDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor2"), new TurnForge.Engine.Entities.Actors.Definitions.UnitDefinition(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor2"), 100, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+        unitDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor1"), new TurnForge.Engine.Entities.Actors.Definitions.UnitDefinition(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor1"), 100, 3, 2, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+        unitDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor2"), new TurnForge.Engine.Entities.Actors.Definitions.UnitDefinition(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("Survivor2"), 100, 3, 2, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
 
         var gameContext = new GameEngineContext(
             repository,
-            propDefs,
-            unitDefs,
-            npcDefs,
             new TestPropSpawnStrategy(),
             new TestUnitSpawnStrategy());
-        var engine = GameEngineFactory.Build(gameContext);    
+        var engine = GameEngineFactory.Build(gameContext);
         return (engine, repository);
     }
 }

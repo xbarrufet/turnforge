@@ -1,5 +1,6 @@
 <Project Sdk="Godot.NET.Sdk/4.5.1">
   <ItemGroup>
+    <ProjectReference Include="..\BarelyAlive.Rules\BarelyAlive.Rules.csproj" />
     <ProjectReference Include="..\TurnForge.Engine\TurnForge.Engine.csproj" />
   </ItemGroup>
   <ItemGroup>

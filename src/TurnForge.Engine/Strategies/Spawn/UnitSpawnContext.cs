@@ -1,3 +1,4 @@
+using TurnForge.Engine.Descriptors;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Interfaces;

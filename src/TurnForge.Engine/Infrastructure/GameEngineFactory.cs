@@ -1,12 +1,12 @@
+using TurnForge.Engine.APIs;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Appliers;
+using TurnForge.Engine.Infrastructure.Catalog;
+using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Registration;
-using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace TurnForge.Engine.Infrastructure;
@@ -18,7 +18,7 @@ namespace TurnForge.Engine.Infrastructure;
 /// </summary>
 public static class GameEngineFactory
 {
-    public static GameEngine Build(
+    public static Core.TurnForge Build(
         GameEngineContext gameEngineContext)
     {
         // 1️⃣ ServiceProvider del engine
@@ -27,26 +27,18 @@ public static class GameEngineFactory
         // 1️⃣ Servicios internos del engine
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
         
-        // 2️⃣ Dependencias externas (decididas por el host/juego)
-        services.RegisterSingleton<IGameRepository>(gameEngineContext.GameRepository);
-        
-        services.RegisterSingleton<IDefinitionRegistry<PropTypeId, PropDefinition>>(gameEngineContext.PropDefinitions);
-        services.RegisterSingleton<IDefinitionRegistry<UnitTypeId, UnitDefinition>>(gameEngineContext.UnitDefinitions);
-        services.RegisterSingleton<IDefinitionRegistry<NpcTypeId, NpcDefinition>>(gameEngineContext.NpcDefinitions);
+        var gameCatalog = new InMemoryGameCatalog();
+        services.RegisterSingleton<IGameCatalog>(gameCatalog);
         services.RegisterSingleton<IActorFactory>(
             new GenericActorFactory(
-                services.Resolve<IDefinitionRegistry<PropTypeId, PropDefinition>>(),
-                services.Resolve<IDefinitionRegistry<UnitTypeId, UnitDefinition>>(),
-                services.Resolve<IDefinitionRegistry<NpcTypeId, NpcDefinition>>()
-            )
-        );
-
-
+                services.Resolve<IGameCatalog>()
+            ));
 
         
-        services.RegisterSingleton<IPropSpawnStrategy>(gameEngineContext.PropSpawnStrategy);
-        services.RegisterSingleton<IUnitSpawnStrategy>(gameEngineContext.UnitSpawnStrategy);
-        services.RegisterSingleton<IEffectSink>(new ObservableEffectSink());
+        // 2️⃣ Dependencias externas (decididas por el host/juego)
+        services.RegisterSingleton(gameEngineContext.GameRepository);
+        services.RegisterSingleton(gameEngineContext.PropSpawnStrategy);
+        services.RegisterSingleton(gameEngineContext.UnitSpawnStrategy);
         
         // 3️⃣ Registro de comandos y handlers propios del engine
         EngineCommandRegistration.Register(services);
@@ -54,13 +46,13 @@ public static class GameEngineFactory
         // 4️⃣ Resolver de handlers (engine infra)
         var resolver =
             new ServiceProviderCommandHandlerResolver(services);
-
-        // 5️⃣ EventBus (engine infra)
+        
+        
+        
+        //Infraestructura interna adicional
         var effectSink = new ObservableEffectSink();
-
-        // 6️⃣ GameLoop (engine infra)
         var gameLoop = new GameLoop();
-
+        services.RegisterSingleton<IEffectSink>(effectSink);
         // 7️⃣ CommandBus (engine infra)
         var commandBus = new CommandBus(
             gameLoop,
@@ -68,7 +60,9 @@ public static class GameEngineFactory
             effectSink
         );
 
-        // 8️⃣ GameEngine (fachada pública)
-        return new GameEngine(commandBus);
+        // 8️⃣ TurnForge (fachada pública)
+        var runtime =  new GameEngineRuntime(commandBus);
+        var catalogApi = new GameCatalogApi(gameCatalog);
+        return new Core.TurnForge(runtime, catalogApi);
     }
 }

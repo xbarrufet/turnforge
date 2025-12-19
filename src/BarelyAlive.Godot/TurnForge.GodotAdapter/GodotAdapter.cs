@@ -1,15 +1,15 @@
+using BarelyAlive.Rules.Game;
 using Godot;
 using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Commands.LoadGame;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Infrastructure;
-using TurnForge.GodotAdapter.Dto.MissionDefinition;
 
 namespace TurnForge.GodotAdapter;
 
 public partial class GodotAdapter:Node
 {
-    private GameEngine _engine;
+    private BarelyAliveGame _engineRuntime;
     public static GodotAdapter Instance { get; private set; }
 
     public override void _EnterTree()
@@ -20,7 +20,7 @@ public partial class GodotAdapter:Node
     public void Bootstrap(GameEngineContext context)
     {
         GD.Print("Bootstrap started");
-        _engine = GameEngineFactory.Build(context);
+        _engineRuntime = BarelyAliveGame.CreateNewGame();
         GD.Print("Bootstrap completed");
         
     }
@@ -36,7 +36,7 @@ public partial class GodotAdapter:Node
         );
 
         // Use engine API
-        _engine.LoadGame(command);
+        _engineRuntime.InitializeGame(command);
     }
 
     /*public void LoadMission(MissionDefinitionDTO mission)

@@ -9,7 +9,7 @@ namespace TurnForge.Engine.Tests.GameState
         {
             var state = TurnForge.Engine.Entities.GameState.Empty();
             var id = new ActorId(Guid.NewGuid());
-            var def = new UnitDefinition(new UnitTypeId("u1"), 10, new System.Collections.Generic.List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+            var def = new UnitDefinition(new UnitTypeId("u1"), 10, 3, 2, new System.Collections.Generic.List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
             var unit = new Unit(id, Position.Empty, def);
 
             var newState = state.WithUnit(unit);

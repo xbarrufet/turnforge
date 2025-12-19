@@ -19,8 +19,10 @@ public sealed class PropDefinitionLoader(IDefinitionRegistry<PropTypeId, PropDef
 
         var definition = new PropDefinition(
             TypeId: new PropTypeId(dto.TypeId),
-            MaxHealth: dto.MaxHealth,
-            Behaviours: behaviours
+            MaxBaseMovement: 0,
+            MaxActionPoints: 0,
+            Behaviours: behaviours,
+            MaxHealth: dto.MaxHealth ?? 1
         );
         registry.Register(definition.TypeId, definition);
         
