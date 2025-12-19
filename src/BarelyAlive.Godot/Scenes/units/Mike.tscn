@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://0nhkdtoktu7o"]
+
+[ext_resource type="PackedScene" uid="uid://co6oyjrl0e0g2" path="res://scenes/units/BaseUniScene.tscn" id="1_g3prk"]
+
+[node name="UnitNode" instance=ExtResource("1_g3prk")]
+BaseDiameter = 25.0

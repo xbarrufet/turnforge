@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3 uid="uid://co6oyjrl0e0g2"]
+
+[ext_resource type="Script" uid="uid://b67vx88vuijx6" path="res://scenes/units/BaseUnitScene.cs" id="1_7e6nm"]
+[ext_resource type="Shader" uid="uid://c8dwa4c0qrymj" path="res://assets/tile_1R/token.gdshader" id="2_vu6se"]
+[ext_resource type="Texture2D" uid="uid://be4nlw64w261s" path="res://assets/textures/avatar/s_1.png" id="3_43koe"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vu6se"]
+shader = ExtResource("2_vu6se")
+shader_parameter/circle_color = Color(1, 0.8, 0, 1)
+shader_parameter/border_thickness = 0.07
+shader_parameter/feather = 0.005
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7e6nm"]
+
+[node name="UnitNode" type="Node2D"]
+script = ExtResource("1_7e6nm")
+Texture = ExtResource("3_43koe")
+
+[node name="UnitSprite" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_vu6se")
+texture = ExtResource("3_43koe")
+
+[node name="UnitSelectionArea" type="Area2D" parent="UnitSprite"]
+
+[node name="UnitCollisionShape" type="CollisionShape2D" parent="UnitSprite/UnitSelectionArea"]
+shape = SubResource("CircleShape2D_7e6nm")

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TurnForge.Engine\TurnForge.Engine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Core\Actors\Npcs\" />
+      <Folder Include="Core\Actors\Props\" />
+      <Folder Include="Core\Actors\Units\" />
+      <Folder Include="Core\Rules\" />
+      <Folder Include="Core\Strategies\Combat\" />
+      <Folder Include="Core\Strategies\Movement\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Core\Actors\.DS_Store" />
+      <Content Include="Core\Strategies\.DS_Store" />
+      <Content Include="Core\Behaviours\.DS_Store" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="MissionResource" load_steps=2 format=3 uid="uid://bw4phudovyecs"]
+
+[ext_resource type="Script" uid="uid://bm315pwm3kfji" path="res://src/resources/Missions/MissionResource.cs" id="1_eknyi"]
+
+[resource]
+script = ExtResource("1_eknyi")
+MissionName = "Tile 1R"
+metadata/_custom_type_script = "uid://csu41ylbtqgai"
