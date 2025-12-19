@@ -6,14 +6,11 @@ namespace TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 public interface IGameCatalog
 {
     IDefinitionRegistry<PropTypeId, PropDefinition> Props { get; }
-    IDefinitionRegistry<UnitTypeId, UnitDefinition> Units { get; }
-    IDefinitionRegistry<NpcTypeId, NpcDefinition> Npcs { get; }
-    
-    void RegiterNpcDefinition(NpcTypeId typeId, NpcDefinition definition);
-    void RegisterUnitDefinition(UnitTypeId typeId, UnitDefinition definition);
+    IDefinitionRegistry<AgentTypeId, AgentDefinition> Agents { get; }
+
+    void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition);
     void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition);
-    
-    NpcDefinition GetNpcDefinition(NpcTypeId typeId);
-    UnitDefinition GetUnitDefinition(UnitTypeId typeId);
+
+    AgentDefinition GetAgentDefinition(AgentTypeId typeId);
     PropDefinition GetPropDefinition(PropTypeId typeId);
 }

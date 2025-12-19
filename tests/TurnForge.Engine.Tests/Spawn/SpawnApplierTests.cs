@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using TurnForge.Engine.Infrastructure.Appliers;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Infrastructure.Appliers;
+using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
+using TurnForge.Engine.Strategies.Spawn;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Spawn
 {
@@ -17,39 +17,35 @@ namespace TurnForge.Engine.Tests.Spawn
         {
             public readonly List<TurnForge.Engine.Core.Interfaces.IGameEffect> Emitted = new();
             public void Emit(TurnForge.Engine.Core.Interfaces.IGameEffect effect) => Emitted.Add(effect);
+            public void Subscribe(System.Action<TurnForge.Engine.Core.Interfaces.IGameEffect> action) { } // No-op for test
         }
 
         private class TestActorFactory : TurnForge.Engine.Entities.Actors.Interfaces.IActorFactory
         {
-            public Unit? LastBuiltUnit;
+            public Agent? LastBuiltAgent;
             public Prop? LastBuiltProp;
 
-            public Unit BuildUnit(TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
+            public Agent BuildAgent(TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new UnitDefinition(typeId, 10, 3, 2, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
-                var u = new Unit(id, position, def, behaviours?.ToList());
-                LastBuiltUnit = u;
+                var def = new AgentDefinition(typeId, 10, 3, 2, behaviours ?? new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+                var u = new Agent(id, position, def, behaviours?.ToList());
+                LastBuiltAgent = u;
                 return u;
             }
 
             public Prop BuildProp(TurnForge.Engine.Entities.Actors.Definitions.PropTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
             {
                 var id = new ActorId(System.Guid.NewGuid());
-                var def = new PropDefinition(typeId, 0, 0, behaviours??new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>(), 10);
+                var def = new PropDefinition(typeId, 0, 0, behaviours ?? new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>(), 10);
                 var p = new Prop(id, position, def, null, behaviours?.ToList());
                 LastBuiltProp = p;
                 return p;
             }
-
-            public Npc BuildNpc(TurnForge.Engine.Entities.Actors.Definitions.NpcTypeId typeId, Position position, IReadOnlyList<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>? behaviours = null)
-            {
-                throw new System.NotImplementedException();
-            }
         }
 
         [Test]
-        public void Apply_AddsUnitsAndEmitsEffects()
+        public void Apply_AddsAgentsAndEmitsEffects()
         {
             var effectSink = new TestEffectSink();
             var factory = new TestActorFactory();
@@ -58,17 +54,108 @@ namespace TurnForge.Engine.Tests.Spawn
             var state = TurnForge.Engine.Entities.GameState.Empty();
             var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
             {
-                new UnitSpawnDecision(new TurnForge.Engine.Entities.Actors.Definitions.UnitTypeId("uType"), Position.Zero, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()),
+                new AgentSpawnDecision(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("uType"), Position.Zero, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()),
                 new PropSpawnDecision(new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("pType"), Position.Zero, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>())
             };
 
             var newState = applier.Apply(decisions, state);
 
-            NUnit.Framework.Assert.That(newState.Units.Count, Is.EqualTo(1));
-            NUnit.Framework.Assert.That(newState.Props.Count, Is.EqualTo(1));
+            NUnit.Framework.Assert.That(newState.GetAgents().Count, Is.EqualTo(1));
+            NUnit.Framework.Assert.That(newState.GetProps().Count, Is.EqualTo(1));
             NUnit.Framework.Assert.That(effectSink.Emitted.Count, Is.EqualTo(2));
-            NUnit.Framework.Assert.That(factory.LastBuiltUnit, Is.Not.Null);
+            NUnit.Framework.Assert.That(factory.LastBuiltAgent, Is.Not.Null);
             NUnit.Framework.Assert.That(factory.LastBuiltProp, Is.Not.Null);
+        }
+
+
+        [Test]
+        public void Apply_PropWithBehaviour_BehaviourIsAddedToEntity()
+        {
+            // Arrange
+            var effectSink = new TestEffectSink();
+            var factory = new TestActorFactory();
+            var applier = new SpawnApplier(factory, effectSink);
+
+            var state = TurnForge.Engine.Entities.GameState.Empty();
+
+            // Create a test behaviour
+            var testBehaviour = new TestBehaviour();
+            var behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour> { testBehaviour };
+
+            var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
+            {
+                new PropSpawnDecision(
+                    new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("PropWithBehaviour"),
+                    Position.Zero,
+                    behaviours)
+            };
+
+            // Act
+            var newState = applier.Apply(decisions, state);
+
+            // Assert
+            NUnit.Framework.Assert.That(newState.Props.Count, Is.EqualTo(1), "Should have spawned 1 prop");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp, Is.Not.Null, "Factory should have built a prop");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp!.Behaviours, Is.Not.Null, "Prop should have behaviours collection");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp.Behaviours!.Count, Is.EqualTo(1), "Prop should have 1 behaviour");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp.Behaviours![0], Is.SameAs(testBehaviour), "Prop should have the exact behaviour instance");
+        }
+
+        // Test behaviour implementation
+        private class TestBehaviour : TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour
+        {
+        }
+
+        [Test]
+        public void Apply_PropWithParameterizedBehaviour_BehaviourWithCorrectParametersIsAddedToEntity()
+        {
+            // Arrange
+            var effectSink = new TestEffectSink();
+            var factory = new TestActorFactory();
+            var applier = new SpawnApplier(factory, effectSink);
+
+            var state = TurnForge.Engine.Entities.GameState.Empty();
+
+            // Create a parameterized behaviour
+            var expectedOrder = 5;
+            var expectedMaxSpawns = 10;
+            var parameterizedBehaviour = new TestParameterizedBehaviour(expectedOrder, expectedMaxSpawns);
+            var behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour> { parameterizedBehaviour };
+
+            var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
+            {
+                new PropSpawnDecision(
+                    new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("PropWithParameterizedBehaviour"),
+                    Position.Zero,
+                    behaviours)
+            };
+
+            // Act
+            var newState = applier.Apply(decisions, state);
+
+            // Assert
+            NUnit.Framework.Assert.That(newState.Props.Count, Is.EqualTo(1), "Should have spawned 1 prop");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp, Is.Not.Null, "Factory should have built a prop");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp!.Behaviours, Is.Not.Null, "Prop should have behaviours collection");
+            NUnit.Framework.Assert.That(factory.LastBuiltProp.Behaviours!.Count, Is.EqualTo(1), "Prop should have 1 behaviour");
+
+            var spawnedBehaviour = factory.LastBuiltProp.Behaviours![0] as TestParameterizedBehaviour;
+            NUnit.Framework.Assert.That(spawnedBehaviour, Is.Not.Null, "Behaviour should be of type TestParameterizedBehaviour");
+            NUnit.Framework.Assert.That(spawnedBehaviour!.Order, Is.EqualTo(expectedOrder), "Behaviour should have correct Order parameter");
+            NUnit.Framework.Assert.That(spawnedBehaviour.MaxSpawns, Is.EqualTo(expectedMaxSpawns), "Behaviour should have correct MaxSpawns parameter");
+        }
+
+        // Test parameterized behaviour implementation
+        private class TestParameterizedBehaviour : TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour
+        {
+            public int Order { get; }
+            public int MaxSpawns { get; }
+
+            public TestParameterizedBehaviour(int order, int maxSpawns)
+            {
+                Order = order;
+                MaxSpawns = maxSpawns;
+            }
         }
     }
 }

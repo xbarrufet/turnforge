@@ -8,6 +8,5 @@ using TurnForge.Engine.ValueObjects;
 public interface IActorFactory
 {
     Prop BuildProp(PropTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
-    Unit BuildUnit(UnitTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
-    Npc BuildNpc(NpcTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
+    Agent BuildAgent(AgentTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
 }

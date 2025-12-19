@@ -4,12 +4,10 @@ namespace TurnForge.Engine.Services.Interfaces;
 
 public interface IGameCatalogApi
 {
-    void RegiterNpcDefinition(NpcTypeId typeId, NpcDefinition definition);
-    void RegisterUnitDefinition(UnitTypeId typeId, UnitDefinition definition);
+    void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition);
     void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition);
-    
-    NpcDefinition GetNpcDefinition(NpcTypeId typeId);
-    UnitDefinition GetUnitDefinition(UnitTypeId typeId);
+
+    AgentDefinition GetAgentDefinition(AgentTypeId typeId);
     PropDefinition GetPropDefinition(PropTypeId typeId);
 
 }

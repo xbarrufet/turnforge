@@ -4,6 +4,7 @@ using TurnForge.Engine.Registration;
 namespace TurnForge.Engine.Tests.Helpers
 {
     public class TestDefinitionRegistry<TTypeId, TDefinition> : IDefinitionRegistry<TTypeId, TDefinition>
+        where TTypeId : notnull
     {
         private readonly Dictionary<TTypeId, TDefinition> _definitions = new Dictionary<TTypeId, TDefinition>();
 

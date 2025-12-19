@@ -41,25 +41,26 @@ public sealed class InitializeGameHandler
 
     public CommandResult Handle(InitializeGameCommand command)
     {
-        
+
         // 2️⃣ Crear Board
         var board = new BoardApplier().Apply(command);
         // 3️⃣ Crear Game
         var game = _gameFactory.Build(board);
-        var gameState = GameState.Empty(); 
+        var gameState = GameState.Empty();
+
         // 4️⃣ Crear actores (DECISIÓN + EJECUCIÓN)
         //build context for spawn strategy
-        var context = new PropSpawnContext(command.StartingProps,gameState); 
+        var context = new PropSpawnContext(command.StartingProps, gameState);
         var decisions = _propSpawnStrategy.Decide(context);
         //crear SpwanApplier y aplicar
-        var spawner = new SpawnApplier( _actorFactory, _effectsSink);
+        var spawner = new SpawnApplier(_actorFactory, _effectsSink);
         spawner.Apply(decisions, gameState);
-        
+
         // 5️⃣ Guardar
         _gameRepository.SaveGame(game);
         _gameRepository.SaveGameState(gameState);
         return CommandResult.Ok();
     }
 
-   
+
 }

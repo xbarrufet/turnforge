@@ -6,4 +6,5 @@ namespace TurnForge.Engine.Core.Interfaces;
 public interface IGameEngine
 {
     CommandResult Send(ICommand command);
+    void Subscribe(Action<IGameEffect> handler);
 }

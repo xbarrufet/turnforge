@@ -22,34 +22,19 @@ public sealed class GenericActorFactory(
             ActorId.New(),
             position,
             def,
-            def.MaxHealth>0? new HealthComponent(def.MaxHealth) : null,
+            def.MaxHealth > 0 ? new HealthComponent(def.MaxHealth) : null,
             Merge(def.Behaviours, extraBehaviours)
         );
     }
 
-    public Unit BuildUnit(
-        UnitTypeId typeId,
+    public Agent BuildAgent(
+        AgentTypeId typeId,
         Position position,
         IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        var def = gameCatalog.GetUnitDefinition(typeId);
+        var def = gameCatalog.GetAgentDefinition(typeId);
 
-        return new Unit(
-            ActorId.New(),
-            position,
-            def,
-            Merge(def.Behaviours, extraBehaviours)
-        );
-    }
-
-    public Npc BuildNpc(
-        NpcTypeId typeId,
-        Position position,
-        IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
-    {
-        var def = gameCatalog.GetNpcDefinition(typeId);
-
-        return new Npc(
+        return new Agent(
             ActorId.New(),
             position,
             def,
@@ -66,6 +51,6 @@ public sealed class GenericActorFactory(
 
         return baseBehaviours.Concat(extra).ToList();
     }
-    
-   
+
+
 }

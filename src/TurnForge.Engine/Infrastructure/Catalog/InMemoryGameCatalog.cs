@@ -8,16 +8,11 @@ namespace TurnForge.Engine.Infrastructure.Catalog;
 internal sealed class InMemoryGameCatalog : IGameCatalog
 {
     public IDefinitionRegistry<PropTypeId, PropDefinition> Props { get; }
-    public IDefinitionRegistry<UnitTypeId, UnitDefinition> Units { get; }
-    public IDefinitionRegistry<NpcTypeId, NpcDefinition> Npcs { get; }
-    public void RegiterNpcDefinition(NpcTypeId typeId, NpcDefinition definition)
-    {
-        Npcs.Register(typeId, definition);
-    }
+    public IDefinitionRegistry<AgentTypeId, AgentDefinition> Agents { get; }
 
-    public void RegisterUnitDefinition(UnitTypeId typeId, UnitDefinition definition)
+    public void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition)
     {
-        Units.Register(typeId, definition);
+        Agents.Register(typeId, definition);
     }
 
     public void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition)
@@ -25,14 +20,9 @@ internal sealed class InMemoryGameCatalog : IGameCatalog
         Props.Register(typeId, definition);
     }
 
-    public NpcDefinition GetNpcDefinition(NpcTypeId typeId)
+    public AgentDefinition GetAgentDefinition(AgentTypeId typeId)
     {
-        return Npcs.Get(typeId);
-    }
-
-    public UnitDefinition GetUnitDefinition(UnitTypeId typeId)
-    {
-        return Units.Get(typeId);
+        return Agents.Get(typeId);
     }
 
     public PropDefinition GetPropDefinition(PropTypeId typeId)
@@ -43,8 +33,7 @@ internal sealed class InMemoryGameCatalog : IGameCatalog
     public InMemoryGameCatalog()
     {
         Props = new InMemoryDefinitionRegistry<PropTypeId, PropDefinition>();
-        Units = new InMemoryDefinitionRegistry<UnitTypeId, UnitDefinition>();
-        Npcs  = new InMemoryDefinitionRegistry<NpcTypeId, NpcDefinition>();
+        Agents = new InMemoryDefinitionRegistry<AgentTypeId, AgentDefinition>();
     }
-    
+
 }

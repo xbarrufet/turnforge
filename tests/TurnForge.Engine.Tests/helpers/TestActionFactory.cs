@@ -13,13 +13,8 @@ public sealed class TestActionFactory : IActorFactory
         return new Prop(new ActorId(System.Guid.NewGuid()), position, new PropDefinition(typeId, 0, 0, extraBehaviours ?? new List<IActorBehaviour>(), 10), null, extraBehaviours);
     }
 
-    public Unit BuildUnit(UnitTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
+    public Agent BuildAgent(AgentTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
     {
-        return new Unit(new ActorId(System.Guid.NewGuid()), position, new UnitDefinition(typeId, 10, 3, 2, extraBehaviours ?? new List<IActorBehaviour>()), extraBehaviours);
-    }
-
-    public Npc BuildNpc(NpcTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null)
-    {
-        return new Npc(new ActorId(System.Guid.NewGuid()), position, new NpcDefinition(typeId, 10, 3, 2, extraBehaviours ?? new List<IActorBehaviour>()), extraBehaviours);
+        return new Agent(new ActorId(System.Guid.NewGuid()), position, new AgentDefinition(typeId, 10, 3, 2, extraBehaviours ?? new List<IActorBehaviour>()), extraBehaviours);
     }
 }

@@ -3,9 +3,9 @@ using BarelyAlive.Rules.Registration;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Infrastructure;
-using TurnForge.Engine.Repositories.InMemory;
-using TurnForge.Engine.Repositories.Interfaces;
+using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Registration;
+using TurnForge.Engine.Repositories.Interfaces;
 
 namespace BarelyAlive.Rules.Game;
 
@@ -15,18 +15,18 @@ namespace BarelyAlive.Rules.Game;
 /// </summary>
 public sealed class GameBootstrap
 {
-   
+
 
     public static TurnForge.Engine.Core.TurnForge GameEngineBootstrap()
     {
         // 1. Crear ServiceProvider
         var services = new SimpleServiceProvider();
-            
-        
+
+
         GameEngineContext gameEngineContext = new GameEngineContext(
             new InMemoryGameRepository(),
             new BarelyAlivePropSpawnStrategy(),
-            new SurvivorUnitsSpawnStrategy());
+            new SurvivorAgentsSpawnStrategy());
         return GameEngineFactory.Build(gameEngineContext);
 
     }

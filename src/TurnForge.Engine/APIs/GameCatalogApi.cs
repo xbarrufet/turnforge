@@ -4,7 +4,7 @@ using TurnForge.Engine.Services.Interfaces;
 
 namespace TurnForge.Engine.APIs;
 
-public class GameCatalogApi:IGameCatalogApi
+public class GameCatalogApi : IGameCatalogApi
 {
     IGameCatalog _catalog;
     public GameCatalogApi(IGameCatalog catalog)
@@ -12,14 +12,9 @@ public class GameCatalogApi:IGameCatalogApi
         _catalog = catalog;
     }
 
-    public void RegiterNpcDefinition(NpcTypeId typeId, NpcDefinition definition)
+    public void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition)
     {
-        _catalog.RegiterNpcDefinition(typeId, definition);
-    }
-
-    public void RegisterUnitDefinition(UnitTypeId typeId, UnitDefinition definition)
-    {
-        _catalog.RegisterUnitDefinition(typeId, definition);
+        _catalog.RegisterAgentDefinition(typeId, definition);
     }
 
     public void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition)
@@ -27,14 +22,9 @@ public class GameCatalogApi:IGameCatalogApi
         _catalog.RegisterPropDefinition(typeId, definition);
     }
 
-    public NpcDefinition GetNpcDefinition(NpcTypeId typeId)
+    public AgentDefinition GetAgentDefinition(AgentTypeId typeId)
     {
-        return _catalog.GetNpcDefinition(typeId);
-    }
-
-    public UnitDefinition GetUnitDefinition(UnitTypeId typeId)
-    {
-        return _catalog.GetUnitDefinition(typeId);
+        return _catalog.GetAgentDefinition(typeId);
     }
 
     public PropDefinition GetPropDefinition(PropTypeId typeId)

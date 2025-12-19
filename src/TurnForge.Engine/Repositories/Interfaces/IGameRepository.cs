@@ -10,8 +10,8 @@ public interface IGameRepository
     void SaveGame(Game game);
     Game LoadGame(GameId gameId);
     Game? GetCurrent();
-    GameState Load();
+    GameState LoadGameState();
     void SaveGameState(GameState state);
-    
-    
+
+
 }

@@ -5,6 +5,8 @@ namespace BarelyAlive.Rules.Adapter.Dto;
 public sealed class BehaviourDto
 {
     public string Type { get; init; } = default!;
-    public JsonElement Data { get; init; }
+
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, JsonElement> ExtensionData { get; init; } = new();
 }
 

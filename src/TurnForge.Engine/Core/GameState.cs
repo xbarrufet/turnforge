@@ -7,64 +7,58 @@ namespace TurnForge.Engine.Entities;
 
 public sealed class GameState
 {
-    public ImmutableDictionary<ActorId, Unit> Units { get; }
-    public ImmutableDictionary<ActorId, Npc> Npcs { get; }
+    public ImmutableDictionary<ActorId, Agent> Agents { get; }
     public ImmutableDictionary<ActorId, Prop> Props { get; }
+    public NodeId? CurrentStateId { get; }
 
     private GameState(
-        ImmutableDictionary<ActorId, Unit> units,
+        ImmutableDictionary<ActorId, Agent> agents,
         ImmutableDictionary<ActorId, Prop> props,
-        ImmutableDictionary<ActorId, Npc> npcs)
+        NodeId? currentStateId)
     {
-        Units = units;
+        Agents = agents;
         Props = props;
-        Npcs = npcs;
+        CurrentStateId = currentStateId;
     }
 
     public static GameState Empty()
         => new(
-            ImmutableDictionary<ActorId, Unit>.Empty,
+            ImmutableDictionary<ActorId, Agent>.Empty,
             ImmutableDictionary<ActorId, Prop>.Empty,
-            ImmutableDictionary<ActorId, Npc>.Empty
+            null
         );
 
-    public GameState WithUnit(Unit unit)
+    public GameState WithAgent(Agent agent)
         => new(
-            Units.Add(unit.Id, unit),
+            Agents.Add(agent.Id, agent),
             Props,
-            Npcs
+            CurrentStateId
         );
 
     public GameState WithProp(Prop prop)
         => new(
-            Units,
+            Agents,
             Props.Add(prop.Id, prop),
-            Npcs
+            CurrentStateId
         );
-    public GameState WithNpc(Npc npc)
-        => new(
-            Units,
-            Props,
-            Npcs.Add(npc.Id, npc)
-        );
-    
-    public GameState WithUnits(IEnumerable<Unit> units, bool replaceAll = false)
+
+    public GameState WithAgents(IEnumerable<Agent> agents, bool replaceAll = false)
     {
         if (replaceAll)
         {
-            var builder = ImmutableDictionary.CreateBuilder<ActorId, Unit>();
-            foreach (var u in units)
+            var builder = ImmutableDictionary.CreateBuilder<ActorId, Agent>();
+            foreach (var u in agents)
                 builder[u.Id] = u;
-            return new(builder.ToImmutable(), Props, Npcs);
+            return new(builder.ToImmutable(), Props, CurrentStateId);
         }
-    
-        var updated = Units;
-        foreach (var u in units)
+
+        var updated = Agents;
+        foreach (var u in agents)
             updated = updated.SetItem(u.Id, u);
-    
-        return new(updated, Props, Npcs);
+
+        return new(updated, Props, CurrentStateId);
     }
-    
+
     public GameState WithProps(IEnumerable<Prop> props, bool replaceAll = false)
     {
         if (replaceAll)
@@ -72,36 +66,21 @@ public sealed class GameState
             var builder = ImmutableDictionary.CreateBuilder<ActorId, Prop>();
             foreach (var u in props)
                 builder[u.Id] = u;
-            return new(Units, builder.ToImmutable(), Npcs);
+            return new(Agents, builder.ToImmutable(), CurrentStateId);
         }
-    
+
         var updated = Props;
         foreach (var u in props)
             updated = updated.SetItem(u.Id, u);
-    
-        return new(Units, updated, Npcs);
+
+        return new(Agents, updated, CurrentStateId);
     }
-    
-    public GameState WithNpcs(IEnumerable<Npc> npcs, bool replaceAll = false)
-    {
-        if (replaceAll)
-        {
-            var builder = ImmutableDictionary.CreateBuilder<ActorId, Npc>();
-            foreach (var u in npcs)
-                builder[u.Id] = u;
-            return new(Units,Props, builder.ToImmutable());
-        }
-    
-        var updated = Npcs;
-        foreach (var u in npcs)
-            updated = updated.SetItem(u.Id, u);
-    
-        return new(Units, Props, updated);
-    }
-    
-    public IReadOnlyList<Unit> GetUnis() => Units.Values.ToList();
+
+    public GameState WithCurrentStateId(NodeId stateId)
+        => new(Agents, Props, stateId);
+
+    public IReadOnlyList<Agent> GetAgents() => Agents.Values.ToList();
     public IReadOnlyList<Prop> GetProps() => Props.Values.ToList();
-    public IReadOnlyList<Npc> GetNpcs() => Npcs.Values.ToList();
 }
 
 

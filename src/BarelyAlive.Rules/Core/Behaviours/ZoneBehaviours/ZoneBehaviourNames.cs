@@ -2,7 +2,7 @@ namespace BarelyAlive.Rules.Core.Behaviours.ZoneBehaviours;
 
 public class ZoneBehaviourNames
 {
-    public const string DarkZoneBehaviour = "DarkZ";
-    public const string IndoorZoneBehaviour = "Indoo";
-    
+    public const string DarkZoneBehaviour = "Dark";
+    public const string IndoorZoneBehaviour = "Indoor";
+
 }

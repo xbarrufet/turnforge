@@ -16,6 +16,6 @@ public static class ActorBehaviourMapper
 
     public static IActorBehaviour Map(BehaviourDto dto)
     {
-        return ActorBehaviourFactory.Create(dto.Type, dto.Data);
+        return ActorBehaviourFactory.Create(dto.Type, dto.ExtensionData);
     }
 }

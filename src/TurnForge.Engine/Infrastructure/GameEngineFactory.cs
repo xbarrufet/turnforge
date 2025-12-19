@@ -26,7 +26,7 @@ public static class GameEngineFactory
 
         // 1️⃣ Servicios internos del engine
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
-        
+
         var gameCatalog = new InMemoryGameCatalog();
         services.RegisterSingleton<IGameCatalog>(gameCatalog);
         services.RegisterSingleton<IActorFactory>(
@@ -34,21 +34,21 @@ public static class GameEngineFactory
                 services.Resolve<IGameCatalog>()
             ));
 
-        
+
         // 2️⃣ Dependencias externas (decididas por el host/juego)
         services.RegisterSingleton(gameEngineContext.GameRepository);
         services.RegisterSingleton(gameEngineContext.PropSpawnStrategy);
-        services.RegisterSingleton(gameEngineContext.UnitSpawnStrategy);
-        
+        services.RegisterSingleton(gameEngineContext.AgentSpawnStrategy);
+
         // 3️⃣ Registro de comandos y handlers propios del engine
         EngineCommandRegistration.Register(services);
 
         // 4️⃣ Resolver de handlers (engine infra)
         var resolver =
             new ServiceProviderCommandHandlerResolver(services);
-        
-        
-        
+
+
+
         //Infraestructura interna adicional
         var effectSink = new ObservableEffectSink();
         var gameLoop = new GameLoop();
@@ -61,7 +61,7 @@ public static class GameEngineFactory
         );
 
         // 8️⃣ TurnForge (fachada pública)
-        var runtime =  new GameEngineRuntime(commandBus);
+        var runtime = new GameEngineRuntime(commandBus, effectSink, gameEngineContext.GameRepository);
         var catalogApi = new GameCatalogApi(gameCatalog);
         return new Core.TurnForge(runtime, catalogApi);
     }

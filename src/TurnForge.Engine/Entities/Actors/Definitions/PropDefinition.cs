@@ -8,7 +8,7 @@ public sealed record PropDefinition(
     int MaxActionPoints,
     IReadOnlyList<IActorBehaviour> Behaviours,
     int MaxHealth)
- : AgentDefinition(MaxHealth, MaxBaseMovement, MaxActionPoints, Behaviours);
+ : ActorDefinition(Behaviours);
 
 
 

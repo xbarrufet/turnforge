@@ -1,11 +1,16 @@
+using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json;
+using BarelyAlive.Rules.Adapter.Dto;
+using BarelyAlive.Rules.Apis;
+using BarelyAlive.Rules.Apis.Interfaces;
+
+using BarelyAlive.Rules.Events.Interfaces;
+using BarelyAlive.Rules.Infrastructure;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Services.Interfaces;
-using BarelyAlive.Rules.Definitions;
-using System.IO;
-using System.Text.Json;
-using BarelyAlive.Rules.Adapter.Dto;
 
 namespace BarelyAlive.Rules.Game;
 
@@ -15,18 +20,35 @@ namespace BarelyAlive.Rules.Game;
 public sealed class BarelyAliveGame
 {
     private readonly TurnForge.Engine.Core.TurnForge _turnForge = GameBootstrap.GameEngineBootstrap();
-    
+
     public IGameCatalogApi GameCatalog => _turnForge.GameCatalog;
-    
-    
+
+    public IBarelyAliveApis BarelyAliveApis { get; }
+    public ITurnForgeEffectsHandler EventHandler { get; }
+    private readonly BarelyAliveObservableEffectSink _observableEffectSink;
+
+    private BarelyAliveGame()
+    {
+        _observableEffectSink = new BarelyAliveObservableEffectSink();
+        var eventHandler = new TurnForgeEventHandler(_observableEffectSink);
+        EventHandler = eventHandler;
+        _turnForge.Runtime.Subscribe(eventHandler.Handle);
+        BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime);
+
+    }
+
     public static BarelyAliveGame CreateNewGame()
     {
         BarelyAliveGame game = new BarelyAliveGame();
         game.RegisterGameDefinitions();
         return game;
     }
-    
-    
+
+    public void Subscribe(Action<IBarelyAliveEffect> handler)
+    {
+        _observableEffectSink.Subscribe(handler);
+    }
+
     private void RegisterGameDefinitions()
     {
         var filePath = Path.Combine(AppContext.BaseDirectory, "Units_BarelyAlive.json");
@@ -37,17 +59,12 @@ public sealed class BarelyAliveGame
 
         var json = File.ReadAllText(filePath);
         var config = JsonSerializer.Deserialize<BarelyAliveConfig>(json);
-        
+
         if (config == null) return;
 
-        foreach (var survivor in config.Survivors)
+        foreach (var agent in config.Agents)
         {
-            RegisterSurvivor(survivor);
-        }
-
-        foreach (var zombie in config.Zombies)
-        {
-            RegisterZombie(zombie);
+            RegisterAgent(agent);
         }
 
         foreach (var prop in config.Props)
@@ -56,30 +73,19 @@ public sealed class BarelyAliveGame
         }
     }
 
-    private void RegisterZombie(ZombieDto zombie)
+    private void RegisterAgent(AgentDto agent)
     {
-        var npcDef = new NpcDefinition(
-            new NpcTypeId(zombie.TypeId),
-            zombie.MaxHealth,
-            zombie.MaxBaseMovement,
-            zombie.MaxActionPoints,
+        var agentDef = new AgentDefinition(
+            new AgentTypeId(agent.TypeId),
+            agent.MaxHealth,
+            agent.MaxBaseMovement,
+            agent.MaxActionPoints,
             []
         );
-        _turnForge.GameCatalog.RegiterNpcDefinition(npcDef.TypeId, npcDef);
+        _turnForge.GameCatalog.RegisterAgentDefinition(agentDef.TypeId, agentDef);
     }
 
-    private void RegisterSurvivor(SurvivorDto survivor)
-    {
-        var defModel = new SurvivorDefinition(survivor.TypeId);
-        var unitDef = new UnitDefinition(
-            new UnitTypeId(survivor.TypeId),
-            survivor.MaxHealth,
-            survivor.MaxBaseMovement,
-            survivor.MaxActionPoints,
-            []
-        );
-        _turnForge.GameCatalog.RegisterUnitDefinition(unitDef.TypeId, unitDef);
-    }
+
 
     private void RegisterProp(PropDto prop)
     {
@@ -95,8 +101,7 @@ public sealed class BarelyAliveGame
 
     private class BarelyAliveConfig
     {
-        public List<BarelyAlive.Rules.Adapter.Dto.SurvivorDto> Survivors { get; set; } = new();
-        public List<BarelyAlive.Rules.Adapter.Dto.ZombieDto> Zombies { get; set; } = new();
+        public List<BarelyAlive.Rules.Adapter.Dto.AgentDto> Agents { get; set; } = new();
         public List<BarelyAlive.Rules.Adapter.Dto.PropDto> Props { get; set; } = new();
     }
 }

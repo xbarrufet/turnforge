@@ -2,7 +2,8 @@ using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace TurnForge.Engine.Entities.Actors.Definitions;
 
-public abstract record AgentDefinition(
+public record AgentDefinition(
+    AgentTypeId TypeId,
     int MaxHealth,
     int MaxBaseMovement,
     int MaxActionPoints,

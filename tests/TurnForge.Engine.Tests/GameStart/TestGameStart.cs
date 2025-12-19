@@ -30,19 +30,19 @@ public class TestGameStart
         var game = repository.GetCurrent();
         Assert.That(game, Is.Not.Null, "Game should be loaded before GameStart");
 
-        // Create two unit descriptors with all required parameters
-        var unit1 = new UnitDescriptor(
-            TypeId: new UnitTypeId("Survivor1"),
+        // Create two agent descriptors with all required parameters
+        var agent1 = new AgentDescriptor(
+            TypeId: new AgentTypeId("Survivor1"),
             Position: null, // Strategies will assign position
             ExtraBehaviours: new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
         );
-        var unit2 = new UnitDescriptor(
-            TypeId: new UnitTypeId("Survivor2"),
-            Position: null,
+        var agent2 = new AgentDescriptor(
+            TypeId: new AgentTypeId("Survivor2"),
+            Position: null, // Strategies will assign position
             ExtraBehaviours: new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
         );
-        
-        var playerUnits = new[] { unit1, unit2 };
+
+        var playerUnits = new[] { agent1, agent2 };
 
         // Act: Create and dispatch GameStartCommand through GameEngine
         var gameStartCommand = new GameStartCommand(playerUnits);

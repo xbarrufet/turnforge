@@ -46,11 +46,11 @@ public static class EngineCommandRegistration
         // - EndTurnHandler
         // - SaveGameHandler
         // =====================================================
-        
+
         services.Register<GameStartCommandHandler>(sp =>
             new GameStartCommandHandler(
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
-                (IUnitSpawnStrategy)sp.GetService(typeof(IUnitSpawnStrategy))!,
+                (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
                 (IActorFactory)sp.GetService(typeof(IActorFactory))!,
                 (IEffectSink)sp.GetService(typeof(IEffectSink))!
             )

@@ -13,27 +13,27 @@ public sealed class GameStartCommandHandler
     : ICommandHandler<GameStartCommand>
 {
     private readonly IGameRepository _repo;
-    private readonly IUnitSpawnStrategy _unitSpawnStrategy;
+    private readonly IAgentSpawnStrategy _agentSpawnStrategy;
     private readonly IEffectSink _effectsSink;
     private readonly IActorFactory _actorFactory;
 
     public GameStartCommandHandler(
         IGameRepository repo,
-        IUnitSpawnStrategy unitSpawnStrategy,
+        IAgentSpawnStrategy agentSpawnStrategy,
         IActorFactory actorFactory,
         IEffectSink effectsSink)
     {
         _repo = repo;
         _actorFactory = actorFactory;
         _effectsSink = effectsSink;
-        _unitSpawnStrategy = unitSpawnStrategy;
+        _agentSpawnStrategy = agentSpawnStrategy;
     }
 
     public CommandResult Handle(GameStartCommand command)
     {
-        var gameState = _repo.Load();
-        var context = new UnitSpawnContext(command.PlayerUnits, gameState);
-        var decisions = _unitSpawnStrategy.Decide(context);
+        var gameState = _repo.LoadGameState();
+        var context = new AgentSpawnContext(command.Agents, gameState);
+        var decisions = _agentSpawnStrategy.Decide(context);
 
         var spawner = new SpawnApplier(_actorFactory, _effectsSink);
         var newState = spawner.Apply(decisions, gameState);

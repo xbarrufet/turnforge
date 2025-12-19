@@ -9,10 +9,10 @@ namespace TurnForge.Engine.Infrastructure;
 public readonly struct GameEngineContext(
     IGameRepository gameRepository,
     IPropSpawnStrategy propSpawnStrategy,
-    IUnitSpawnStrategy unitSpawnStrategy)
+    IAgentSpawnStrategy agentSpawnStrategy)
 {
     public IGameRepository GameRepository { get; init; } = gameRepository;
-    
+
     public IPropSpawnStrategy PropSpawnStrategy { get; init; } = propSpawnStrategy;
-    public IUnitSpawnStrategy UnitSpawnStrategy { get; init; } = unitSpawnStrategy;
+    public IAgentSpawnStrategy AgentSpawnStrategy { get; init; } = agentSpawnStrategy;
 }

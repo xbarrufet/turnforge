@@ -4,8 +4,7 @@ namespace TurnForge.Engine.Entities.Interfaces;
 
 public interface IReadOnlyGameState
 {
-    IReadOnlyCollection<Unit> Units { get; }
+    IReadOnlyCollection<Agent> Agents { get; }
     IReadOnlyCollection<Prop> Props { get; }
-    IReadOnlyCollection<Npc> Npcs { get; }
-    
+
 }
