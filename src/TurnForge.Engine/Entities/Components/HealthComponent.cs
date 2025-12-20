@@ -1,6 +1,8 @@
+using TurnForge.Engine.Entities.Components.Interfaces;
+
 namespace TurnForge.Engine.Entities.Actors.Components;
 
-public sealed class HealthComponent
+public sealed class HealthComponent : IActorComponent
 {
     public int CurrentHealth { get; private set; }
     public int MaxHealth { get; }
