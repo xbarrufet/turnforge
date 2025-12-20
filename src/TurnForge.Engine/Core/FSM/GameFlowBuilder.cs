@@ -7,9 +7,9 @@ namespace TurnForge.Engine.Infrastructure.Registration
 {
     public class GameFlowBuilder
     {
-        private FsmNode _root;
+        private FsmNode? _root = null;
 
-        public GameFlowBuilder AddRoot<T>(string name, Action<BranchBuilder> configure = null) where T : BranchNode, new()
+        public GameFlowBuilder AddRoot<T>(string name, Action<BranchBuilder>? configure = null) where T : BranchNode, new()
         {
             var root = new T
             {

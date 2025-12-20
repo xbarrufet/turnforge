@@ -6,7 +6,7 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Infrastructure.Registration;
 
 namespace TurnForge.Engine.Tests.Infrastructure.Registration
@@ -68,7 +68,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
             // Root -> MovementPhase
             var rootBranch = _builtRoot as BranchNode;
             Assert.That(rootBranch, Is.Not.Null);
-            Assert.That(rootBranch.FirstChild, Is.Not.Null);
+            Assert.That(rootBranch!.FirstChild, Is.Not.Null);
             Assert.That(rootBranch.FirstChild, Is.TypeOf<MovementPhase>());
 
             var movementPhase = rootBranch.FirstChild;
@@ -116,7 +116,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
         {
             // NormalMove -> Reinforcements
             var rootBranch = _builtRoot as BranchNode;
-            var movementPhase = rootBranch.FirstChild as BranchNode;
+            var movementPhase = rootBranch!.FirstChild as BranchNode;
             var normalMove = movementPhase.FirstChild;
 
             Assert.That(normalMove.NextSibling, Is.Not.Null);

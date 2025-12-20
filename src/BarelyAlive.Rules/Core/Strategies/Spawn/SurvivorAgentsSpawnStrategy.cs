@@ -18,7 +18,7 @@ public class SurvivorAgentsSpawnStrategy : IAgentSpawnStrategy
 
         if (spawnPoint == null) return Position.Empty;
 
-        return spawnPoint.GetComponent<PositionComponent>().CurrentPosition;
+        return spawnPoint.GetComponent<PositionComponent>()?.CurrentPosition ?? Position.Empty;
 
     }
 

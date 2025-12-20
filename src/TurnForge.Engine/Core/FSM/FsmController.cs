@@ -6,8 +6,8 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Infrastructure.Appliers;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm
@@ -18,8 +18,7 @@ namespace TurnForge.Engine.Core.Fsm
         private readonly Dictionary<NodeId, FsmNode> _nodesById;
         private NodeId _currentStateId;
 
-        // Evento para que el Engine sepa que debe aplicar cambios al GameState global
-        public event Action<IEnumerable<IFsmApplier>> OnTransitionExecuted;
+
         public NodeId CurrentStateId => _currentStateId;
 
 

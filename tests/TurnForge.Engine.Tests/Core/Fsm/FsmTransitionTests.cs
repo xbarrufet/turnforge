@@ -9,8 +9,8 @@ using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Infrastructure;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
 using TurnForge.Engine.Infrastructure.Interfaces;
 using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Infrastructure.Registration;
@@ -78,7 +78,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         {
             // 1. Setup Infrastructure
             _effectSink = new ObservableEffectSink();
-            var commandBus = new CommandBus(new GameLoop(), new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()), _effectSink);
+            var commandBus = new CommandBus(new GameLoop(), new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()));
             _repository = new InMemoryGameRepository();
 
             // Initialize Repository with Empty State
@@ -169,7 +169,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             // Re-setup runtime with this registry
             var effectSink = new ObservableEffectSink();
             var resolver = new ServiceProviderCommandHandlerResolver(services);
-            var commandBus = new CommandBus(new GameLoop(), resolver, effectSink);
+            var commandBus = new CommandBus(new GameLoop(), resolver);
             _runtime = new GameEngineRuntime(commandBus, effectSink, _repository);
             _runtime.SetFsmController(_controller);
 

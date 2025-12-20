@@ -8,7 +8,7 @@ namespace TurnForge.Engine.Infrastructure.Registration
     public class BranchBuilder
     {
         private readonly BranchNode _parent;
-        private FsmNode _lastNodeAdded = null;
+        private FsmNode? _lastNodeAdded = null;
 
         public BranchBuilder(BranchNode parent)
         {
@@ -26,7 +26,7 @@ namespace TurnForge.Engine.Infrastructure.Registration
         }
 
         // Validación: Solo permite clases que hereden de BranchNode
-        public BranchBuilder AddBranch<T>(string name, Action<BranchBuilder> configure = null) where T : BranchNode, new()
+        public BranchBuilder AddBranch<T>(string name, Action<BranchBuilder>? configure = null) where T : BranchNode, new()
         {
             var branch = new T { Id = NodeId.New(), Name = name };
             ConfigureNode(branch);

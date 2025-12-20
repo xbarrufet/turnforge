@@ -3,9 +3,11 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Infrastructure.Appliers;
+using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
+using TurnForge.Engine.Infrastructure.Factories;
+using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
@@ -56,8 +58,7 @@ public static class GameEngineFactory
         // 7️⃣ CommandBus (engine infra)
         var commandBus = new CommandBus(
             gameLoop,
-            resolver,
-            effectSink
+            resolver
         );
 
         // 8️⃣ TurnForge (fachada pública)

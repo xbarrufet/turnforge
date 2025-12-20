@@ -3,12 +3,12 @@ using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Events;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
-namespace TurnForge.Engine.Infrastructure.Appliers;
+namespace TurnForge.Engine.Entities.Appliers;
 
 public sealed class SpawnApplier(IActorFactory actorFactory, IEffectSink effectsSink) : ISpawnApplier
 {
@@ -32,7 +32,7 @@ public sealed class SpawnApplier(IActorFactory actorFactory, IEffectSink effects
         return state;
     }
 
-    private IAppplierResult SpawnAgent(AgentSpawnDecision decision, GameState currentState)
+    private IApplierResult SpawnAgent(AgentSpawnDecision decision, GameState currentState)
     {
         var agent = _actorFactory.BuildAgent(
             decision.TypeId,
@@ -48,7 +48,7 @@ public sealed class SpawnApplier(IActorFactory actorFactory, IEffectSink effects
         return new ApplierResult(currentState.WithAgent(agent), new AgentSpawnedEffect(agent.Id, agent.Definition.TypeId, decision.Position));
     }
 
-    private IAppplierResult SpawnProp(PropSpawnDecision decision, GameState currentState)
+    private IApplierResult SpawnProp(PropSpawnDecision decision, GameState currentState)
     {
         var prop = _actorFactory.BuildProp(
             decision.TypeId,

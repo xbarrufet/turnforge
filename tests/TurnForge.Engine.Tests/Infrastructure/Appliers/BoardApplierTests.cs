@@ -5,7 +5,7 @@ using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Infrastructure.Appliers;
+using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 

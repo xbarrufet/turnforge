@@ -24,10 +24,13 @@ public sealed class MutableTileGraph : IMutableTileGraph
     public MutableTileGraph(IEnumerable<(TileId A, TileId B)> connections)
     {
         _adjacency = new();
+        _nodes = new HashSet<TileId>();
         foreach (var (a, b) in connections)
         {
             EnableEdge(a, b);
             EnableEdge(b, a);
+            _nodes.Add(a);
+            _nodes.Add(b);
         }
     }
 

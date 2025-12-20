@@ -7,6 +7,7 @@ namespace BarelyAlive.Rules.Registration;
 /// </summary>
 public sealed class InMemoryDefinitionRegistry<TTypeId, TDefinition>
     : IDefinitionRegistry<TTypeId, TDefinition>
+    where TTypeId : notnull
 {
     private readonly Dictionary<TTypeId, TDefinition> _definitions = new();
 
@@ -18,6 +19,6 @@ public sealed class InMemoryDefinitionRegistry<TTypeId, TDefinition>
            ?? throw new KeyNotFoundException($"Definition {id} not found");
 
     public bool TryGet(TTypeId id, out TDefinition def)
-        => _definitions.TryGetValue(id, out def);
+        => _definitions.TryGetValue(id, out def!);
 }
 

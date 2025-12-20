@@ -7,8 +7,7 @@ namespace TurnForge.Engine.Core;
 
 public sealed class CommandBus(
     IGameLoop gameLoop,
-    ICommandHandlerResolver handlerResolver,
-    IEffectSink effectSink)
+    ICommandHandlerResolver handlerResolver)
 {
 
     private bool _waitingForAck;

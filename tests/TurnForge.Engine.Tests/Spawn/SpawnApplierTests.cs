@@ -7,8 +7,8 @@ using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Components;
 using TurnForge.Engine.Entities.Components.Definitions;
-using TurnForge.Engine.Infrastructure.Appliers;
-using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.ValueObjects;
 namespace TurnForge.Engine.Tests.Spawn

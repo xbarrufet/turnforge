@@ -4,7 +4,7 @@ public sealed record CommandResult
 {
     public bool Success { get; init; }
     public string? Error { get; init; }
-    public IReadOnlyCollection<string> Tags { get; init; }
+    public IReadOnlyCollection<string> Tags { get; init; } = Array.Empty<string>();
 
     public static CommandResult Ok(params string[] tags)
         => new() { Success = true, Tags = tags };

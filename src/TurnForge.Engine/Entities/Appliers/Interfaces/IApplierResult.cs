@@ -1,9 +1,9 @@
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 
-namespace TurnForge.Engine.Infrastructure.Appliers.Interfaces;
+namespace TurnForge.Engine.Entities.Appliers.Interfaces;
 
-public interface IAppplierResult
+public interface IApplierResult
 {
     public GameState GameState { get; }
     public IGameEffect GameEffect { get; }

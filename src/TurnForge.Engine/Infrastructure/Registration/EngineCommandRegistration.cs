@@ -2,8 +2,9 @@ using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Infrastructure;
-using TurnForge.Engine.Infrastructure.Appliers;
+using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 

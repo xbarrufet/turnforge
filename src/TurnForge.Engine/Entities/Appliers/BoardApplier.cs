@@ -1,13 +1,16 @@
-using TurnForge.Engine.Commands.Game.Descriptors;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Spatial;
 using TurnForge.Engine.Spatial.Interfaces;
 
-namespace TurnForge.Engine.Infrastructure.Appliers;
+namespace TurnForge.Engine.Entities.Appliers;
 
 public sealed class BoardApplier() : IBoardApplier
 {

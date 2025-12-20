@@ -9,7 +9,7 @@ public class InMemoryGameRepository : IGameRepository
 {
     private readonly Dictionary<GameId, Game> _games = new();
     private Game _currentGame = null!;
-    private GameState _gameState;
+    private GameState _gameState = GameState.Empty();
 
     public void SaveGame(Game game)
     {

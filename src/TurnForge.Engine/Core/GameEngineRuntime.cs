@@ -20,18 +20,6 @@ public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectS
     public void SetFsmController(FsmController controller)
     {
         _fsmController = controller;
-        // Subscribe to FSM transitions
-        _fsmController.OnTransitionExecuted += ApplyFsmTransition;
-    }
-
-    private void ApplyFsmTransition(IEnumerable<Infrastructure.Appliers.Interfaces.IFsmApplier> appliers)
-    {
-        var state = _repository.LoadGameState();
-        foreach (var applier in appliers)
-        {
-            state = applier.Apply(state, effectSink);
-        }
-        _repository.SaveGameState(state);
     }
 
     public CommandResult Send(ICommand command)

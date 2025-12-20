@@ -27,7 +27,7 @@ public sealed class ConnectedGraphSpatialModel : ISpatialModel
 
     public bool CanMove(Actor actor, Position target)
     {
-        if (!actor.GetComponent<PositionComponent>().IsDiscrete) return false;
+        if (actor.GetComponent<PositionComponent>()?.IsDiscrete != true) return false;
         return _tileGraph.AreAdjacent(actor.GetComponent<PositionComponent>()!.CurrentPosition.TileId, target.TileId);
     }
 
