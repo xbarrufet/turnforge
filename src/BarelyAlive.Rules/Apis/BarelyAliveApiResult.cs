@@ -1,3 +1,4 @@
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Decisions.Interfaces;
 
 namespace BarelyAlive.Rules.Apis;
