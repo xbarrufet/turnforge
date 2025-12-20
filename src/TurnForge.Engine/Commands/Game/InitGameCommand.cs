@@ -1,16 +1,15 @@
 
 using System.Collections.Generic;
-using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Descriptors;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Entities.Descriptors;
 
 namespace TurnForge.Engine.Commands.Game;
 
 public sealed record InitGameCommand(
     SpatialDescriptor Spatial,
     IReadOnlyList<ZoneDescriptor> Zones,
-    IReadOnlyList<PropDescriptor> StartingProps,
-    IReadOnlyList<AgentDescriptor> Agents
+    IReadOnlyList<TurnForge.Engine.Entities.Descriptors.PropDescriptor> StartingProps,
+    IReadOnlyList<TurnForge.Engine.Entities.Descriptors.AgentDescriptor> Agents
 ) : ICommand;

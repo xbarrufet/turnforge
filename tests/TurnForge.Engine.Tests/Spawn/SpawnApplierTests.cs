@@ -5,10 +5,13 @@ using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Entities.Components.Definitions;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Definitions;
+using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.ValueObjects;
 namespace TurnForge.Engine.Tests.Spawn
@@ -27,13 +30,17 @@ namespace TurnForge.Engine.Tests.Spawn
             public Agent? LastBuiltAgent;
             public Prop? LastBuiltProp;
 
-            public Agent BuildAgent(TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId typeId, IEnumerable<ActorBehaviour>? behaviours = null)
-            {
-                var id = EntityId.New();
-                var behavioursList = behaviours?.Cast<IActorBehaviour>().ToList() ?? new List<IActorBehaviour>();
-                var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(behaviours?.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>() ?? Enumerable.Empty<TurnForge.Engine.Entities.Components.BaseBehaviour>());
+            public Agent BuildAgent(AgentDescriptor descriptor) => Build(descriptor);
+            public Prop BuildProp(PropDescriptor descriptor) => Build(descriptor);
 
-                var def = new AgentDefinition(typeId,
+            public Agent Build(IGameEntityDescriptor<Agent> descriptor)
+            {
+                var d = (AgentDescriptor)descriptor;
+                var id = EntityId.New();
+                var behavioursList = d.ExtraBehaviours?.Cast<IActorBehaviour>().ToList() ?? new List<IActorBehaviour>();
+                var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(d.ExtraBehaviours?.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>() ?? Enumerable.Empty<TurnForge.Engine.Entities.Components.BaseBehaviour>());
+
+                var def = new AgentDefinition(d.TypeId,
                     new PositionComponentDefinition(Position.Empty),
                     new HealhtComponentDefinition(10),
                     new MovementComponentDefinition(3),
@@ -44,13 +51,14 @@ namespace TurnForge.Engine.Tests.Spawn
                 return u;
             }
 
-            public Prop BuildProp(TurnForge.Engine.Entities.Actors.Definitions.PropTypeId typeId, IEnumerable<ActorBehaviour>? behaviours = null)
+            public Prop Build(IGameEntityDescriptor<Prop> descriptor)
             {
+                var d = (PropDescriptor)descriptor;
                 var id = EntityId.New();
-                var behavioursList = behaviours?.Cast<IActorBehaviour>().ToList() ?? new List<IActorBehaviour>();
-                var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(behaviours?.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>() ?? Enumerable.Empty<TurnForge.Engine.Entities.Components.BaseBehaviour>());
+                var behavioursList = d.ExtraBehaviours?.Cast<IActorBehaviour>().ToList() ?? new List<IActorBehaviour>();
+                var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(d.ExtraBehaviours?.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>() ?? Enumerable.Empty<TurnForge.Engine.Entities.Components.BaseBehaviour>());
 
-                var def = new PropDefinition(typeId,
+                var def = new PropDefinition(d.TypeId,
                     new PositionComponentDefinition(Position.Empty),
                     new HealhtComponentDefinition(10),
                     behavioursList);
@@ -59,6 +67,8 @@ namespace TurnForge.Engine.Tests.Spawn
                 LastBuiltProp = p;
                 return p;
             }
+
+
         }
 
         [Test]
@@ -69,7 +79,7 @@ namespace TurnForge.Engine.Tests.Spawn
             var applier = new SpawnApplier(factory, effectSink);
 
             var state = TurnForge.Engine.Entities.GameState.Empty();
-            var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
+            var decisions = new List<ISpawnDecision>
             {
                 new AgentSpawnDecision(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("uType"), new Position(Vector.Zero), new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()),
                 new PropSpawnDecision(new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("pType"), new Position(Vector.Zero), new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>())
@@ -99,7 +109,7 @@ namespace TurnForge.Engine.Tests.Spawn
             var testBehaviour = new TestBehaviour();
             var behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour> { testBehaviour };
 
-            var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
+            var decisions = new List<ISpawnDecision>
             {
                 new PropSpawnDecision(
                     new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("PropWithBehaviour"),
@@ -141,7 +151,7 @@ namespace TurnForge.Engine.Tests.Spawn
             var parameterizedBehaviour = new TestParameterizedBehaviour(expectedOrder, expectedMaxSpawns);
             var behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour> { parameterizedBehaviour };
 
-            var decisions = new List<TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnDecision>
+            var decisions = new List<ISpawnDecision>
             {
                 new PropSpawnDecision(
                     new TurnForge.Engine.Entities.Actors.Definitions.PropTypeId("PropWithParameterizedBehaviour"),

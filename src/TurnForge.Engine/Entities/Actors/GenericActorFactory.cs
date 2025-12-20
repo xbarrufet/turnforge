@@ -1,7 +1,12 @@
+using System.Collections.Generic;
+using System.Linq;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Entities.Factories.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
-using TurnForge.Engine.Registration;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
@@ -10,52 +15,53 @@ public sealed class GenericActorFactory(
     IGameCatalog gameCatalog)
     : IActorFactory
 {
-    public Prop BuildProp(
-        PropTypeId typeId,
-        IEnumerable<ActorBehaviour>? extraBehaviours = null)
+    public Prop BuildProp(PropDescriptor descriptor)
     {
-        var def = gameCatalog.GetPropDefinition(typeId);
+        var definition = gameCatalog.GetPropDefinition(descriptor.TypeId);
+        var behaviours = descriptor.ExtraBehaviours ?? new List<IActorBehaviour>();
 
-        // Convert definitions behaviors (assuming they are IActorBehaviour) to ActorBehaviour or BaseBehaviour
-        // Need to ensure definitions store BaseBehaviour or convertible logic.
-        // For now, assuming PropDefinition behaviours are compatible or need casting logic later.
-        // But PropDefinition has IReadOnlyList<IActorBehaviour>.
-        // BehaviourComponent expects IEnumerable<BaseBehaviour>.
+        var id = EntityId.New();
+        var position = new PositionComponent(definition.PositionComponentDefinition);
+        if (descriptor.Position != null)
+        {
+            position.CurrentPosition = descriptor.Position.Value;
+        }
 
-        var behaviors = Merge(def.Behaviours, extraBehaviours);
-        var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(behaviors.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>());
-
-        return new Prop(
-            EntityId.New(),
-            def,
-            new TurnForge.Engine.Entities.Components.PositionComponent(def.PositionComponentDefinition),
-            component
+        var behaviourComponent = new BehaviourComponent(
+            definition.Behaviours.Concat(behaviours).Cast<BaseBehaviour>()
         );
+
+        return new Prop(id, definition, position, behaviourComponent);
     }
 
-    public Agent BuildAgent(
-        AgentTypeId typeId,
-        IEnumerable<ActorBehaviour>? extraBehaviours = null)
+    public Agent BuildAgent(AgentDescriptor descriptor)
     {
-        var def = gameCatalog.GetAgentDefinition(typeId);
-        var behaviors = Merge(def.Behaviours, extraBehaviours);
-        var component = new TurnForge.Engine.Entities.Components.BehaviourComponent(behaviors.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>());
+        var definition = gameCatalog.GetAgentDefinition(descriptor.TypeId);
+        var behaviours = descriptor.ExtraBehaviours ?? new List<IActorBehaviour>();
 
-        return new Agent(
-            EntityId.New(),
-            def,
-            new TurnForge.Engine.Entities.Components.PositionComponent(def.PositionComponentDefinition),
-            component
+        var id = EntityId.New();
+        var position = new PositionComponent(definition.PositionComponentDefinition);
+        if (descriptor.Position != null)
+        {
+            position.CurrentPosition = descriptor.Position.Value;
+        }
+
+        var behaviourComponent = new BehaviourComponent(
+            definition.Behaviours.Concat(behaviours).Cast<BaseBehaviour>()
         );
+
+        return new Agent(id, definition, position, behaviourComponent);
     }
 
-    private static IEnumerable<IActorBehaviour> Merge(
-        IReadOnlyList<IActorBehaviour> baseBehaviours,
-        IEnumerable<ActorBehaviour>? extra)
+    // Explicit implementation for IGameEntityFactory<Prop>
+    Prop IGameEntityFactory<Prop>.Build(IGameEntityDescriptor<Prop> descriptor)
     {
-        if (extra == null)
-            return baseBehaviours;
+        return BuildProp((PropDescriptor)descriptor);
+    }
 
-        return baseBehaviours.Concat(extra);
+    // Explicit implementation for IGameEntityFactory<Agent>
+    Agent IGameEntityFactory<Agent>.Build(IGameEntityDescriptor<Agent> descriptor)
+    {
+        return BuildAgent((AgentDescriptor)descriptor);
     }
 }

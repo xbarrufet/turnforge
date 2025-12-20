@@ -3,6 +3,7 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
@@ -34,6 +35,7 @@ public static class EngineCommandRegistration
                 (IActorFactory)sp.GetService(typeof(IActorFactory))!,
                 (IGameFactory)sp.GetService(typeof(IGameFactory))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
+                (IBoardFactory)sp.GetService(typeof(IBoardFactory))!,
                 (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!,
                 (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
                 (IEffectSink)sp.GetService(typeof(IEffectSink))!

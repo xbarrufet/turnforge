@@ -185,7 +185,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         public record startFsmCommand : ICommand;
         public class startFsmHandler : ICommandHandler<startFsmCommand>
         {
-            public CommandResult Handle(startFsmCommand command) => CommandResult.Ok(tags: ["StartFSM"]);
+            public CommandResult Handle(startFsmCommand command) => CommandResult.Ok(System.Array.Empty<TurnForge.Engine.Entities.Decisions.Interfaces.IDecision>(), tags: "StartFSM");
         }
     }
 }

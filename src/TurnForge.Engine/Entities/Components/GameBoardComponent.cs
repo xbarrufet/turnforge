@@ -1,13 +1,13 @@
 using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Board;
+namespace TurnForge.Engine.Entities.Components;
 
-public sealed class GameBoard(ISpatialModel spatialModel) : GameEntity(EntityId.New())
+public class GameBoardComponent(ISpatialModel spatialModel) : IGameEntityComponent
 {
-
-
     private readonly List<Zone> _zones = [];
     public IReadOnlyList<Zone> Zones => _zones.AsReadOnly();
 

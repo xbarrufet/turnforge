@@ -1,6 +1,6 @@
 using BarelyAlive.Rules.Game;
 using NUnit.Framework;
-using TurnForge.Engine.Commands.GameStart.Effects;
+using TurnForge.Engine.Strategies.Spawn;
 
 namespace BarelyAlive.Rules.Tests.Apis;
 
@@ -17,7 +17,7 @@ public class BarelyAliveApisTests
     }
 
     [Test]
-    public void InitializeGame_ShouldSucceed_AndEmitEffects()
+    public void InitializeGame_ShouldSucceed_AndReturnDecisions()
     {
         // Arrange
         var game = BarelyAliveGame.CreateNewGame();
@@ -29,8 +29,11 @@ public class BarelyAliveApisTests
         Assert.That(result.Success, Is.True, $"API call failed: {result.Error}");
         Assert.That(result.Error, Is.Null, "API call should not return errors");
 
-        // Verify side effects
-        Assert.That(game.EventHandler.LastEffect, Is.Not.Null, "An effect should have been emitted");
-        Assert.That(game.EventHandler.LastEffect, Is.InstanceOf<PropSpawnedEffect>(), "Effect should be PropSpawnedEffect");
+        // Verify decisions (Orchestrator not present, so we verify intent)
+        Assert.That(result.Decisions, Is.Not.Null, "Decisions collection should not be null");
+        Assert.That(result.Decisions, Is.Not.Empty, "Should have generated decisions");
+
+        var propDecisions = result.Decisions.OfType<PropSpawnDecision>().ToList();
+        Assert.That(propDecisions, Is.Not.Empty, "Should have generated PropSpawnDecisions");
     }
 }

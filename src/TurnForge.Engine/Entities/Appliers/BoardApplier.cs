@@ -7,22 +7,23 @@ using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Entities.Decisions;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Entities.Factories.Interfaces;
 using TurnForge.Engine.Spatial;
 using TurnForge.Engine.Spatial.Interfaces;
 
 namespace TurnForge.Engine.Entities.Appliers;
 
-public sealed class BoardApplier() : IBoardApplier
+public sealed class BoardApplier : IBuildApplier<GameBoard>
 {
 
-    public GameBoard Apply(SpatialDescriptor spatial, IEnumerable<ZoneDescriptor> zones)
+    public GameBoard Build(IGameEntityDescriptor<GameBoard> descriptor, IGameEntityFactory<GameBoard> factory)
     {
-        // 1️⃣ Spatial
-
-        // 2️⃣ Board
-        var board = new GameBoard(BuildSpatialModel(spatial));
-        // 3️⃣ Zones
-        foreach (var zoneDesc in zones)
+        var board = factory.Build(descriptor);
+        var boardDescriptor = (BoardDescriptor)descriptor;
+        foreach (var zoneDesc in boardDescriptor.Zones)
         {
             var zone = new Zone(
                 new TurnForge.Engine.ValueObjects.EntityId(GenerateGuid(zoneDesc.Id.Value)),
@@ -33,27 +34,6 @@ public sealed class BoardApplier() : IBoardApplier
         return board;
     }
 
-    private ISpatialModel BuildSpatialModel(SpatialDescriptor spatial)
-    {
-        return spatial switch
-        {
-            DiscreteSpatialDescriptor d => BuildDiscreteSpatialModel(d),
-            ContinuousSpatialDescriptior =>
-                throw new NotImplementedException(),
-            _ => throw new NotSupportedException()
-        };
-    }
-
-    private ISpatialModel BuildDiscreteSpatialModel(DiscreteSpatialDescriptor d)
-    {
-        var graph = new MutableTileGraph(d.Nodes.ToHashSet());
-        foreach (var connection in d.Connections)
-        {
-            graph.EnableEdge(connection.From, connection.To);
-        }
-
-        return new ConnectedGraphSpatialModel(graph);
-    }
     private static Guid GenerateGuid(string input)
     {
         using var provider = System.Security.Cryptography.MD5.Create();

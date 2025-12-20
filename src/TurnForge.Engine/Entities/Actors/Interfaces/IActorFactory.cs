@@ -1,12 +1,12 @@
-using TurnForge.Engine.Commands.Game.Descriptors;
+using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Factories.Interfaces;
 
 namespace TurnForge.Engine.Entities.Actors.Interfaces;
 
-using TurnForge.Engine.ValueObjects;
-
-public interface IActorFactory
+public interface IActorFactory : IGameEntityFactory<Prop>, IGameEntityFactory<Agent>
 {
-    Prop BuildProp(PropTypeId typeId, IEnumerable<ActorBehaviour>? extraBehaviours = null);
-    Agent BuildAgent(AgentTypeId typeId, IEnumerable<ActorBehaviour>? extraBehaviours = null);
+    Prop BuildProp(PropDescriptor descriptor);
+    Agent BuildAgent(AgentDescriptor descriptor);
 }

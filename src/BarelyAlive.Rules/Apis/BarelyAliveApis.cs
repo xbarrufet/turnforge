@@ -19,7 +19,8 @@ public class BarelyAliveApis(IGameEngine gameEngine) : IBarelyAliveApis
         {
             Success = result.Success,
             Error = result.Error,
-            Tags = result.Tags
+            Tags = result.Tags,
+            Decisions = result.Decisions
         };
     }
 

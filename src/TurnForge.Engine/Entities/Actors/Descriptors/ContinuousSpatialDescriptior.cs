@@ -1,8 +1,7 @@
-using TurnForge.Engine.Commands.LoadGame.Descriptors;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.Game.Descriptors;
-
-using TurnForge.Engine.ValueObjects;
 
 public sealed record ContinuousSpatialDescriptior(
     BoundsDescriptor Bounds

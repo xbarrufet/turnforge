@@ -4,6 +4,8 @@ using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Infrastructure.Factories;
@@ -28,6 +30,7 @@ public static class GameEngineFactory
 
         // 1️⃣ Servicios internos del engine
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
+        services.RegisterSingleton<IBoardFactory>(new BoardFactory());
 
         var gameCatalog = new InMemoryGameCatalog();
         services.RegisterSingleton<IGameCatalog>(gameCatalog);

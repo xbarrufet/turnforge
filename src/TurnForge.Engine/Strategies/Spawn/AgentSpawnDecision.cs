@@ -1,5 +1,6 @@
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Decisions.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.ValueObjects;
 

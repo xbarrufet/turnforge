@@ -3,11 +3,17 @@ using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Descriptors;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Board.Decisions;
+using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Infrastructure.Factories;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Spatial;
@@ -25,11 +31,13 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
     private readonly IPropSpawnStrategy _propSpawnStrategy;
     private readonly IAgentSpawnStrategy _agentSpawnStrategy;
     private readonly IEffectSink _effectsSink;
+    private readonly IBoardFactory _boardFactory;
 
     public InitGameCommandHandler(
         IActorFactory actorFactory,
         IGameFactory gameFactory,
         IGameRepository gameRepository,
+        IBoardFactory boardFactory,
         IPropSpawnStrategy propSpawnStrategy,
         IAgentSpawnStrategy agentSpawnStrategy,
         IEffectSink effectsSink)
@@ -37,6 +45,7 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
         _actorFactory = actorFactory;
         _gameFactory = gameFactory;
         _gameRepository = gameRepository;
+        _boardFactory = boardFactory;
         _propSpawnStrategy = propSpawnStrategy;
         _agentSpawnStrategy = agentSpawnStrategy;
         _effectsSink = effectsSink;
@@ -73,34 +82,30 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
         // Replicating:
 
         // 2️⃣ Crear Board
-        // Using BoardApplier decoupled
-        var board = new BoardApplier().Apply(command.Spatial, command.Zones);
-
-        var game = _gameFactory.Build(board);
+        // cretes the board and the game, it's totally out of the normal proces but it's just for the first time
         var gameState = GameState.Empty();
 
-        // PHASE 2: Spawn Props
+        var decisions = new List<IDecision>();
+        var spatialModel = command.Spatial;
+
+        var boardDescriptor = new BoardDescriptor(spatialModel, command.Zones);
+        var board = new BoardApplier().Build(boardDescriptor, _boardFactory);
+        var game = new SimpleGameFactory().Build(board);
+        _gameRepository.SaveGame(game);
+        _gameRepository.SaveGameState(gameState);
+        // 
+
+        // 3️⃣ Spawn Props creating decisions
         var propContext = new PropSpawnContext(command.StartingProps, gameState);
         var propDecisions = _propSpawnStrategy.Decide(propContext);
 
-        var spawner = new SpawnApplier(_actorFactory, _effectsSink);
-        gameState = spawner.Apply(propDecisions, gameState);
-
-        // PHASE 3: Spawn Agents
-        // Now gameState has props.
+        // 4️⃣ Spawn Agents creating decisions
         var agentContext = new AgentSpawnContext(command.Agents, gameState);
         var agentDecisions = _agentSpawnStrategy.Decide(agentContext);
 
-        // Re-use spawner ? Yes.
-        gameState = spawner.Apply(agentDecisions, gameState);
+        decisions.AddRange(propDecisions.Cast<IDecision>());
+        decisions.AddRange(agentDecisions.Cast<IDecision>());
 
-        // PHASE 4: Start FSM
-
-
-        // PERSISTENCE
-        _gameRepository.SaveGame(game);
-        _gameRepository.SaveGameState(gameState);
-
-        return CommandResult.Ok(tags: ["GameInitialized", "StartFSM"]);
+        return CommandResult.Ok(decisions: decisions.ToArray(), tags: ["GameInitialized", "StartFSM"]);
     }
 }
