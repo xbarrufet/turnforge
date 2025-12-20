@@ -1,18 +1,23 @@
+using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Orchestrator;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Strategies.Spawn;
 
-public sealed class AgentSpawnDecision
-    (AgentTypeId typeId,
-        Position position,
-        IReadOnlyList<IActorBehaviour> behaviours
-    ) : ISpawnDecision
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+
+public sealed record AgentSpawnDecision(
+    AgentTypeId TypeId,
+    Position Position,
+    IReadOnlyList<IActorBehaviour>? ExtraBehaviours = null
+) : ISpawnDecision<Agent>
 {
-    public Position Position { get; } = position;
-    public IReadOnlyList<IActorBehaviour> ExtraBehaviours { get; } = behaviours;
-    public AgentTypeId TypeId { get; } = typeId;
+    public DecisionTiming Timing { get; init; } = DecisionTiming.Immediate;
+    public string OriginId { get; init; } = "System";
+    public IGameEntityDescriptor<Agent> Descriptor => new AgentDescriptor(TypeId, Position, ExtraBehaviours);
 }

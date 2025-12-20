@@ -6,8 +6,8 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Decisions.Interfaces;
 
-public interface ISpawnDecision : IBuildDecision<Prop>
+public interface ISpawnDecision<T> : IBuildDecision<T> where T : GameEntity
 {
     Position Position { get; }
-    IReadOnlyList<IActorBehaviour> ExtraBehaviours { get; }
+    IReadOnlyList<IActorBehaviour>? ExtraBehaviours { get; }
 }

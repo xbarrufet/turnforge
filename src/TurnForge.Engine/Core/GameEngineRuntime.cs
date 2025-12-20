@@ -7,19 +7,22 @@ using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Orchestrator.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
-public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectSink, IGameRepository repository) : IGameEngine
+public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectSink, IGameRepository repository, IOrchestrator orchestrator) : IGameEngine
 {
     private readonly CommandBus _commandBus = commandBus;
     private readonly IGameRepository _repository = repository;
+    private readonly IOrchestrator _orchestrator = orchestrator;
     private FsmController? _fsmController;
 
     public void SetFsmController(FsmController controller)
     {
         _fsmController = controller;
+        _fsmController.SetOrchestrator(_orchestrator);
     }
 
     public CommandResult Send(ICommand command)
@@ -33,6 +36,17 @@ public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectS
         if (result.Success && _fsmController != null)
         {
             var state = _repository.LoadGameState();
+
+            // Sync Orchestrator
+            _orchestrator.SetState(state);
+
+            // Enqueue new decisions (persists them to scheduler)
+            if (result.Decisions.Any())
+            {
+                _orchestrator.Enqueue(result.Decisions);
+                state = _orchestrator.CurrentState; // Update state with new scheduler
+            }
+
             if (result.Tags.Contains("StartFSM"))
             {
                 // Force initial FSM movement

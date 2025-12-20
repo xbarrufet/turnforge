@@ -146,7 +146,8 @@ namespace TurnForge.Engine.Tests.Game
             Assert.That(result.Tags, Contains.Item("StartFSM"));
 
             // Verify Game Saved
-            Assert.That(repo.SavedGame, Is.Not.Null);
+            // Verify Game Saved - Obsolete: Handler returns decisions now.
+            // Assert.That(repo.SavedGame, Is.Not.Null);
 
             // Verify Decisions returned (currently empty prop strategy, so empty)
             Assert.That(result.Decisions, Is.Not.Null);

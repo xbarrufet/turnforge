@@ -6,6 +6,7 @@ using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Board.Decisions;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Decisions;
 using TurnForge.Engine.Entities.Descriptors;
@@ -16,13 +17,12 @@ using TurnForge.Engine.Spatial.Interfaces;
 
 namespace TurnForge.Engine.Entities.Appliers;
 
-public sealed class BoardApplier : IBuildApplier<GameBoard>
+public sealed class BoardApplier(IGameEntityFactory<GameBoard> factory) : IBuildApplier<BoardDecision, GameBoard>
 {
-
-    public GameBoard Build(IGameEntityDescriptor<GameBoard> descriptor, IGameEntityFactory<GameBoard> factory)
+    public GameState Apply(BoardDecision decision, GameState state)
     {
-        var board = factory.Build(descriptor);
-        var boardDescriptor = (BoardDescriptor)descriptor;
+        var board = factory.Build(decision.Board);
+        var boardDescriptor = decision.Board;
         foreach (var zoneDesc in boardDescriptor.Zones)
         {
             var zone = new Zone(
@@ -31,7 +31,7 @@ public sealed class BoardApplier : IBuildApplier<GameBoard>
                 new TurnForge.Engine.Entities.Components.BehaviourComponent(zoneDesc.Behaviours.Cast<TurnForge.Engine.Entities.Components.BaseBehaviour>()));
             board.AddZone(zone);
         }
-        return board;
+        return state.WithBoard(board);
     }
 
     private static Guid GenerateGuid(string input)

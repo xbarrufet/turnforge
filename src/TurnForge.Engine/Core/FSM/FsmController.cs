@@ -8,6 +8,7 @@ using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm
@@ -22,6 +23,8 @@ namespace TurnForge.Engine.Core.Fsm
         public NodeId CurrentStateId => _currentStateId;
 
 
+        private IOrchestrator? _orchestrator;
+
         public FsmController(FsmNode root, NodeId initialId)
         {
             _navigator = new FlowNavigator(root);
@@ -30,6 +33,11 @@ namespace TurnForge.Engine.Core.Fsm
             // Indexamos para acceso rápido a las instancias de los nodos
             _nodesById = new Dictionary<NodeId, FsmNode>();
             Flatten(root);
+        }
+
+        public void SetOrchestrator(IOrchestrator orchestrator)
+        {
+            _orchestrator = orchestrator;
         }
 
         // Recorre el árbol de nodos y los indexa para acceso rápido
@@ -67,7 +75,19 @@ namespace TurnForge.Engine.Core.Fsm
 
             var appliers = new List<IFsmApplier>();
 
-            // 1. Ejecutamos el cierre del nodo actual y aplicamos los appliers
+            // Sync Orchestrator
+            _orchestrator?.SetState(state);
+
+            // 1. Ejecutamos el cierre del nodo actual
+
+            // Orchestrator Trigger: OnEnd State
+            if (_orchestrator != null && !string.IsNullOrEmpty(fromNode.Name))
+            {
+                _orchestrator.ExecuteScheduled(fromNode.Name, "OnEnd");
+                state = _orchestrator.CurrentState;
+            }
+
+            // Legacy Appliers
             var appliersOnEnd = fromNode.OnEnd(state);
             foreach (var applier in appliersOnEnd)
             {
@@ -75,6 +95,18 @@ namespace TurnForge.Engine.Core.Fsm
             }
 
             // 2. Ejecutamos la apertura del nuevo nodo
+
+            // Sync Orchestrator again if legacy changed state
+            _orchestrator?.SetState(state);
+
+            // Orchestrator Trigger: OnStart State
+            if (_orchestrator != null && !string.IsNullOrEmpty(toNode.Name))
+            {
+                _orchestrator.ExecuteScheduled(toNode.Name, "OnStart");
+                state = _orchestrator.CurrentState;
+            }
+
+            // Legacy Appliers
             var appliersOnStart = toNode.OnStart(state);
             foreach (var applier in appliersOnStart)
             {
@@ -86,6 +118,10 @@ namespace TurnForge.Engine.Core.Fsm
 
             // Actualizamos la referencia local del controlador
             _currentStateId = toId;
+
+            // Final Sync
+            _orchestrator?.SetState(state);
+
             return state;
         }
 
@@ -95,12 +131,25 @@ namespace TurnForge.Engine.Core.Fsm
         public FsmStepResult HandleCommand(ICommand command, GameState state, CommandResult result,
             IEffectSink effectSink)
         {
+            // Sync Orchestrator
+            _orchestrator?.SetState(state);
+
             if (_nodesById[_currentStateId] is LeafNode leaf)
             {
                 var appliersOnCommand = leaf.OnCommandExecuted(command, result, out bool transitionRequested);
+
+                // Legacy
                 foreach (var applier in appliersOnCommand)
                 {
                     state = applier.Apply(state, effectSink);
+                }
+
+                // Orchestrator Trigger: OnCommandExecutionEnd
+                if (_orchestrator != null)
+                {
+                    _orchestrator.SetState(state); // Sync if legacy changed it
+                    _orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd");
+                    state = _orchestrator.CurrentState;
                 }
 
                 return new FsmStepResult(state, transitionRequested);

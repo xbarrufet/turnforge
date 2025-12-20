@@ -1,9 +1,9 @@
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
-using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Entities.Decisions.Interfaces;
 
 namespace TurnForge.Engine.Entities.Appliers.Interfaces;
 
-public interface IBuildApplier<T> where T : GameEntity
+public interface IBuildApplier<in TDecision, TEntity> : IApplier<TDecision>
+    where TDecision : IBuildDecision<TEntity>
+    where TEntity : GameEntity
 {
-    T Build(IGameEntityDescriptor<T> descriptor, IGameEntityFactory<T> factory);
 }

@@ -22,23 +22,24 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
         // TESTS
         // ---------------------------------------------------------
 
-        private FsmNode _builtRoot;
+        private FsmNode _systemRoot;
+        private FsmNode _userRoot;
 
         [SetUp]
         public void Setup()
         {
             /*
              * Structure:
-             * Root: BattleRound (Branch)
-             *    Child 1: MovementPhase (Branch)
-             *       Sub-Child 1.1: NormalMove (Leaf)
-             *       Sub-Child 1.2: Reinforcements (Leaf)
-             *    Child 2: ShootingPhase (Leaf)
+             * SystemRoot
+             *   -> InitialState
+             *   -> GamePrepared
+             *   -> BattleRound (User Root)
+             *       -> MovementPhase ...
              */
 
             var builder = new GameFlowBuilder();
 
-            _builtRoot = builder
+            _systemRoot = builder
                 .AddRoot<BattleRound>("Battle Round", rootConfig =>
                 {
                     rootConfig.AddBranch<MovementPhase>("Movement Phase", moveConfig =>
@@ -50,37 +51,68 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
                     rootConfig.AddLeaf<ShootingPhase>("Shooting Phase");
                 })
                 .Build();
+
+            // Extract User Root (3rd child of SystemRoot)
+            var systemBranch = _systemRoot as TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode;
+            if (systemBranch != null && systemBranch.Children.Count >= 3)
+            {
+                _userRoot = systemBranch.Children.Last();
+            }
         }
 
         [Test]
-        public void Validation_Root()
+        public void Validation_SystemStructure()
         {
-            Assert.That(_builtRoot, Is.Not.Null);
-            Assert.That(_builtRoot, Is.TypeOf<BattleRound>());
-            Assert.That(_builtRoot.Parent, Is.Null, "Root should not have a parent.");
-            Assert.That(_builtRoot.NextSibling, Is.Null, "Root should not have a sibling.");
-            Assert.That(_builtRoot.Name, Is.EqualTo("Battle Round"));
+            Assert.That(_systemRoot, Is.Not.Null);
+            Assert.That(_systemRoot, Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode>());
+            Assert.That(_systemRoot.Parent, Is.Null);
+
+            var branch = (BranchNode)_systemRoot;
+            Assert.That(branch.Children.Count, Is.EqualTo(3));
+
+            var init = branch.Children[0];
+            var prepared = branch.Children[1];
+            var user = branch.Children[2];
+
+            Assert.That(init, Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.InitialStateNode>());
+            Assert.That(prepared, Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode>());
+            Assert.That(user, Is.TypeOf<BattleRound>());
+
+            // Check Navigation Linkage
+            Assert.That(branch.FirstChild, Is.EqualTo(init));
+            Assert.That(init.NextSibling, Is.EqualTo(prepared));
+            Assert.That(prepared.NextSibling, Is.EqualTo(user));
+            Assert.That(user.NextSibling, Is.Null);
+        }
+
+        [Test]
+        public void Validation_UserRoot()
+        {
+            Assert.That(_userRoot, Is.Not.Null);
+            Assert.That(_userRoot, Is.TypeOf<BattleRound>());
+            Assert.That(_userRoot.Parent, Is.EqualTo(_systemRoot));
+            Assert.That(_userRoot.Name, Is.EqualTo("Battle Round"));
         }
 
         [Test]
         public void Validation_FirstLevelChildren()
         {
-            // Root -> MovementPhase
-            var rootBranch = _builtRoot as BranchNode;
+            // UserRoot -> MovementPhase
+            var rootBranch = _userRoot as BranchNode;
             Assert.That(rootBranch, Is.Not.Null);
             Assert.That(rootBranch!.FirstChild, Is.Not.Null);
             Assert.That(rootBranch.FirstChild, Is.TypeOf<MovementPhase>());
 
             var movementPhase = rootBranch.FirstChild;
             Assert.That(movementPhase.Name, Is.EqualTo("Movement Phase"));
-            Assert.That(movementPhase.Parent, Is.EqualTo(_builtRoot));
+            Assert.That(movementPhase.Parent, Is.EqualTo(_userRoot));
         }
 
         [Test]
         public void Validation_Siblings_FirstLevel()
         {
             // MovementPhase -> ShootingPhase
-            var rootBranch = _builtRoot as BranchNode;
+            var rootBranch = _userRoot as BranchNode;
             var movementPhase = rootBranch.FirstChild;
 
             Assert.That(movementPhase.NextSibling, Is.Not.Null);
@@ -92,14 +124,14 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
             // ShootingPhase -> null
             Assert.That(shootingPhase.NextSibling, Is.Null);
             // ShootingPhase Parent
-            Assert.That(shootingPhase.Parent, Is.EqualTo(_builtRoot));
+            Assert.That(shootingPhase.Parent, Is.EqualTo(_userRoot));
         }
 
         [Test]
         public void Validation_SecondLevelChildren()
         {
             // MovementPhase -> NormalMove
-            var rootBranch = _builtRoot as BranchNode;
+            var rootBranch = _userRoot as BranchNode;
             var movementPhase = rootBranch.FirstChild as BranchNode;
 
             Assert.That(movementPhase, Is.Not.Null);
@@ -115,7 +147,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
         public void Validation_Siblings_SecondLevel()
         {
             // NormalMove -> Reinforcements
-            var rootBranch = _builtRoot as BranchNode;
+            var rootBranch = _userRoot as BranchNode;
             var movementPhase = rootBranch!.FirstChild as BranchNode;
             var normalMove = movementPhase.FirstChild;
 
@@ -133,15 +165,15 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
         [Test]
         public void Validation_Identity()
         {
-            var rootBranch = _builtRoot as BranchNode;
+            var rootBranch = _userRoot as BranchNode;
             var movementPhase = rootBranch.FirstChild;
 
-            // Check IDs are not empty
-            Assert.That(_builtRoot.Id.Value, Is.Not.EqualTo(System.Guid.Empty));
+            // Check IDs
+            Assert.That(_systemRoot.Id.Value, Is.Not.EqualTo(System.Guid.Empty));
+            Assert.That(_userRoot.Id.Value, Is.Not.EqualTo(System.Guid.Empty));
             Assert.That(movementPhase.Id.Value, Is.Not.EqualTo(System.Guid.Empty));
 
-            // Check IDs are different
-            Assert.That(_builtRoot.Id, Is.Not.EqualTo(movementPhase.Id));
+            Assert.That(_userRoot.Id, Is.Not.EqualTo(movementPhase.Id));
         }
     }
 }

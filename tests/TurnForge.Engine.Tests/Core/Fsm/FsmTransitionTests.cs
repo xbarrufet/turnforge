@@ -14,6 +14,7 @@ using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Interfaces;
 using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Infrastructure.Registration;
+using TurnForge.Engine.Orchestrator; // Added
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Core.Fsm
@@ -84,7 +85,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             // Initialize Repository with Empty State
             _repository.SaveGameState(global::TurnForge.Engine.Entities.GameState.Empty());
 
-            _runtime = new GameEngineRuntime(commandBus, _effectSink, _repository);
+            _runtime = new GameEngineRuntime(commandBus, _effectSink, _repository, new TurnForgeOrchestrator());
 
             // 2. Build FSM Tree: Root -> Child1 -> Child2
             // Use Builder to ensure correct linking
@@ -99,7 +100,12 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             // "SpyNode" instances are created by the builder via Activator.CreateInstance. 
             // So my `_child1` field above is NOT the one in the tree.
             // I need to traverse the built tree to get the actual instances.
-            _root = (SpyBranch)nodeRoot;
+            // Extract references from built tree to assert on them?
+            // "SpyNode" instances are created by the builder via Activator.CreateInstance. 
+            // So my `_child1` field above is NOT the one in the tree.
+            // I need to traverse the built tree to get the actual instances.
+            var systemRoot = (TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode)nodeRoot;
+            _root = (SpyBranch)systemRoot.Children.Last();
             _child1 = (SpyNode)((BranchNode)_root).FirstChild;
             _child2 = (SpyNode)_child1.NextSibling;
 
@@ -170,7 +176,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             var effectSink = new ObservableEffectSink();
             var resolver = new ServiceProviderCommandHandlerResolver(services);
             var commandBus = new CommandBus(new GameLoop(), resolver);
-            _runtime = new GameEngineRuntime(commandBus, effectSink, _repository);
+            _runtime = new GameEngineRuntime(commandBus, effectSink, _repository, new TurnForgeOrchestrator());
             _runtime.SetFsmController(_controller);
 
             // Act

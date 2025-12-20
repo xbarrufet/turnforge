@@ -1,72 +1,87 @@
+
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using NUnit.Framework;
 using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Board.Decisions;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Components;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Orchestrator;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
+using TFGameState = TurnForge.Engine.Entities.GameState;
 
-namespace TurnForge.Engine.Tests.Infrastructure.Appliers;
-
-[TestFixture]
-public class BoardApplierTests
+namespace TurnForge.Engine.Tests.Infrastructure.Appliers
 {
-    private BoardApplier _sut;
-    private Mock<TurnForge.Engine.Entities.Factories.Interfaces.IGameEntityFactory<GameBoard>> _factoryMock;
-
-    [SetUp]
-    public void Setup()
+    [TestFixture]
+    public class BoardApplierTests
     {
-        _sut = new BoardApplier();
-        _factoryMock = new Mock<TurnForge.Engine.Entities.Factories.Interfaces.IGameEntityFactory<GameBoard>>();
-        _factoryMock.Setup(f => f.Build(It.IsAny<IGameEntityDescriptor<GameBoard>>()))
-                    .Returns(new GameBoard(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TileId>()))));
-    }
+        private BoardApplier _sut;
+        private Mock<IGameEntityFactory<GameBoard>> _factoryMock;
 
-    [Test]
-    public void Apply_ShouldCreateBoardWithCorrectZones_AndAttachBehaviours()
-    {
-        // Arrange
-        var spatial = new DiscreteSpatialDescriptor(
-            Nodes: new List<TileId> { TileId.New() },
-            Connections: new List<DiscreteConnectionDeacriptor>()
-        );
+        [SetUp]
+        public void Setup()
+        {
+            _factoryMock = new Mock<IGameEntityFactory<GameBoard>>();
 
-        var zoneId = "TestZone";
-        var mockBehaviour = new Mock<TurnForge.Engine.Entities.Board.ZoneBehaviour>();
-        var behaviours = new List<TurnForge.Engine.Entities.Board.Interfaces.IZoneBehaviour> { mockBehaviour.Object };
+            // Setup Factory to return a dummy board
+            _factoryMock.Setup(f => f.Build(It.IsAny<IGameEntityDescriptor<GameBoard>>()))
+                        .Returns(new GameBoard(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TileId>()))));
 
-        var zoneDescriptor = new ZoneDescriptor(
-            Id: new ZoneId(zoneId),
-            Bound: Mock.Of<IZoneBound>(),
-            Behaviours: behaviours
-        );
+            _sut = new BoardApplier(_factoryMock.Object);
+        }
 
-        var zones = new List<ZoneDescriptor> { zoneDescriptor };
+        [Test]
+        public void Apply_ShouldCreateBoardWithCorrectZones_AndAttachBehaviours()
+        {
+            // Arrange
+            var spatial = new DiscreteSpatialDescriptor(
+                Nodes: new List<TileId> { TileId.New() },
+                Connections: new List<DiscreteConnectionDeacriptor>()
+            );
 
-        var boardDescriptor = new BoardDescriptor(spatial, zones);
+            var zoneId = "TestZone";
+            var mockBehaviour = new Mock<BaseBehaviour>();
+            var behaviours = new List<IZoneBehaviour> { mockBehaviour.As<IZoneBehaviour>().Object };
 
-        // Act
-        var resultBoard = _sut.Build(boardDescriptor, _factoryMock.Object);
+            var zoneDescriptor = new ZoneDescriptor(
+                Id: new ZoneId(zoneId),
+                Bound: Mock.Of<IZoneBound>(),
+                Behaviours: behaviours
+            );
 
-        // Assert
-        Assert.That(resultBoard, Is.Not.Null);
-        // Assert.That(resultBoard.Zones, Has.Count.EqualTo(1)); // BoardApplier adds zones to the board returned by factory.
-        // The mock factory returns a board. BoardApplier adds zones to it.
-        // Since mock returns a fresh board, it should have zones added by applier if applier does that.
-        // Let's verify applier logic: it iterates zones and calls board.AddZone(zone).
-        Assert.That(resultBoard.Zones.Count, Is.EqualTo(1));
+            var zones = new List<ZoneDescriptor> { zoneDescriptor };
 
-        var createdZone = resultBoard.Zones.First();
-        var behaviourComponent = createdZone.GetComponent<BehaviourComponent>();
+            var boardDescriptor = new BoardDescriptor(spatial, zones);
 
-        Assert.That(behaviourComponent, Is.Not.Null);
-        Assert.That(behaviourComponent.Behaviours, Contains.Item(mockBehaviour.Object));
+            var decision = new BoardDecision(boardDescriptor)
+            {
+                Timing = DecisionTiming.Immediate
+            };
+
+            // Act
+            var initialState = TFGameState.Empty();
+            var finalState = _sut.Apply(decision, initialState);
+
+            // Assert
+            var resultBoard = finalState.Board;
+            Assert.That(resultBoard, Is.Not.Null);
+
+            // Verify zones added
+            Assert.That(resultBoard.Zones.Count, Is.EqualTo(1));
+
+            var createdZone = resultBoard.Zones.First();
+            var behaviourComponent = createdZone.GetComponent<BehaviourComponent>();
+
+            Assert.That(behaviourComponent, Is.Not.Null);
+            Assert.That(behaviourComponent.Behaviours, Contains.Item(mockBehaviour.Object));
+        }
     }
 }
