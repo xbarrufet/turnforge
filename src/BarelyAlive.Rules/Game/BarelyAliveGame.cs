@@ -77,9 +77,9 @@ public sealed class BarelyAliveGame
     {
         var agentDef = new AgentDefinition(
             new AgentTypeId(agent.TypeId),
-            agent.MaxHealth,
-            agent.MaxBaseMovement,
-            agent.MaxActionPoints,
+            new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
+            new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(agent.MaxHealth),
+            new TurnForge.Engine.Entities.Components.Definitions.MovementComponentDefinition(agent.MaxBaseMovement),
             []
         );
         _turnForge.GameCatalog.RegisterAgentDefinition(agentDef.TypeId, agentDef);
@@ -91,10 +91,9 @@ public sealed class BarelyAliveGame
     {
         var propDef = new PropDefinition(
             new PropTypeId(prop.TypeId),
-            prop.MaxBaseMovement,
-            prop.MaxActionPoints,
-            [],
-            prop.MaxHealth
+            new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
+             new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(prop.MaxHealth),
+            []
         );
         _turnForge.GameCatalog.RegisterPropDefinition(propDef.TypeId, propDef);
     }

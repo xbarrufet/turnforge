@@ -3,21 +3,19 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board;
 
-public sealed class Connection(ConnectionId id, AreaId fromAreaId, AreaId toAreaId, bool isOpen= true)
+using TurnForge.Engine.Entities.Components;
+
+public sealed class Connection : GameEntity
 {
-    public ConnectionId Id { get; init; } = id;
-    public AreaId FromAreaId { get; init; } = fromAreaId;
-    public AreaId ToAreaId { get; init; } = toAreaId;
-    public bool IsOpen { get; set; } = isOpen;
+    public TileId FromAreaId { get; init; }
+    public TileId ToAreaId { get; init; }
+    public bool IsOpen { get; set; }
 
-    private readonly HashSet<IConnectionBehaviour> _Behaviours = [];
-    
-    public void AddBehaviour(IConnectionBehaviour Behaviour)
-        => _Behaviours.Add(Behaviour);
-
-    public bool HasBehaviour<T>() where T : IConnectionBehaviour
-        => _Behaviours.Any(t => t is T);
-
-    public T? GetBehaviour<T>() where T : class, IConnectionBehaviour
-        => _Behaviours.OfType<T>().FirstOrDefault();
+    public Connection(EntityId id, TileId fromAreaId, TileId toAreaId, BehaviourComponent behaviourComponent, bool isOpen = true) : base(id)
+    {
+        FromAreaId = fromAreaId;
+        ToAreaId = toAreaId;
+        IsOpen = isOpen;
+        AddComponent(behaviourComponent);
+    }
 }

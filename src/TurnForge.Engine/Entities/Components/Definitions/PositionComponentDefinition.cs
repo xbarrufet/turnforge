@@ -1,6 +1,5 @@
+using TurnForge.Engine.ValueObjects;
+
 namespace TurnForge.Engine.Entities.Components.Definitions;
 
-public class PositionComponentDefinition
-{
-    
-}
+public sealed record PositionComponentDefinition(Position Position);

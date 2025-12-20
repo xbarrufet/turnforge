@@ -1,6 +1,7 @@
 using TurnForge.Engine.Commands.GameStart.Effects;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Events;
 using TurnForge.Engine.Infrastructure.Appliers.Interfaces;
@@ -35,8 +36,15 @@ public sealed class SpawnApplier(IActorFactory actorFactory, IEffectSink effects
     {
         var agent = _actorFactory.BuildAgent(
             decision.TypeId,
-            decision.Position,
-            decision.ExtraBehaviours);
+            decision.ExtraBehaviours?.Cast<ActorBehaviour>()); // Cast assuming they are updated
+
+        // ... rest unchanged ...
+        var positionComponent = agent.GetComponent<TurnForge.Engine.Entities.Components.PositionComponent>();
+        if (positionComponent != null)
+        {
+            positionComponent.CurrentPosition = decision.Position;
+        }
+
         return new ApplierResult(currentState.WithAgent(agent), new AgentSpawnedEffect(agent.Id, agent.Definition.TypeId, decision.Position));
     }
 
@@ -44,8 +52,15 @@ public sealed class SpawnApplier(IActorFactory actorFactory, IEffectSink effects
     {
         var prop = _actorFactory.BuildProp(
             decision.TypeId,
-            decision.Position,
-            decision.ExtraBehaviours);
+            decision.ExtraBehaviours?.Cast<ActorBehaviour>()); // Cast
+
+        // ... rest unchanged ...
+        var positionComponent = prop.GetComponent<TurnForge.Engine.Entities.Components.PositionComponent>();
+        if (positionComponent != null)
+        {
+            positionComponent.CurrentPosition = decision.Position;
+        }
+
         return new ApplierResult(currentState.WithProp(prop), new PropSpawnedEffect(prop.Id, prop.Definition.TypeId, decision.Position));
     }
 }

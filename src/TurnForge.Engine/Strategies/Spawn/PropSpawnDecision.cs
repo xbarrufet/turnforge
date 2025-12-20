@@ -11,9 +11,9 @@ public sealed class PropSpawnDecision(
     PropTypeId typeId,
     Position position,
     IReadOnlyList<IActorBehaviour> behaviours
-): ISpawnDecision
+) : ISpawnDecision
 {
-    public Position Position { get; } =position;
+    public Position Position { get; } = position;
     public IReadOnlyList<IActorBehaviour> ExtraBehaviours { get; } = behaviours;
     public PropTypeId TypeId { get; } = typeId;
 }

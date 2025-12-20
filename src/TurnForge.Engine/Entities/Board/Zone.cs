@@ -1,23 +1,21 @@
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Components;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board;
 
 
-public sealed class Zone
+public sealed class Zone : GameEntity
 {
-    public ZoneId Id { get; }
     public IZoneBound Bound { get; }
-    public IReadOnlyList<IZoneBehaviour> Behaviours { get; }
 
     public Zone(
-        ZoneId id,
+        EntityId id,
         IZoneBound bound,
-        IReadOnlyList<IZoneBehaviour> Behaviours)
+        BehaviourComponent behaviourComponent) : base(id)
     {
-        Id = id;
         Bound = bound;
-        Behaviours = Behaviours;
+        AddComponent(behaviourComponent);
     }
 
     public bool Contains(Position position)

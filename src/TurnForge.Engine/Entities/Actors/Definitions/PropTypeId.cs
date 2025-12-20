@@ -1,6 +1,3 @@
 namespace TurnForge.Engine.Entities.Actors.Definitions;
 
-public class PropTypeId
-{
-    
-}
+public readonly record struct PropTypeId(string Value);

@@ -19,6 +19,12 @@ public sealed class RectZoneBound : IZoneBound
     }
 
     public bool Contains(Position pos)
-        => pos.X >= X && pos.X < X + Width
-                      && pos.Y >= Y && pos.Y < Y + Height;
+    {
+        if (!pos.IsDiscrete)
+        {
+            return false;
+        }
+        return (pos.X >= X && pos.X < X + Width
+                           && pos.Y >= Y && pos.Y < Y + Height);
+    }
 }

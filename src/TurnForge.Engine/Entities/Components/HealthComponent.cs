@@ -1,21 +1,24 @@
+using TurnForge.Engine.Entities.Components.Definitions;
 using TurnForge.Engine.Entities.Components.Interfaces;
 
-namespace TurnForge.Engine.Entities.Actors.Components;
+namespace TurnForge.Engine.Entities.Components;
 
-public sealed class HealthComponent : IActorComponent
+public sealed class HealthComponent : IGameEntityComponent
 {
     public int CurrentHealth { get; private set; }
     public int MaxHealth { get; }
 
     public bool IsAlive => CurrentHealth > 0;
-
-    public HealthComponent(int maxHealth)
+    public HealhtComponentDefinition Definition { get; }
+    
+    public HealthComponent(HealhtComponentDefinition definition)
     {
-        if (maxHealth <= 0)
-            throw new ArgumentOutOfRangeException(nameof(maxHealth));
+        if (definition == null) throw new ArgumentNullException(nameof(definition));
+        if (definition.MaxHealth <= 0) throw new ArgumentOutOfRangeException(nameof(definition.MaxHealth));
 
-        MaxHealth = maxHealth;
-        CurrentHealth = maxHealth;
+        MaxHealth = definition.MaxHealth;
+        CurrentHealth = definition.MaxHealth;
+        Definition= definition;
     }
 
     public void TakeDamage(int amount)

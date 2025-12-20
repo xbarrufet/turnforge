@@ -15,10 +15,10 @@ namespace TurnForge.Engine.Spatial.Interfaces
         bool CanMove(Actor actor, Position target);
 
         int Distance(Position from, Position to);
-        
+
         void EnableConnection(Position from, Position to);
-        
+
         void DisableConnection(Position from, Position to);
-        
+
     }
 }

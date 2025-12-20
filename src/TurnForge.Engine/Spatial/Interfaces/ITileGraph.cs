@@ -4,11 +4,11 @@ namespace TurnForge.Engine.Spatial.Interfaces;
 
 public interface ITileGraph
 {
-    bool AreAdjacent(Position from, Position to);
+    bool AreAdjacent(TileId from, TileId to);
 
-    IEnumerable<Position> GetNeighbors(Position tile);
+    IEnumerable<TileId> GetNeighbors(TileId tile);
 
-    int ShortestPathLength(Position from, Position to);
+    int ShortestPathLength(TileId from, TileId to);
 
-    bool Exists(Position tile);
+    bool Exists(TileId tile);
 }

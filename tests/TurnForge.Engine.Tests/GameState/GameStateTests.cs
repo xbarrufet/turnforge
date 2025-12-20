@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Definitions;
 using TurnForge.Engine.ValueObjects;
-
 namespace TurnForge.Engine.Tests.GameState
 {
     public class GameStateTests
@@ -13,9 +15,15 @@ namespace TurnForge.Engine.Tests.GameState
         public void WithAgent_DoesNotMutateOriginalAndAddsAgent()
         {
             var state = TurnForge.Engine.Entities.GameState.Empty();
-            var id = new ActorId(Guid.NewGuid());
-            var def = new AgentDefinition(new AgentTypeId("u1"), 10, 3, 2, new System.Collections.Generic.List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
-            var agent = new Agent(id, Position.Empty, def);
+            var id = EntityId.New();
+            var def = new AgentDefinition(
+                new AgentTypeId("u1"),
+                new PositionComponentDefinition(Position.Empty),
+                new HealhtComponentDefinition(10),
+                new MovementComponentDefinition(3),
+                new System.Collections.Generic.List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>());
+
+            var agent = new Agent(id, def, new PositionComponent(def.PositionComponentDefinition), new BehaviourComponent(Enumerable.Empty<BaseBehaviour>()));
 
             var newState = state.WithAgent(agent);
 

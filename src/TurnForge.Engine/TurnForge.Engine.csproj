@@ -22,6 +22,7 @@
   <ItemGroup>
     <Folder Include="Commands\InitializeGame\Descriptors\" />
     <Folder Include="Commands\Player\" />
+    <Folder Include="Entities\Actors\Components\" />
     <Folder Include="Entities\Actors\Descriptors\" />
     <Folder Include="Results\" />
     <Folder Include="Snapshots\" />

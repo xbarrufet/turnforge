@@ -1,0 +1,48 @@
+{
+  "Agents": [
+    {
+      "TypeId": "Amy",
+      "MaxHealth": 3,
+      "MaxBaseMovement": 1,
+      "MaxActionPoints": 3,
+      "Behaviours": []
+    },
+    {
+      "TypeId": "Doug",
+      "MaxHealth": 3,
+      "MaxBaseMovement": 1,
+      "MaxActionPoints": 3,
+      "Behaviours": []
+    },
+    {
+      "TypeId": "Walker",
+      "MaxHealth": 1,
+      "MaxBaseMovement": 1,
+      "MaxActionPoints": 1,
+      "Behaviours": []
+    },
+    {
+      "TypeId": "Runner",
+      "MaxHealth": 1,
+      "MaxBaseMovement": 1,
+      "MaxActionPoints": 2,
+      "Behaviours": []
+    },
+    {
+      "TypeId": "Fatty",
+      "MaxHealth": 2,
+      "MaxBaseMovement": 1,
+      "MaxActionPoints": 1,
+      "Behaviours": []
+    }
+  ],
+  "Props": [
+    {
+      "TypeId": "BarelyAlive.Spawn",
+      "MaxHealth": 1,
+      "MaxBaseMovement": 0,
+      "MaxActionPoints": 0,
+      "Behaviours": []
+    }
+  ]
+}

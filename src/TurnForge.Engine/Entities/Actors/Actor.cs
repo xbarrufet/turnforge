@@ -1,18 +1,14 @@
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public abstract class Actor
+public abstract class Actor : GameEntity
 {
-    public ActorId Id { get; }
-    public Position Position { get; protected set; }
-    public IReadOnlyList<IActorBehaviour>? Behaviours { get; }
-
-    protected Actor(ActorId id, Position position, IReadOnlyList<IActorBehaviour>? behaviours = null)
+    protected Actor(EntityId id, PositionComponent positionComponent, BehaviourComponent behaviorComponent) : base(id)
     {
-        Id = id;
-        Position = position;
-        Behaviours = behaviours;
+        AddComponent(positionComponent);
+        AddComponent(behaviorComponent);
     }
 }

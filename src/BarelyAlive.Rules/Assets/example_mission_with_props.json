@@ -1,0 +1,53 @@
+{
+  "missionName": "Example Mission with Parameterized Props",
+  "scale": {
+    "tileWidth": 100,
+    "tileHeight": 100
+  },
+  "spatial": {
+    "rows": 5,
+    "cols": 5
+  },
+  "zones": [],
+  "props": [
+    {
+      "typeId": "BarelyAlive.Spawn",
+      "maxHealth": 1,
+      "maxBaseMovement": 0,
+      "maxActionPoints": 0,
+      "behaviours": [
+        {
+          "type": "ZombieSpawn",
+          "data": {
+            "order": 1
+          }
+        }
+      ]
+    },
+    {
+      "typeId": "BarelyAlive.Spawn",
+      "maxHealth": 1,
+      "maxBaseMovement": 0,
+      "maxActionPoints": 0,
+      "behaviours": [
+        {
+          "type": "PartySpawn"
+        }
+      ]
+    },
+    {
+      "typeId": "BarelyAlive.Spawn",
+      "maxHealth": 1,
+      "maxBaseMovement": 0,
+      "maxActionPoints": 0,
+      "behaviours": [
+        {
+          "type": "ZombieSpawn",
+          "data": {
+            "order": 2
+          }
+        }
+      ]
+    }
+  ]
+}

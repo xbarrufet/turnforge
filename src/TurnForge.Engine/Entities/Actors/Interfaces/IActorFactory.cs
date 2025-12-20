@@ -7,6 +7,6 @@ using TurnForge.Engine.ValueObjects;
 
 public interface IActorFactory
 {
-    Prop BuildProp(PropTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
-    Agent BuildAgent(AgentTypeId typeId, Position position, IReadOnlyList<IActorBehaviour>? extraBehaviours = null);
+    Prop BuildProp(PropTypeId typeId, IEnumerable<ActorBehaviour>? extraBehaviours = null);
+    Agent BuildAgent(AgentTypeId typeId, IEnumerable<ActorBehaviour>? extraBehaviours = null);
 }

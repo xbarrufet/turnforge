@@ -6,22 +6,23 @@ namespace TurnForge.Engine.Entities.Board;
 
 public sealed class GameBoard(ISpatialModel spatialModel)
 {
-    
-    private readonly List<Zone> zones = [];
+
+    private readonly List<Zone> _zones = [];
+    public IReadOnlyList<Zone> Zones => _zones.AsReadOnly();
 
     // ─────────────
     // SETUP
     // ─────────────
     public void AddZone(Zone zone)
     {
-        zones.Add(zone);
-    }   
-    
+        _zones.Add(zone);
+    }
+
     // ─────────────
     // QUERIES
     // ─────────────
 
- 
+
     public bool IsValid(Position position)
         => spatialModel.IsValidPosition(position);
 
@@ -31,9 +32,9 @@ public sealed class GameBoard(ISpatialModel spatialModel)
     public int Distance(Position from, Position to)
         => spatialModel.Distance(from, to);
 
-    
+
     public IEnumerable<Zone> GetZonesAt(Position position)
-        => zones.Where(z => z.Contains(position));
+        => _zones.Where(z => z.Contains(position));
     // ─────────────
     // MOVEMENT
     // ─────────────
@@ -41,5 +42,5 @@ public sealed class GameBoard(ISpatialModel spatialModel)
     public bool CanMoveActor(Actor actor, Position target)
         => spatialModel.CanMove(actor, target);
 
-    
+
 }

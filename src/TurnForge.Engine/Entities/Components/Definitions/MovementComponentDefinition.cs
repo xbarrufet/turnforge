@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.Entities.Components.Definitions;
 
-public class MovementComponentDefinition
+public sealed record MovementComponentDefinition(int MaxUnitsToMove)
 {
     
 }

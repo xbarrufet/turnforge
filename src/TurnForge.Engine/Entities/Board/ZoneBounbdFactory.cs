@@ -16,7 +16,7 @@ public static class ZoneBoundFactory
     }
 }
 
-public enum ZoneBoundType 
+public enum ZoneBoundType
 {
     TileSet
 }

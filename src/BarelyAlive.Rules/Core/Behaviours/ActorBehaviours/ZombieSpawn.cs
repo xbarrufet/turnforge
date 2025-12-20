@@ -1,4 +1,6 @@
 using BarelyAlive.Rules.Core.Behaviours.Attributes;
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Behaviours.ActorBehaviours;
 
@@ -7,11 +9,11 @@ namespace BarelyAlive.Rules.Core.Behaviours.ActorBehaviours;
 /// </summary>
 
 [ActorBehaviour("ZombieSpawn")]
-public sealed class ZombieSpawn : TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour
+public sealed class ZombieSpawn : ActorBehaviour
 {
     public int Order { get; }
 
-    public ZombieSpawn( [BehaviourParam("order")] int order)
+    public ZombieSpawn([BehaviourParam("order")] int order)
     {
         if (order < 1)
             throw new ArgumentException("Order must be >= 1", nameof(order));

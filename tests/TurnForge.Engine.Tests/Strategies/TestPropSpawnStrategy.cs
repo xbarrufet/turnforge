@@ -10,8 +10,8 @@ public class TestPropSpawnStrategy : IPropSpawnStrategy
         foreach (var descriptor in context.PropsToSpawn)
         {
             decisions.Add(new PropSpawnDecision(
-                descriptor.TypeId, 
-                descriptor.Position ?? Position.Zero, 
+                descriptor.TypeId,
+                descriptor.Position ?? new Position(Vector.Zero),
                 descriptor.ExtraBehaviours ?? new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
         }
         return decisions;

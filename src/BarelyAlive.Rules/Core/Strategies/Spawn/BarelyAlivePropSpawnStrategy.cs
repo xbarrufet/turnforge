@@ -5,9 +5,9 @@ using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Core.Strategies.Spawn;
 
-public sealed class BarelyAlivePropSpawnStrategy:IPropSpawnStrategy
-{ 
-    
+public sealed class BarelyAlivePropSpawnStrategy : IPropSpawnStrategy
+{
+
 
     public IReadOnlyList<PropSpawnDecision> Decide(PropSpawnContext context)
     {
@@ -16,7 +16,7 @@ public sealed class BarelyAlivePropSpawnStrategy:IPropSpawnStrategy
         {
             decisions.Add(new PropSpawnDecision(
                 descriptor.TypeId,
-                descriptor.Position ?? Position.Zero,
+                descriptor.Position ?? Position.Empty,
                 descriptor.ExtraBehaviours ?? Array.Empty<IActorBehaviour>()));
         }
         return decisions;

@@ -5,31 +5,31 @@ namespace TurnForge.Engine.Entities.Board;
 
 public sealed class Area
 {
-    public AreaId Id { get; }
+    public TileId Id { get; }
     public Rectangle Bound { get; }
-    
+
     private readonly HashSet<IAreaBehaviour> _Behaviours = [];
-    
-    public Area(AreaId areaId, Rectangle bound)
+
+    public Area(TileId areaId, Rectangle bound)
     {
         this.Id = areaId;
         this.Bound = bound;
     }
-    
-    public Area(AreaId areaId, Point topLeft, Point bottomRight)
+
+    public Area(TileId areaId, Point topLeft, Point bottomRight)
     {
         this.Id = areaId;
         this.Bound = new Rectangle(topLeft, bottomRight);
     }
 
-    public Area(AreaId areaId, Point topLeft,  int width, int height)
+    public Area(TileId areaId, Point topLeft, int width, int height)
     {
         this.Id = areaId;
         this.Bound = new Rectangle(topLeft, width, height);
     }
     public override string ToString()
         => $"Area {Id} [Bound: {Bound}]";
-    
+
     public void AddBehaviour(IAreaBehaviour Behaviour)
         => _Behaviours.Add(Behaviour);
 
@@ -38,7 +38,7 @@ public sealed class Area
 
     public T? GetBehaviour<T>() where T : class, IAreaBehaviour
         => _Behaviours.OfType<T>().FirstOrDefault();
-    
-    public bool Contains(Position position)
+
+    public bool Contains(Vector position)
         => Bound.Contains(position);
 }

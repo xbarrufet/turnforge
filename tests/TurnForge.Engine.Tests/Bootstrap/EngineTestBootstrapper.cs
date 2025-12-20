@@ -17,20 +17,30 @@ internal static class EngineTestBootstrapper
 {
     public static (TurnForge.Engine.Core.TurnForge Engine, IGameRepository Repository) Boot()
     {
-
-        // 2️⃣ Repository
         // 2️⃣ Repository
         var repository = new InMemoryGameRepository();
         var actorFactory = new TestActionFactory();
 
         // Mock registries
-        // Mock registries
         var propDefs = new TestDefinitionRegistry<TurnForge.Engine.Entities.Actors.Definitions.PropTypeId, TurnForge.Engine.Entities.Actors.Definitions.PropDefinition>();
         var agentDefs = new TestDefinitionRegistry<TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId, TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition>();
 
         // Register test definitions
-        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"), new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"), 100, 3, 2, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
-        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"), new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"), 100, 3, 2, new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"),
+                new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(
+                    new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"),
+                     new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
+                     new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(100),
+                     new TurnForge.Engine.Entities.Components.Definitions.MovementComponentDefinition(3),
+                    new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+
+        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"),
+             new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(
+                new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"),
+                 new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
+                 new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(100),
+                 new TurnForge.Engine.Entities.Components.Definitions.MovementComponentDefinition(3),
+                new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
 
         var gameContext = new GameEngineContext(
             repository,

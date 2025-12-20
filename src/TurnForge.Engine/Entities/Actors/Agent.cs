@@ -1,25 +1,19 @@
-using TurnForge.Engine.Entities.Actors.Components;
 using TurnForge.Engine.Entities.Actors.Definitions;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Entities.Components;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public class Agent : Actor
+public sealed class Agent : Actor
 {
     public AgentDefinition Definition { get; }
-    public HealthComponent Health { get; }
 
     public Agent(
-        ActorId id,
-        Position position,
+        EntityId id,
         AgentDefinition definition,
-        IReadOnlyList<IActorBehaviour>? behaviours = null)
-        : base(id, position, behaviours)
+        PositionComponent position,
+        BehaviourComponent behaviourComponent) : base(id, position, behaviourComponent)
     {
         Definition = definition;
-        Health = new HealthComponent(definition.MaxHealth);
     }
-
-    public bool IsAlive => Health.IsAlive;
 }

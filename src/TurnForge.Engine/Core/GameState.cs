@@ -7,13 +7,13 @@ namespace TurnForge.Engine.Entities;
 
 public sealed class GameState
 {
-    public ImmutableDictionary<ActorId, Agent> Agents { get; }
-    public ImmutableDictionary<ActorId, Prop> Props { get; }
+    public ImmutableDictionary<EntityId, Agent> Agents { get; }
+    public ImmutableDictionary<EntityId, Prop> Props { get; }
     public NodeId? CurrentStateId { get; }
 
     private GameState(
-        ImmutableDictionary<ActorId, Agent> agents,
-        ImmutableDictionary<ActorId, Prop> props,
+        ImmutableDictionary<EntityId, Agent> agents,
+        ImmutableDictionary<EntityId, Prop> props,
         NodeId? currentStateId)
     {
         Agents = agents;
@@ -23,8 +23,8 @@ public sealed class GameState
 
     public static GameState Empty()
         => new(
-            ImmutableDictionary<ActorId, Agent>.Empty,
-            ImmutableDictionary<ActorId, Prop>.Empty,
+            ImmutableDictionary<EntityId, Agent>.Empty,
+            ImmutableDictionary<EntityId, Prop>.Empty,
             null
         );
 
@@ -46,7 +46,7 @@ public sealed class GameState
     {
         if (replaceAll)
         {
-            var builder = ImmutableDictionary.CreateBuilder<ActorId, Agent>();
+            var builder = ImmutableDictionary.CreateBuilder<EntityId, Agent>();
             foreach (var u in agents)
                 builder[u.Id] = u;
             return new(builder.ToImmutable(), Props, CurrentStateId);
@@ -63,7 +63,7 @@ public sealed class GameState
     {
         if (replaceAll)
         {
-            var builder = ImmutableDictionary.CreateBuilder<ActorId, Prop>();
+            var builder = ImmutableDictionary.CreateBuilder<EntityId, Prop>();
             foreach (var u in props)
                 builder[u.Id] = u;
             return new(Agents, builder.ToImmutable(), CurrentStateId);

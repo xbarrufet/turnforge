@@ -24,17 +24,19 @@ public sealed class CommandBus(
             if (!loopResult.IsAllowed)
                 throw new InvalidOperationException(loopResult.Reason);
             // 2️⃣ Ejecutar el handler correspondiente
-            DispatchToHandler(command);
+            // 2️⃣ Ejecutar el handler correspondiente
+            var result = DispatchToHandler(command);
             // 4️⃣ Gestión de ACK
             _waitingForAck = loopResult.RequiresAck;
-            return CommandResult.Ok();
-        } catch (Exception ex)
+            return result;
+        }
+        catch (Exception ex)
         {
             return CommandResult.Fail(ex.Message);
         }
     }
 
-    private void DispatchToHandler(ICommand command)
+    private CommandResult DispatchToHandler(ICommand command)
     {
         // Dispatch genérico controlado
         var method = typeof(CommandBus)
@@ -43,14 +45,14 @@ public sealed class CommandBus(
                 BindingFlags.Instance | BindingFlags.NonPublic)!;
 
         var generic = method.MakeGenericMethod(command.GetType());
-        generic.Invoke(this, new object[] { command });
+        return (CommandResult)generic.Invoke(this, new object[] { command })!;
     }
 
-    private void DispatchGeneric<TCommand>(TCommand command)
+    private CommandResult DispatchGeneric<TCommand>(TCommand command)
         where TCommand : ICommand
     {
         var handler = handlerResolver.Resolve<TCommand>();
-        handler.Handle(command);
+        return handler.Handle(command);
     }
 
     public void Acknowledge()

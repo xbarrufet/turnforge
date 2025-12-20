@@ -5,7 +5,7 @@ namespace BarelyAlive.Rules.Adapter.Mappers;
 
 public static class PositionMapper
 {
-    public static Position ToPosition(this PositionDto dto)
+    public static Vector ToPosition(this PositionDto dto)
         => new(dto.X, dto.Y);
 }
 

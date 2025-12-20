@@ -1,7 +1,5 @@
 using TurnForge.Engine.Commands.Game;
-using TurnForge.Engine.Commands.GameStart;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Commands.LoadGame;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Infrastructure;
@@ -26,37 +24,22 @@ public static class EngineCommandRegistration
         // LoadGame
         // =====================================================
 
-        services.Register<InitializeGameHandler>(sp =>
-            new InitializeGameHandler(
+        // =====================================================
+        // Game Initialization
+        // =====================================================
+
+        services.Register<InitGameCommandHandler>(sp =>
+            new InitGameCommandHandler(
                 (IActorFactory)sp.GetService(typeof(IActorFactory))!,
                 (IGameFactory)sp.GetService(typeof(IGameFactory))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
                 (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!,
-                (IEffectSink)sp.GetService(typeof(IEffectSink))!
-            )
-        );
-        services.Register<ICommandHandler<InitializeGameCommand>>(sp =>
-            (InitializeGameHandler)sp.GetService(typeof(InitializeGameHandler))!
-        );
-
-        // =====================================================
-        // FUTURO (ejemplos):
-        // - MoveActorHandler
-        // - AttackHandler
-        // - EndTurnHandler
-        // - SaveGameHandler
-        // =====================================================
-
-        services.Register<GameStartCommandHandler>(sp =>
-            new GameStartCommandHandler(
-                (IGameRepository)sp.GetService(typeof(IGameRepository))!,
                 (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
-                (IActorFactory)sp.GetService(typeof(IActorFactory))!,
                 (IEffectSink)sp.GetService(typeof(IEffectSink))!
             )
         );
-        services.Register<ICommandHandler<GameStartCommand>>(sp =>
-            (GameStartCommandHandler)sp.GetService(typeof(GameStartCommandHandler))!
+        services.Register<ICommandHandler<InitGameCommand>>(sp =>
+            (InitGameCommandHandler)sp.GetService(typeof(InitGameCommandHandler))!
         );
     }
 }
