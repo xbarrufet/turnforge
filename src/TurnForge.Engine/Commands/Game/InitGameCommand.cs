@@ -10,6 +10,8 @@ namespace TurnForge.Engine.Commands.Game;
 public sealed record InitGameCommand(
     SpatialDescriptor Spatial,
     IReadOnlyList<ZoneDescriptor> Zones,
-    IReadOnlyList<TurnForge.Engine.Entities.Descriptors.PropDescriptor> StartingProps,
-    IReadOnlyList<TurnForge.Engine.Entities.Descriptors.AgentDescriptor> Agents
-) : ICommand;
+    IReadOnlyList<TurnForge.Engine.Entities.Descriptors.PropDescriptor> StartingProps
+) : ICommand
+{
+    public Type CommandType => typeof(InitGameCommand);
+}

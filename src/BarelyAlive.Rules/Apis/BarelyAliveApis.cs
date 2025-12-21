@@ -1,29 +1,36 @@
-
-// expose end points to call teh run engine API¡s
-using BarelyAlive.Rules.Adapter.Loaders;
+using BarelyAlive.Rules.Apis.Handlers;
 using BarelyAlive.Rules.Apis.Interfaces;
-using TurnForge.Engine.Commands.Game;
-using TurnForge.Engine.Commands.LoadGame;
+using BarelyAlive.Rules.Apis.Messaging;
+using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.Core.Interfaces;
 
 namespace BarelyAlive.Rules.Apis;
 
-public class BarelyAliveApis(IGameEngine gameEngine) : IBarelyAliveApis
+public class BarelyAliveApis : IBarelyAliveApis
 {
-    public BarelyAliveApiResult InitializeGame(string missionJson)
+    private readonly InitializeGameHandler _initializeGameHandler;
+    private readonly StartGameHandler _startGameHandler;
+
+    private List<TurnForge.Engine.Entities.Descriptors.AgentDescriptor> _pendingAgents = new();
+
+    public BarelyAliveApis(IGameEngine gameEngine)
     {
-        var (spatial, zones, props, agents) = MissionLoader.ParseMissionString(missionJson);
-        var command = new InitGameCommand(spatial, zones, props, agents);
-        var result = gameEngine.Send(command);
-        return new BarelyAliveApiResult
-        {
-            Success = result.Success,
-            Error = result.Error,
-            Tags = result.Tags,
-            Decisions = result.Decisions
-        };
+        var projector = new DomainProjector();
+        _initializeGameHandler = new InitializeGameHandler(gameEngine, projector);
+        _startGameHandler = new StartGameHandler(gameEngine, projector);
     }
 
+    public GameResponse InitializeGame(string missionJson)
+    {
+        var result = _initializeGameHandler.Handle(missionJson);
+        _pendingAgents = result.Agents;
+        return result.Response;
+    }
 
-
+    public GameResponse StartGame()
+    {
+        var result = _startGameHandler.Handle(_pendingAgents);
+        _pendingAgents.Clear();
+        return result;
+    }
 }

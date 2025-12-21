@@ -37,12 +37,21 @@ public static class EngineCommandRegistration
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
                 (IBoardFactory)sp.GetService(typeof(IBoardFactory))!,
                 (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!,
-                (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
                 (IEffectSink)sp.GetService(typeof(IEffectSink))!
             )
         );
         services.Register<ICommandHandler<InitGameCommand>>(sp =>
             (InitGameCommandHandler)sp.GetService(typeof(InitGameCommandHandler))!
+        );
+
+        services.Register<StartGameCommandHandler>(sp =>
+            new StartGameCommandHandler(
+                (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
+                (IGameRepository)sp.GetService(typeof(IGameRepository))!
+            )
+        );
+        services.Register<ICommandHandler<StartGameCommand>>(sp =>
+            (StartGameCommandHandler)sp.GetService(typeof(StartGameCommandHandler))!
         );
     }
 }

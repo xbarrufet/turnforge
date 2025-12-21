@@ -8,6 +8,7 @@ using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
 using TurnForge.Engine.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
@@ -18,12 +19,15 @@ namespace TurnForge.Engine.Core.Fsm
         private readonly FlowNavigator _navigator;
         private readonly Dictionary<NodeId, FsmNode> _nodesById;
         private NodeId _currentStateId;
+        private bool _waittingForACK;
 
 
         public NodeId CurrentStateId => _currentStateId;
-
+        public bool WaittingForACK { get => _waittingForACK; set => _waittingForACK = value; }
 
         private IOrchestrator? _orchestrator;
+
+        public FsmNode CurrentState => _nodesById[_currentStateId];
 
         public FsmController(FsmNode root, NodeId initialId)
         {
@@ -53,26 +57,24 @@ namespace TurnForge.Engine.Core.Fsm
         /// <summary>
         /// Solicita avanzar al siguiente estado lógico en el árbol.
         /// </summary>
-        public GameState MoveForwardRequest(GameState currentState, IEffectSink effectSink)
+        public FsmStepResult MoveForwardRequest(GameState currentState, IEffectSink effectSink)
         {
             var nextId = _navigator.GetNextStateId(_currentStateId);
 
             if (nextId == null)
             {
                 // Aquí se podría disparar un evento de Fin de Juego
-                return currentState;
+                return new FsmStepResult(currentState, false, []);
             }
-
             return ExecuteTransition(_currentStateId, nextId.Value, currentState, effectSink);
         }
 
-
         // Ejecuta una transición entre dos estados
-        private GameState ExecuteTransition(NodeId fromId, NodeId toId, GameState state, IEffectSink effectSink)
+        private FsmStepResult ExecuteTransition(NodeId fromId, NodeId toId, GameState state, IEffectSink effectSink)
         {
             var fromNode = _nodesById[fromId];
             var toNode = _nodesById[toId];
-
+            var effects = new List<IGameEffect>();
             var appliers = new List<IFsmApplier>();
 
             // Sync Orchestrator
@@ -87,11 +89,14 @@ namespace TurnForge.Engine.Core.Fsm
                 state = _orchestrator.CurrentState;
             }
 
+
             // Legacy Appliers
             var appliersOnEnd = fromNode.OnEnd(state);
             foreach (var applier in appliersOnEnd)
             {
-                state = applier.Apply(state, effectSink);
+                var applierResponse = applier.Apply(state);
+                state = applierResponse.GameState;
+                effects.AddRange(applierResponse.GameEffects);
             }
 
             // 2. Ejecutamos la apertura del nuevo nodo
@@ -110,11 +115,15 @@ namespace TurnForge.Engine.Core.Fsm
             var appliersOnStart = toNode.OnStart(state);
             foreach (var applier in appliersOnStart)
             {
-                state = applier.Apply(state, effectSink);
+                var applierResponse = applier.Apply(state);
+                state = applierResponse.GameState;
+                effects.AddRange(applierResponse.GameEffects);
             }
 
             // 3. Applier interno para actualizar el puntero CurrentStateId en el GameState
-            state = new ChangeStateApplier(toId).Apply(state, effectSink);
+            var changeStateApplierResponse = new ChangeStateApplier(toId).Apply(state);
+            state = changeStateApplierResponse.GameState;
+            effects.AddRange(changeStateApplierResponse.GameEffects);
 
             // Actualizamos la referencia local del controlador
             _currentStateId = toId;
@@ -122,26 +131,26 @@ namespace TurnForge.Engine.Core.Fsm
             // Final Sync
             _orchestrator?.SetState(state);
 
-            return state;
+            return new FsmStepResult(state, false, effects);
         }
 
         /// <summary>
         /// Delega el comando al nodo hoja actual si es válido.
         /// </summary>
-        public FsmStepResult HandleCommand(ICommand command, GameState state, CommandResult result,
-            IEffectSink effectSink)
+        public FsmStepResult HandleCommand(ICommand command, GameState state, CommandResult result)
         {
             // Sync Orchestrator
             _orchestrator?.SetState(state);
-
+            var effects = new List<IGameEffect>();
             if (_nodesById[_currentStateId] is LeafNode leaf)
             {
                 var appliersOnCommand = leaf.OnCommandExecuted(command, result, out bool transitionRequested);
-
                 // Legacy
                 foreach (var applier in appliersOnCommand)
                 {
-                    state = applier.Apply(state, effectSink);
+                    var response = applier.Apply(state);
+                    state = response.GameState;
+                    effects.AddRange(response.GameEffects);
                 }
 
                 // Orchestrator Trigger: OnCommandExecutionEnd
@@ -152,12 +161,11 @@ namespace TurnForge.Engine.Core.Fsm
                     state = _orchestrator.CurrentState;
                 }
 
-                return new FsmStepResult(state, transitionRequested);
+                return new FsmStepResult(state, transitionRequested, effects);
             }
-
-            return new FsmStepResult(state, false);
+            return new FsmStepResult(state, false, []);
         }
     }
 
-    public record FsmStepResult(GameState State, bool TransitionRequested);
+    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEffect> Effects);
 }

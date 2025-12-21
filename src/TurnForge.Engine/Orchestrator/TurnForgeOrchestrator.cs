@@ -1,4 +1,5 @@
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Decisions.Interfaces;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
@@ -73,7 +74,8 @@ public sealed class TurnForgeOrchestrator : IOrchestrator
         if (_appliers.TryGetValue(decisionType, out var applier))
         {
             // Dynamic dispatch to IApplier<T>.Apply(T, GameState)
-            CurrentState = ((dynamic)applier).Apply((dynamic)decision, CurrentState);
+            var response = (ApplierResponse)((dynamic)applier).Apply((dynamic)decision, CurrentState);
+            CurrentState = response.GameState;
         }
         else
         {

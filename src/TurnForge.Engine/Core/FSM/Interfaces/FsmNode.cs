@@ -16,6 +16,9 @@ public abstract class FsmNode
     public FsmNode? NextSibling { get; internal set; }
     public BranchNode? Parent { get; internal set; }
 
+    public abstract bool IsCommandAllowed(Type commandType);
+    public abstract IReadOnlyList<Type> GetAllowedCommands();
+
     // El nodo solo se ocupa de su propia vida
     public virtual IEnumerable<IFsmApplier> OnStart(GameState state) => Enumerable.Empty<IFsmApplier>();
     public virtual IEnumerable<IFsmApplier> OnEnd(GameState state) => Enumerable.Empty<IFsmApplier>();

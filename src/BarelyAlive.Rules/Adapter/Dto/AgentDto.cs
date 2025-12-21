@@ -1,7 +1,9 @@
+namespace BarelyAlive.Rules.Adapter.Dto;
 
 using System.Collections.Generic;
 
-namespace BarelyAlive.Rules.Adapter.Dto;
+
+
 
 public sealed class AgentDto
 {
@@ -10,4 +12,5 @@ public sealed class AgentDto
     public int MaxHealth { get; init; }
     public int MaxBaseMovement { get; init; }
     public int MaxActionPoints { get; init; }
+    public PositionDto? Position { get; init; }
 }

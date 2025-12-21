@@ -7,17 +7,16 @@ namespace TurnForge.Engine.Entities.Board;
 
 public sealed class Zone : GameEntity
 {
-    public IZoneBound Bound { get; }
+    private readonly ZoneDefinition _definition;
 
     public Zone(
-        EntityId id,
-        IZoneBound bound,
-        BehaviourComponent behaviourComponent) : base(id)
+        ZoneDefinition definition,
+        BehaviourComponent behaviourComponent) : base(definition.Id)
     {
-        Bound = bound;
+        _definition = definition;
         AddComponent(behaviourComponent);
     }
 
     public bool Contains(Position position)
-        => Bound.Contains(position);
+        => _definition.Bound.Contains(position);
 }

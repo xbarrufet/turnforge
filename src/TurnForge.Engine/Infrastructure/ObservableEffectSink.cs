@@ -1,4 +1,5 @@
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
@@ -8,8 +9,7 @@ public sealed class ObservableEffectSink : IEffectSink
 
     public void Emit(IGameEffect effect)
     {
-        if (effect == null)
-            throw new ArgumentNullException(nameof(effect));
+        ArgumentNullException.ThrowIfNull(effect);
 
         foreach (var subscriber in _subscribers)
             subscriber(effect);

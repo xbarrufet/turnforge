@@ -11,6 +11,8 @@ public sealed record CommandResult
     public IReadOnlyCollection<IDecision> Decisions { get; init; } = [];
     public IReadOnlyCollection<string> Tags { get; init; } = [];
 
+    public static CommandResult ACKResult => new() { Success = true, Tags = new[] { "ACK" } };
+
     public static CommandResult Ok(IDecision[] decisions, params string[] tags)
         => new() { Success = true, Decisions = decisions, Tags = tags };
 

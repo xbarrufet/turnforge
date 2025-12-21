@@ -29,7 +29,7 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
     private readonly IGameFactory _gameFactory;
     private readonly IGameRepository _gameRepository;
     private readonly IPropSpawnStrategy _propSpawnStrategy;
-    private readonly IAgentSpawnStrategy _agentSpawnStrategy;
+
     private readonly IEffectSink _effectsSink;
     private readonly IBoardFactory _boardFactory;
 
@@ -39,7 +39,6 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
         IGameRepository gameRepository,
         IBoardFactory boardFactory,
         IPropSpawnStrategy propSpawnStrategy,
-        IAgentSpawnStrategy agentSpawnStrategy,
         IEffectSink effectsSink)
     {
         _actorFactory = actorFactory;
@@ -47,7 +46,6 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
         _gameRepository = gameRepository;
         _boardFactory = boardFactory;
         _propSpawnStrategy = propSpawnStrategy;
-        _agentSpawnStrategy = agentSpawnStrategy;
         _effectsSink = effectsSink;
     }
 
@@ -64,13 +62,8 @@ public sealed class InitGameCommandHandler : ICommandHandler<InitGameCommand>
         var propContext = new PropSpawnContext(command.StartingProps, gameState);
         var propDecisions = _propSpawnStrategy.Decide(propContext);
 
-        // 3️⃣ Spawn Agents creating decisions
-        var agentContext = new AgentSpawnContext(command.Agents, gameState);
-        var agentDecisions = _agentSpawnStrategy.Decide(agentContext);
-
         decisions.AddRange(propDecisions.Cast<IDecision>());
-        decisions.AddRange(agentDecisions.Cast<IDecision>());
 
-        return CommandResult.Ok(decisions: decisions.ToArray(), tags: ["GameInitialized", "StartFSM"]);
+        return CommandResult.Ok(decisions: decisions.ToArray(), tags: ["GameInitialized"]);
     }
 }

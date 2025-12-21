@@ -1,3 +1,4 @@
+
 using BarelyAlive.Rules.Adapter.Dto;
 using TurnForge.Engine.ValueObjects;
 

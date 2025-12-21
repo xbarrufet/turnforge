@@ -78,11 +78,11 @@ public static class GameEngineFactory
         // Note: We cast interfaces because the concrete factory implements the generic factory interface explicitly/implicitly
         if (actorFactory is IGameEntityFactory<Prop> propFactory)
         {
-            orchestrator.RegisterApplier(new PropApplier(propFactory, effectSink));
+            orchestrator.RegisterApplier(new PropApplier(propFactory));
         }
         if (actorFactory is IGameEntityFactory<Agent> agentFactory)
         {
-            orchestrator.RegisterApplier(new AgentApplier(agentFactory, effectSink));
+            orchestrator.RegisterApplier(new AgentApplier(agentFactory));
         }
         if (boardFactory is IGameEntityFactory<GameBoard> castBoardFactory)
         {

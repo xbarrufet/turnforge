@@ -54,9 +54,40 @@ public sealed class MissionLoader
         // 3. Map Zones & Props
         var zoneDescriptors = missionDto.Zones.Select(z => MapZone(z, coordinateMap)).ToArray();
         var propDescriptors = missionDto.Props.Select(p => MapProp(p, coordinateMap)).ToArray();
-        var agentDescriptors = Array.Empty<AgentDescriptor>();
+        var agentDescriptors = missionDto.Agents.Select(a => MapAgent(a, coordinateMap)).ToArray();
 
         return (spatialDescriptor, zoneDescriptors, propDescriptors, agentDescriptors);
+    }
+
+    private static AgentDescriptor MapAgent(AgentDto dto, Dictionary<Vector, TileId> map)
+    {
+        var typeId = new AgentTypeId(dto.TypeId);
+
+        Position? position = null;
+        if (dto.Position != null)
+        {
+            var posDto = (PositionDto)dto.Position;
+            var vec = posDto.ToPosition();
+            if (map.TryGetValue(vec, out var tileId))
+            {
+                position = new Position(tileId);
+            }
+        }
+        // Agents in mission must have a position
+        if (position == null) throw new ArgumentException($"Agent {typeId} must have a valid position in the mission.");
+
+        var behaviours = dto.Behaviours
+            .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
+            .ToList();
+
+        // Note: Definitions like Health/Movement are usually loaded from Catalog, 
+        // but here we might override or use them if Dto provides them.
+        // For now, creating mostly with TypeId and Position.
+        // AgentDescriptor constructor might need DefinitionId? 
+        // Engine's AgentDescriptor: (AgentTypeId TypeId, IReadOnlyCollection<IBehaviour> Behaviours, Position? Position)
+        // Let's check AgentDescriptor signature.
+
+        return new AgentDescriptor(typeId, position, behaviours);
     }
 
     private static SpatialDescriptor MapSpatial(SpatialDto dto, Dictionary<Vector, TileId> map)
@@ -110,7 +141,7 @@ public sealed class MissionLoader
         Position? position = null;
         if (dto.Position != null)
         {
-            var vec = dto.Position.ToPosition();
+            var vec = dto.Position!.ToPosition();
             if (map.TryGetValue(vec, out var tileId))
             {
                 position = new Position(tileId);

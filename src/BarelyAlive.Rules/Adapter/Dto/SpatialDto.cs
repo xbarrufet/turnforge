@@ -1,5 +1,8 @@
-
 namespace BarelyAlive.Rules.Adapter.Dto;
+
+using System.Collections.Generic;
+
+
 
 public sealed class SpatialDto
 {

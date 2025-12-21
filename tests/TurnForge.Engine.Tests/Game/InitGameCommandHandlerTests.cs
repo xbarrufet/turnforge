@@ -9,6 +9,7 @@ using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
@@ -143,7 +144,6 @@ namespace TurnForge.Engine.Tests.Game
 
             Assert.That(result.Success, Is.True);
             Assert.That(result.Tags, Contains.Item("GameInitialized"));
-            Assert.That(result.Tags, Contains.Item("StartFSM"));
 
             // Verify Game Saved
             // Verify Game Saved - Obsolete: Handler returns decisions now.

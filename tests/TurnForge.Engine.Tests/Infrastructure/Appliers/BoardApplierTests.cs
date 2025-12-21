@@ -71,7 +71,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Appliers
             var finalState = _sut.Apply(decision, initialState);
 
             // Assert
-            var resultBoard = finalState.Board;
+            var resultBoard = finalState.GameState.Board;
             Assert.That(resultBoard, Is.Not.Null);
 
             // Verify zones added

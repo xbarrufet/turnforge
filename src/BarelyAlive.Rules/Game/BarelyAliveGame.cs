@@ -5,8 +5,7 @@ using BarelyAlive.Rules.Adapter.Dto;
 using BarelyAlive.Rules.Apis;
 using BarelyAlive.Rules.Apis.Interfaces;
 
-using BarelyAlive.Rules.Events.Interfaces;
-using BarelyAlive.Rules.Infrastructure;
+
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Registration;
@@ -24,15 +23,9 @@ public sealed class BarelyAliveGame
     public IGameCatalogApi GameCatalog => _turnForge.GameCatalog;
 
     public IBarelyAliveApis BarelyAliveApis { get; }
-    public ITurnForgeEffectsHandler EventHandler { get; }
-    private readonly BarelyAliveObservableEffectSink _observableEffectSink;
 
     private BarelyAliveGame()
     {
-        _observableEffectSink = new BarelyAliveObservableEffectSink();
-        var eventHandler = new TurnForgeEventHandler(_observableEffectSink);
-        EventHandler = eventHandler;
-        _turnForge.Runtime.Subscribe(eventHandler.Handle);
         BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime);
 
     }
@@ -44,10 +37,6 @@ public sealed class BarelyAliveGame
         return game;
     }
 
-    public void Subscribe(Action<IBarelyAliveEffect> handler)
-    {
-        _observableEffectSink.Subscribe(handler);
-    }
 
     private void RegisterGameDefinitions()
     {
@@ -100,8 +89,8 @@ public sealed class BarelyAliveGame
 
     private class BarelyAliveConfig
     {
-        public List<BarelyAlive.Rules.Adapter.Dto.AgentDto> Agents { get; set; } = new();
-        public List<BarelyAlive.Rules.Adapter.Dto.PropDto> Props { get; set; } = new();
+        public List<AgentDto> Agents { get; set; } = new();
+        public List<PropDto> Props { get; set; } = new();
     }
 }
 

@@ -12,6 +12,11 @@ namespace TurnForge.Engine.Core.Fsm.SystemNodes
 {
     public class InitialStateNode : LeafNode
     {
+        public InitialStateNode()
+        {
+            AddAllowedCommand<InitGameCommand>();
+        }
+
         public override bool IsCommandValid(ICommand command, GameState state)
         {
             return command is InitGameCommand;
@@ -19,7 +24,7 @@ namespace TurnForge.Engine.Core.Fsm.SystemNodes
 
         public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
         {
-            transitionRequested = result.Tags != null && result.Tags.Contains("StartFSM");
+            transitionRequested = result.Tags != null && result.Tags.Contains("GameInitialized");
             return Enumerable.Empty<IFsmApplier>();
         }
     }

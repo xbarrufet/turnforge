@@ -1,6 +1,7 @@
-
-
 namespace BarelyAlive.Rules.Adapter.Dto;
+
+
+
 
 public sealed class ConnectionDto
 {

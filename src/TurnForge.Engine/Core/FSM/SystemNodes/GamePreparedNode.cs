@@ -12,6 +12,11 @@ namespace TurnForge.Engine.Core.Fsm.SystemNodes
 {
     public class GamePreparedNode : LeafNode
     {
+        public GamePreparedNode()
+        {
+            AddAllowedCommand<SpawnAgentsCommand>();
+        }
+
         public override bool IsCommandValid(ICommand command, GameState state)
         {
             return command is SpawnAgentsCommand;

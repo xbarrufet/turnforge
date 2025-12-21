@@ -1,3 +1,5 @@
+using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+
 namespace TurnForge.Engine.Core.Interfaces;
 
 public interface IEffectSink

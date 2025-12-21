@@ -5,4 +5,7 @@ using TurnForge.Engine.Entities.Descriptors;
 
 namespace TurnForge.Engine.Commands.Game;
 
-public sealed record SpawnAgentsCommand(IReadOnlyList<AgentDescriptor> PlayerAgents) : ICommand;
+public sealed record SpawnAgentsCommand(IReadOnlyList<AgentDescriptor> PlayerAgents) : ICommand
+{
+    public Type CommandType => typeof(SpawnAgentsCommand);
+}

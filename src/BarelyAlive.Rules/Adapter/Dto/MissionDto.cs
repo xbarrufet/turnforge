@@ -1,5 +1,8 @@
-
 namespace BarelyAlive.Rules.Adapter.Dto;
+
+using System.Collections.Generic;
+
+
 
 public sealed class MissionDto
 {
@@ -8,4 +11,5 @@ public sealed class MissionDto
     public SpatialDto Spatial { get; init; } = default!;
     public List<ZoneDto> Zones { get; init; } = new();
     public List<PropDto> Props { get; init; } = new();
+    public List<AgentDto> Agents { get; init; } = new();
 }

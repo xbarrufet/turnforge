@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Appliers;
@@ -16,8 +17,8 @@ public class ChangeStateApplier : IFsmApplier
         _newStateId = newStateId;
     }
 
-    public GameState Apply(GameState state, IEffectSink effectSink)
+    public ApplierResponse Apply(GameState state)
     {
-        return state.WithCurrentStateId(_newStateId);
+        return new ApplierResponse(state.WithCurrentStateId(_newStateId), []);
     }
 }
