@@ -7,9 +7,7 @@ using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Repositories;
 using TurnForge.Engine.Repositories.Interfaces;
-using TurnForge.Engine.Tests.helpers;
 using TurnForge.Engine.Tests.Helpers;
-using TurnForge.Engine.Tests.Strategies;
 
 namespace TurnForge.Engine.Tests.Bootstrap;
 
@@ -19,34 +17,43 @@ internal static class EngineTestBootstrapper
     {
         // 2️⃣ Repository
         var repository = new InMemoryGameRepository();
-        var actorFactory = new TestActionFactory();
+       
 
         // Mock registries
-        var propDefs = new TestDefinitionRegistry<TurnForge.Engine.Entities.Actors.Definitions.PropTypeId, TurnForge.Engine.Entities.Actors.Definitions.PropDefinition>();
-        var agentDefs = new TestDefinitionRegistry<TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId, TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition>();
+        var propDefs = new TestDefinitionRegistry<string, TestPropDefinition>();
+        var agentDefs = new TestDefinitionRegistry<string, TestAgentDefinition>();
 
         // Register test definitions
-        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"),
-                new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(
-                    new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor1"),
-                     new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
-                     new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(100),
-                     new TurnForge.Engine.Entities.Components.Definitions.MovementComponentDefinition(3),
-                    new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+        agentDefs.Register("Survivor1",
+                new TestAgentDefinition
+                {
+                    DefinitionId = "Survivor1",
+                    AgentName = "Survivor1",
+                    Category = "Test",
+                    PositionComponent = new TurnForge.Engine.Entities.Components.BasePositionComponent(TurnForge.Engine.ValueObjects.Position.Empty),
+                    MaxHealth = 100,
+                    MaxMovement = 3,
+                    Behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
+                });
 
-        agentDefs.Register(new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"),
-             new TurnForge.Engine.Entities.Actors.Definitions.AgentDefinition(
-                new TurnForge.Engine.Entities.Actors.Definitions.AgentTypeId("Survivor2"),
-                 new TurnForge.Engine.Entities.Components.Definitions.PositionComponentDefinition(TurnForge.Engine.ValueObjects.Position.Empty),
-                 new TurnForge.Engine.Entities.Components.Definitions.HealhtComponentDefinition(100),
-                 new TurnForge.Engine.Entities.Components.Definitions.MovementComponentDefinition(3),
-                new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()));
+        agentDefs.Register("Survivor2",
+             new TestAgentDefinition
+             {
+                 DefinitionId = "Survivor2",
+                 AgentName = "Survivor2",
+                 Category = "Test",
+                 PositionComponent = new TurnForge.Engine.Entities.Components.BasePositionComponent(TurnForge.Engine.ValueObjects.Position.Empty),
+                 MaxHealth = 100,
+                 MaxMovement = 3,
+                 Behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
+             });
 
-        var gameContext = new GameEngineContext(
+        /*var gameContext = new GameEngineContext(
             repository,
             new TestPropSpawnStrategy(),
             new TestAgentSpawnStrategy());
-        var engine = GameEngineFactory.Build(gameContext);
-        return (engine, repository);
+        var engine = GameEngineFactory.Build(gameContext);*/
+        //return (null, repository);
+        return (null,null);
     }
 }

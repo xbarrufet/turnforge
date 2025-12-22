@@ -1,5 +1,3 @@
-using TurnForge.Engine.Entities.Actors.Definitions;
-using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Bootstrap.Mappers;

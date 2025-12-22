@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3x7q8y9z1a2"]
+
+[ext_resource type="Script" path="res://src/UI/SurvivorSelection/SurvivorSelectionRow.cs" id="1_script"]
+
+[node name="SurvivorSelectionRow" type="Button"]
+custom_minimum_size = Vector2(0, 50)
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+script = ExtResource("1_script")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SurvivorAvatar" type="TextureRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SurvivorNameLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Survivor Name"
+vertical_alignment = 1

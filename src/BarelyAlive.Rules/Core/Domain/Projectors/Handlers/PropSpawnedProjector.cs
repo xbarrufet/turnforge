@@ -14,13 +14,14 @@ public class PropSpawnedProjector : IEffectProjector
     public void Project(IGameEffect effect, ICollection<EntityBuildUpdate> created, ICollection<EntityStateUpdate> updated, ICollection<DomainEvent> events)
     {
         if (effect is not PropSpawnedEffect prop) return;
-
+        
         created.Add(new EntityBuildUpdate(
-            prop.PropId.Value.ToString(),
+            prop.PropId.ToString(),
             "Prop",
-            prop.PropType.Value,
-            new Vector(prop.Position.X, prop.Position.Y),
-            new Dictionary<string, object>()
+            prop.DefinitionId,
+            prop.Position.TileId.ToString(),
+            new List<string>(), // Behaviors
+            new Dictionary<string, object>() // InitialState
         ));
     }
 }

@@ -1,34 +1,33 @@
-using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Entities;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
-using TurnForge.Engine.Services.Interfaces;
+using TurnForge.Engine.APIs.Interfaces;
 
 namespace TurnForge.Engine.APIs;
 
 public class GameCatalogApi : IGameCatalogApi
 {
     IGameCatalog _catalog;
+    
     public GameCatalogApi(IGameCatalog catalog)
     {
         _catalog = catalog;
     }
 
-    public void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition)
+    public T GetDefinition<T>(string definitionId) where T : GameEntityDefinition
     {
-        _catalog.RegisterAgentDefinition(typeId, definition);
+        return _catalog.GetDefinition<T>(definitionId);
     }
 
-    public void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition)
+    
+    public void RegisterDefinition<T>(string definitionId, T definition) where T:GameEntityDefinition
     {
-        _catalog.RegisterPropDefinition(typeId, definition);
+        _catalog.RegisterDefinition(definitionId, definition);
     }
 
-    public AgentDefinition GetAgentDefinition(AgentTypeId typeId)
-    {
-        return _catalog.GetAgentDefinition(typeId);
-    }
 
-    public PropDefinition GetPropDefinition(PropTypeId typeId)
+    public bool TryGetDefinition<T>(string definitionId, out T definition) where T : GameEntityDefinition
     {
-        return _catalog.GetPropDefinition(typeId);
+        return _catalog.TryGetDefinition(definitionId, out definition);
     }
 }
+

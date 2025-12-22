@@ -1,5 +1,5 @@
-using Godot;
 using System;
+using Godot;
 
 namespace BarelyAlive.Godot.Resources.Missions;
 
@@ -14,5 +14,5 @@ public partial class MissionResource : Resource
     [Export]
     public Texture2D Map = null;
     [Export]
-    public Vector2 MaoSize;
+    public Vector2 MapSize;
 }

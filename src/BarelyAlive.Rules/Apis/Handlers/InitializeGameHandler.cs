@@ -17,7 +17,7 @@ public class InitializeGameHandler
         _projector = projector;
     }
 
-    public (GameResponse Response, List<TurnForge.Engine.Entities.Descriptors.AgentDescriptor> Agents) Handle(string missionJson)
+    public (GameResponse Response, List<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor> Agents) Handle(string missionJson)
     {
         var (spatial, zones, props, agents) = MissionLoader.ParseMissionString(missionJson);
         var command = new InitGameCommand(spatial, zones, props);

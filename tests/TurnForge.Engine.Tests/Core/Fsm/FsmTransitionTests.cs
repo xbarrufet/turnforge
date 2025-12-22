@@ -14,7 +14,7 @@ using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Interfaces;
 using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Infrastructure.Registration;
-using TurnForge.Engine.Orchestrator; // Added
+using TurnForge.Engine.Core.Orchestrator; // Added
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Core.Fsm
@@ -67,26 +67,31 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             }
         }
 
+        internal class StubBoardFactory : TurnForge.Engine.Entities.Board.Interfaces.IBoardFactory
+        {
+            public TurnForge.Engine.Entities.Board.GameBoard Build(TurnForge.Engine.Entities.Descriptors.Interfaces.IGameEntityDescriptor<TurnForge.Engine.Entities.Board.GameBoard> descriptor) => new TurnForge.Engine.Entities.Board.GameBoard(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TurnForge.Engine.ValueObjects.TileId>())));
+        }
+
         private GameEngineRuntime _runtime;
         private FsmController _controller;
         private InMemoryGameRepository _repository;
         private SpyBranch _root;
         private SpyNode _child1;
         private SpyNode _child2;
-        private IEffectSink _effectSink;
+
 
         [SetUp]
         public void Setup()
         {
             // 1. Setup Infrastructure
-            _effectSink = new ObservableEffectSink();
             var commandBus = new CommandBus(new GameLoop(), new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()));
             _repository = new InMemoryGameRepository();
 
             // Initialize Repository with Empty State
             _repository.SaveGameState(global::TurnForge.Engine.Entities.GameState.Empty());
 
-            _runtime = new GameEngineRuntime(commandBus, _effectSink, _repository, new TurnForgeOrchestrator());
+            var stubBoardFactory = new StubBoardFactory();
+            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), stubBoardFactory);
 
             // 2. Build FSM Tree: Root -> Child1 -> Child2
             // Use Builder to ensure correct linking
@@ -127,7 +132,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             Assert.That(initialState.CurrentStateId, Is.EqualTo(_root.Id));
 
             // Act: Request Move Forward (Root -> Child1)
-            var newState = _controller.MoveForwardRequest(initialState, _effectSink);
+            var newState = _controller.MoveForwardRequest(initialState);
             _repository.SaveGameState(newState.State);
 
             // Assert
@@ -142,7 +147,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             var state = _repository.LoadGameState();
 
             // Act
-            var newState = _controller.MoveForwardRequest(state, _effectSink);
+            var newState = _controller.MoveForwardRequest(state);
             _repository.SaveGameState(newState.State);
 
             // Assert
@@ -154,12 +159,12 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         public void SerialTransitions_Root_Child1_Child2()
         {
             // 1. Root -> Child1
-            var state1 = _controller.MoveForwardRequest(_repository.LoadGameState(), _effectSink);
+            var state1 = _controller.MoveForwardRequest(_repository.LoadGameState());
             _repository.SaveGameState(state1.State);
             Assert.That(_repository.LoadGameState().CurrentStateId, Is.EqualTo(_child1.Id));
 
             // 2. Child1 -> Child2
-            var state2 = _controller.MoveForwardRequest(_repository.LoadGameState(), _effectSink);
+            var state2 = _controller.MoveForwardRequest(_repository.LoadGameState());
             _repository.SaveGameState(state2.State);
 
             Assert.That(_repository.LoadGameState().CurrentStateId, Is.EqualTo(_child2.Id));
@@ -174,10 +179,10 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             services.Register<ICommandHandler<startFsmCommand>>(sp => new startFsmHandler());
 
             // Re-setup runtime with this registry
-            var effectSink = new ObservableEffectSink();
             var resolver = new ServiceProviderCommandHandlerResolver(services);
             var commandBus = new CommandBus(new GameLoop(), resolver);
-            _runtime = new GameEngineRuntime(commandBus, effectSink, _repository, new TurnForgeOrchestrator());
+            var stubBoardFactory = new StubBoardFactory();
+            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), stubBoardFactory);
 
             // IMPORTANT: Configure the node to request transition!
             // This replaces the old "StartFSM" tag hack. The node itself must decide logic.

@@ -24,18 +24,18 @@ public class BarelyAliveGameStartupTests
         var game = BarelyAliveGame.CreateNewGame();
 
         // Act - Try to retrieve registered survivors
-        var amyDefinition = game.GameCatalog.GetAgentDefinition(new AgentTypeId("Amy"));
-        var dougDefinition = game.GameCatalog.GetAgentDefinition(new AgentTypeId("Doug"));
+        var amyDefinition = game.GameCatalog.GetAgentDefinition("Amy");
+        var dougDefinition = game.GameCatalog.GetAgentDefinition("Doug");
 
         // Assert
         Assert.That(amyDefinition, Is.Not.Null, "Amy should be registered");
-        Assert.That(amyDefinition.TypeId.Value, Is.EqualTo("Amy"));
+        Assert.That(amyDefinition.AgentName, Is.EqualTo("Amy"));
         Assert.That(amyDefinition.HealthComponentDefinition.MaxHealth, Is.EqualTo(3), "Amy should have 3 health");
         // Assert.That(amyDefinition.MaxActionPoints, Is.EqualTo(3), "Amy should have 3 action points"); // TODO: ActionPoints definitions are pending refactor
         Assert.That(amyDefinition.MovementComponentDefinition.MaxUnitsToMove, Is.EqualTo(1), "Amy should have 1 movement");
 
         Assert.That(dougDefinition, Is.Not.Null, "Doug should be registered");
-        Assert.That(dougDefinition.TypeId.Value, Is.EqualTo("Doug"));
+        Assert.That(dougDefinition.AgentName, Is.EqualTo("Doug"));
         Assert.That(dougDefinition.HealthComponentDefinition.MaxHealth, Is.EqualTo(3), "Doug should have 3 health");
         // Assert.That(dougDefinition.MaxActionPoints, Is.EqualTo(3), "Doug should have 3 action points"); // TODO: ActionPoints definitions are pending refactor
         Assert.That(dougDefinition.MovementComponentDefinition.MaxUnitsToMove, Is.EqualTo(1), "Doug should have 1 movement");
@@ -48,23 +48,23 @@ public class BarelyAliveGameStartupTests
         var game = BarelyAliveGame.CreateNewGame();
 
         // Act - Try to retrieve registered zombies
-        var walkerDefinition = game.GameCatalog.GetAgentDefinition(new AgentTypeId("Walker"));
-        var runnerDefinition = game.GameCatalog.GetAgentDefinition(new AgentTypeId("Runner"));
-        var fattyDefinition = game.GameCatalog.GetAgentDefinition(new AgentTypeId("Fatty"));
+        var walkerDefinition = game.GameCatalog.GetAgentDefinition("Walker");
+        var runnerDefinition = game.GameCatalog.GetAgentDefinition("Runner");
+        var fattyDefinition = game.GameCatalog.GetAgentDefinition("Fatty");
 
         // Assert
         Assert.That(walkerDefinition, Is.Not.Null, "Walker should be registered");
-        Assert.That(walkerDefinition.TypeId.Value, Is.EqualTo("Walker"));
+        Assert.That(walkerDefinition.AgentName, Is.EqualTo("Walker"));
         Assert.That(walkerDefinition.HealthComponentDefinition.MaxHealth, Is.EqualTo(1), "Walker should have 1 health");
         // Assert.That(walkerDefinition.MaxActionPoints, Is.EqualTo(1), "Walker should have 1 action point"); // TODO: ActionPoints definitions are pending refactor
 
         Assert.That(runnerDefinition, Is.Not.Null, "Runner should be registered");
-        Assert.That(runnerDefinition.TypeId.Value, Is.EqualTo("Runner"));
+        Assert.That(runnerDefinition.AgentName, Is.EqualTo("Runner"));
         Assert.That(runnerDefinition.HealthComponentDefinition.MaxHealth, Is.EqualTo(1), "Runner should have 1 health");
         // Assert.That(runnerDefinition.MaxActionPoints, Is.EqualTo(2), "Runner should have 2 action points"); // TODO: ActionPoints definitions are pending refactor
 
         Assert.That(fattyDefinition, Is.Not.Null, "Fatty should be registered");
-        Assert.That(fattyDefinition.TypeId.Value, Is.EqualTo("Fatty"));
+        Assert.That(fattyDefinition.AgentName, Is.EqualTo("Fatty"));
         Assert.That(fattyDefinition.HealthComponentDefinition.MaxHealth, Is.EqualTo(2), "Fatty should have 2 health");
         // Assert.That(fattyDefinition.MaxActionPoints, Is.EqualTo(1), "Fatty should have 1 action point"); // TODO: ActionPoints definitions are pending refactor
     }

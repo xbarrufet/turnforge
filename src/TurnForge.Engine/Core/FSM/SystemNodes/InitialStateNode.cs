@@ -14,17 +14,17 @@ namespace TurnForge.Engine.Core.Fsm.SystemNodes
     {
         public InitialStateNode()
         {
-            AddAllowedCommand<InitGameCommand>();
+            AddAllowedCommand<SpawnStartingPropsCommand>();
         }
 
         public override bool IsCommandValid(ICommand command, GameState state)
         {
-            return command is InitGameCommand;
+            return command is SpawnStartingPropsCommand;
         }
 
         public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
         {
-            transitionRequested = result.Tags != null && result.Tags.Contains("GameInitialized");
+            transitionRequested = result.Tags != null && result.Tags.Contains("StartingPropsSpawned");
             return Enumerable.Empty<IFsmApplier>();
         }
     }

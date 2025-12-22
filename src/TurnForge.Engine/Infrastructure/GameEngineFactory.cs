@@ -1,4 +1,5 @@
 using TurnForge.Engine.APIs;
+using TurnForge.Engine.Appliers.Spawn;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors;
@@ -12,7 +13,7 @@ using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Infrastructure.Factories;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
-using TurnForge.Engine.Orchestrator;
+using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
@@ -58,9 +59,7 @@ public static class GameEngineFactory
 
 
         //Infraestructura interna adicional
-        var effectSink = new ObservableEffectSink();
         var gameLoop = new GameLoop();
-        services.RegisterSingleton<IEffectSink>(effectSink);
         // 7️⃣ CommandBus (engine infra)
         var commandBus = new CommandBus(
             gameLoop,
@@ -71,26 +70,20 @@ public static class GameEngineFactory
         var orchestrator = new TurnForgeOrchestrator();
 
         // Resolve factories for appliers
-        var actorFactory = services.Resolve<IActorFactory>();
+        var genericActorFactory = services.Resolve<GenericActorFactory>();
         var boardFactory = services.Resolve<IBoardFactory>();
 
-        // Register Core Appliers
-        // Note: We cast interfaces because the concrete factory implements the generic factory interface explicitly/implicitly
-        if (actorFactory is IGameEntityFactory<Prop> propFactory)
-        {
-            orchestrator.RegisterApplier(new PropApplier(propFactory));
-        }
-        if (actorFactory is IGameEntityFactory<Agent> agentFactory)
-        {
-            orchestrator.RegisterApplier(new AgentApplier(agentFactory));
-        }
-        if (boardFactory is IGameEntityFactory<GameBoard> castBoardFactory)
-        {
-            orchestrator.RegisterApplier(new BoardApplier(castBoardFactory));
-        }
+        // Register New Spawn Appliers (using new spawn pipeline)
+        orchestrator.RegisterApplier(new AgentSpawnApplier(genericActorFactory));
+        orchestrator.RegisterApplier(new PropSpawnApplier(genericActorFactory));
 
         // 8️⃣ TurnForge (fachada pública)
-        var runtime = new GameEngineRuntime(commandBus, effectSink, gameEngineContext.GameRepository, orchestrator);
+        var runtime = new GameEngineRuntime(
+            commandBus, 
+            gameEngineContext.GameRepository, 
+            orchestrator, 
+            gameEngineContext.Logger,
+            boardFactory); // Inject BoardFactory
         var catalogApi = new GameCatalogApi(gameCatalog);
         return new Core.TurnForge(runtime, catalogApi);
     }

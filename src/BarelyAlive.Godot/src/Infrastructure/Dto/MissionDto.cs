@@ -8,7 +8,7 @@ namespace BarelyAlive.Godot.Infrastructure.Dto
     {
         [JsonPropertyName("missionName")] public string MissionName { get; set; } = string.Empty;
 
-        [JsonPropertyName("scale")] public string MapSize { get; set; } = string.Empty;
+        [JsonPropertyName("scale")] public ScaleDto MapSize { get; set; } = new ScaleDto();
 
         [JsonPropertyName("areas")] public List<AreaDto> Areas { get; set; } = [];
 

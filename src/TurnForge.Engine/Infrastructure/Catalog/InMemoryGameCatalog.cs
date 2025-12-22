@@ -1,39 +1,48 @@
-using BarelyAlive.Rules.Registration;
-using TurnForge.Engine.Entities.Actors.Definitions;
-using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
-using TurnForge.Engine.Registration;
+    using BarelyAlive.Rules.Registration;
+    using TurnForge.Engine.Entities;
+    using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
+    using TurnForge.Engine.Registration;
 
-namespace TurnForge.Engine.Infrastructure.Catalog;
+    namespace TurnForge.Engine.Infrastructure.Catalog;
 
-internal sealed class InMemoryGameCatalog : IGameCatalog
-{
-    public IDefinitionRegistry<PropTypeId, PropDefinition> Props { get; }
-    public IDefinitionRegistry<AgentTypeId, AgentDefinition> Agents { get; }
-
-    public void RegisterAgentDefinition(AgentTypeId typeId, AgentDefinition definition)
+    internal sealed class InMemoryGameCatalog : IGameCatalog
     {
-        Agents.Register(typeId, definition);
-    }
+        public IDefinitionRegistry<string, GameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, GameEntityDefinition>();
 
-    public void RegisterPropDefinition(PropTypeId typeId, PropDefinition definition)
-    {
-        Props.Register(typeId, definition);
-    }
+        
 
-    public AgentDefinition GetAgentDefinition(AgentTypeId typeId)
-    {
-        return Agents.Get(typeId);
-    }
+        public T GetDefinition<T>(string definitionId) where T : GameEntityDefinition
+        {
+            return Entities.Get(definitionId) as T;
+        }
 
-    public PropDefinition GetPropDefinition(PropTypeId typeId)
-    {
-        return Props.Get(typeId);
-    }
+        public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : GameEntityDefinition
+        {
+            try
+            {
+                var entity = Entities.Get(definitionId);
+                if (entity is T typedEntity)
+                {
+                    definition = typedEntity;
+                    return true;
+                }
+                definition = null;
+                return false;
+            }
+            catch
+            {
+                definition = null;
+                return false;
+            }
+        }
 
-    public InMemoryGameCatalog()
-    {
-        Props = new InMemoryDefinitionRegistry<PropTypeId, PropDefinition>();
-        Agents = new InMemoryDefinitionRegistry<AgentTypeId, AgentDefinition>();
-    }
+        public void RegisterDefinition<T>(string definitionId, T definition) where T : GameEntityDefinition
+        {
+            Entities.Register(definitionId, definition);
+        }
 
-}
+        public InMemoryGameCatalog()
+        {
+        }
+
+    }

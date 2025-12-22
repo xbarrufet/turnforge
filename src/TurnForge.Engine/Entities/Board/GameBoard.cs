@@ -4,7 +4,7 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board;
 
-public sealed class GameBoard(ISpatialModel spatialModel) : GameEntity(EntityId.New())
+public sealed class GameBoard(ISpatialModel spatialModel) : GameEntity(EntityId.New(), string.Empty, string.Empty, string.Empty)
 {
 
 

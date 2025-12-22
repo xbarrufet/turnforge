@@ -1,19 +1,16 @@
-using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
-public sealed class Agent : Actor
+public  class Agent : Actor
 {
-    public AgentDefinition Definition { get; }
-
     public Agent(
         EntityId id,
-        AgentDefinition definition,
-        PositionComponent position,
-        BehaviourComponent behaviourComponent) : base(id, position, behaviourComponent)
+        string definitionId,
+        string name,
+        string category) : base(id, name, category, definitionId)
     {
-        Definition = definition;
     }
 }

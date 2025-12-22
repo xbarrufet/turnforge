@@ -20,5 +20,8 @@ public sealed class InMemoryDefinitionRegistry<TTypeId, TDefinition>
 
     public bool TryGet(TTypeId id, out TDefinition def)
         => _definitions.TryGetValue(id, out def!);
+
+    public IEnumerable<TDefinition> GetAll()
+        => _definitions.Values;
 }
 

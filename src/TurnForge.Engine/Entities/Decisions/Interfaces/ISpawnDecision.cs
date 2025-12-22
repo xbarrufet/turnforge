@@ -1,13 +1,16 @@
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Decisions.Interfaces;
-using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Decisions.Interfaces;
 
-public interface ISpawnDecision<T> : IBuildDecision<T> where T : GameEntity
+/// <summary>
+/// Spawn decision that carries a pre-created entity ready to be added to GameState.
+/// Strategies are responsible for creating entities via Factory.
+/// </summary>
+/// <typeparam name="T">The entity type being spawned</typeparam>
+public interface ISpawnDecision<T> : IDecision where T : GameEntity
 {
-    Position Position { get; }
-    IReadOnlyList<IActorBehaviour>? ExtraBehaviours { get; }
+    /// <summary>
+    /// The already-created entity ready to be added to GameState
+    /// </summary>
+    T Entity { get; }
 }

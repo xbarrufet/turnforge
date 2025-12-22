@@ -8,8 +8,9 @@ namespace BarelyAlive.Rules.Apis.Messaging;
 /// </summary>
 public sealed record EntityBuildUpdate(
     string EntityId,
-    string EntityType,    // Ex: "Hero", "Prop", "Enemy"
-    string DescriptorId, // La clau de configuració (ex: "warrior_v1")
-    Vector Position,    // Posició inicial al món
+    string EntityName,
+    string EntityCategory,    // Ex: "Hero", "Prop", "Enemy"
+    string TileId,    // Posició inicial al món
+    IReadOnlyList<string> Behaviors,
     IReadOnlyDictionary<string, object> InitialState // Stats o flags d'inici
 );

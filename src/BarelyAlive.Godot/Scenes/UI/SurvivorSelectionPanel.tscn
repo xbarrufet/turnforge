@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://d2m8jcx6g643r"]
+
+[node name="SurvivorSelectionPanel" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CharacterListContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="GameStartButton" type="Button" parent="."]
+layout_mode = 2

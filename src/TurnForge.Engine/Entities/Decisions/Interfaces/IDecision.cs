@@ -1,6 +1,6 @@
-namespace TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Core.Orchestrator;
 
-using TurnForge.Engine.Orchestrator;
+namespace TurnForge.Engine.Entities.Decisions.Interfaces;
 
 public interface IDecision
 {

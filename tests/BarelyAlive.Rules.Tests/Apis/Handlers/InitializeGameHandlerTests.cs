@@ -9,7 +9,7 @@ using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Definitions; // For AgentTypeId
 using TurnForge.Engine.Entities.Appliers.Results;
 using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
-using TurnForge.Engine.Orchestrator;
+using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Tests.Apis.Handlers;
@@ -45,7 +45,8 @@ public class InitializeGameHandlerTests
             ""props"": [],
             ""agents"": [ 
                 { 
-                    ""typeId"": ""Survivor"", 
+                    ""agentName"": ""Survivor"", 
+                    ""category"": ""Survivor"",
                     ""maxHealth"": 3, 
                     ""maxBaseMovement"": 3,
                     ""position"": { ""x"": 0, ""y"": 0, ""z"": 0 }
@@ -77,7 +78,7 @@ public class InitializeGameHandlerTests
             Assert.That(result.Response.Success, Is.True);
             Assert.That(result.Response.TransactionId, Is.EqualTo(mockTransaction.Id));
             Assert.That(result.Agents, Has.Count.EqualTo(1));
-            Assert.That(result.Agents.First().TypeId.Value, Is.EqualTo("Survivor"));
+            Assert.That(result.Agents.First().AgentName, Is.EqualTo("Survivor"));
             // Payload should NOT contain agents as they are not spawned yet
             Assert.That(result.Response.Payload.Created, Is.Empty);
         });

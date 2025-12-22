@@ -5,7 +5,9 @@ namespace BarelyAlive.Rules.Apis.Interfaces;
 public interface IBarelyAliveApis
 {
 
-    GameResponse InitializeGame(String missionJson);
-    GameResponse StartGame();
+    GameResponse InitializeGame(string missionJson);
+    GameResponse StartGame(string[] survivorIds);
+    List<SurvivorDefinition> GetAvailableSurvivors();
+    void Ack();
 
 }

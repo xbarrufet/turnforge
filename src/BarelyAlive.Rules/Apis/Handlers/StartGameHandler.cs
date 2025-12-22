@@ -2,7 +2,7 @@ using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Actors.Descriptors;
 
 namespace BarelyAlive.Rules.Apis.Handlers;
 

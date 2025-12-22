@@ -1,13 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Entities.Factories.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Core.Mapping;
+using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Core.Attributes;
+using System.Reflection;
 
 namespace TurnForge.Engine.Entities.Actors;
 
@@ -15,53 +19,79 @@ public sealed class GenericActorFactory(
     IGameCatalog gameCatalog)
     : IActorFactory
 {
+
     public Prop BuildProp(PropDescriptor descriptor)
     {
-        var definition = gameCatalog.GetPropDefinition(descriptor.TypeId);
-        var behaviours = descriptor.ExtraBehaviours ?? new List<IActorBehaviour>();
+        var definition = gameCatalog.GetDefinition<GameEntityDefinition>(descriptor.DefinitionID);
+        
+        // Determine concrete type from attributes
+        var entityType = GetEntityType<Prop>(descriptor.GetType(), definition);
+        
+        // Create instance using reflection
+        var prop = CreateEntityInstance<Prop>(entityType, descriptor.DefinitionID, definition);
 
-        var id = EntityId.New();
-        var position = new PositionComponent(definition.PositionComponentDefinition);
-        if (descriptor.Position != null)
-        {
-            position.CurrentPosition = descriptor.Position.Value;
-        }
+        // Map properties from definition and descriptor to components
+        EngineAutoMapper.Map(definition, prop);
+        EngineAutoMapper.Map(descriptor, prop);
 
-        var behaviourComponent = new BehaviourComponent(
-            definition.Behaviours.Concat(behaviours).Cast<BaseBehaviour>()
-        );
-
-        return new Prop(id, definition, position, behaviourComponent);
+        return prop;
     }
 
-    public Agent BuildAgent(AgentDescriptor descriptor)
+     public Agent BuildAgent(AgentDescriptor descriptor)
     {
-        var definition = gameCatalog.GetAgentDefinition(descriptor.TypeId);
-        var behaviours = descriptor.ExtraBehaviours ?? new List<IActorBehaviour>();
+        var definition = gameCatalog.GetDefinition<GameEntityDefinition>(descriptor.DefinitionID);
+        
+        // Determine concrete type from attributes
+        var entityType = GetEntityType<Agent>(descriptor.GetType(), definition);
+        
+        // Create instance using reflection
+        var agent = CreateEntityInstance<Agent>(entityType, descriptor.DefinitionID, definition);
 
-        var id = EntityId.New();
-        var position = new PositionComponent(definition.PositionComponentDefinition);
-        if (descriptor.Position != null)
-        {
-            position.CurrentPosition = descriptor.Position.Value;
-        }
+        // Map properties from definition and descriptor to components
+        EngineAutoMapper.Map(definition, agent);
+        EngineAutoMapper.Map(descriptor, agent);
 
-        var behaviourComponent = new BehaviourComponent(
-            definition.Behaviours.Concat(behaviours).Cast<BaseBehaviour>()
-        );
-
-        return new Agent(id, definition, position, behaviourComponent);
+        return agent;
     }
 
-    // Explicit implementation for IGameEntityFactory<Prop>
-    Prop IGameEntityFactory<Prop>.Build(IGameEntityDescriptor<Prop> descriptor)
+    /// Determines the concrete entity type from EntityType attribute on descriptor or definition
+/// </summary>
+private Type GetEntityType<TDefault>(Type descriptorType, GameEntityDefinition definition) 
+    where TDefault : GameEntity
+{
+    // Priority 1: Check descriptor type
+    var entityType = descriptorType.GetCustomAttribute<EntityTypeAttribute>()?.EntityType;
+    
+    // Priority 2: Check definition type
+    if (entityType == null)
     {
-        return BuildProp((PropDescriptor)descriptor);
+        entityType = definition.GetType().GetCustomAttribute<EntityTypeAttribute>()?.EntityType;
     }
-
-    // Explicit implementation for IGameEntityFactory<Agent>
-    Agent IGameEntityFactory<Agent>.Build(IGameEntityDescriptor<Agent> descriptor)
-    {
-        return BuildAgent((AgentDescriptor)descriptor);
-    }
+    
+    // Priority 3: Use default type
+    return entityType ?? typeof(TDefault);
 }
+
+/// <summary>
+/// Creates entity instance using reflection
+/// </summary>
+private T CreateEntityInstance<T>(Type concreteType, string definitionId, GameEntityDefinition definition) 
+    where T : GameEntity
+{
+    var instance = Activator.CreateInstance(
+        concreteType, 
+        EntityId.New(), 
+        definitionId, 
+        definition.Name, 
+        definition.Category);
+    
+    if (instance == null)
+    {
+        throw new InvalidOperationException($"Failed to create instance of {concreteType.Name}");
+    }
+    
+    return (T)instance;
+}
+
+}
+

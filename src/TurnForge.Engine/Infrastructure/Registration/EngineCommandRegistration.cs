@@ -30,18 +30,14 @@ public static class EngineCommandRegistration
         // Game Initialization
         // =====================================================
 
-        services.Register<InitGameCommandHandler>(sp =>
-            new InitGameCommandHandler(
-                (IActorFactory)sp.GetService(typeof(IActorFactory))!,
-                (IGameFactory)sp.GetService(typeof(IGameFactory))!,
+        services.Register<SpawnStartingPropsCommandHandler>(sp =>
+            new SpawnStartingPropsCommandHandler(
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!,
-                (IBoardFactory)sp.GetService(typeof(IBoardFactory))!,
-                (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!,
-                (IEffectSink)sp.GetService(typeof(IEffectSink))!
+                (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!
             )
         );
-        services.Register<ICommandHandler<InitGameCommand>>(sp =>
-            (InitGameCommandHandler)sp.GetService(typeof(InitGameCommandHandler))!
+        services.Register<ICommandHandler<SpawnStartingPropsCommand>>(sp =>
+            (SpawnStartingPropsCommandHandler)sp.GetService(typeof(SpawnStartingPropsCommandHandler))!
         );
 
         services.Register<StartGameCommandHandler>(sp =>

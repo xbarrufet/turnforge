@@ -1,35 +1,40 @@
 {
   "Agents": [
     {
-      "TypeId": "Amy",
+      "AgentName": "Amy",
+      "Category": "Survivor",
       "MaxHealth": 3,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 3,
       "Behaviours": []
     },
     {
-      "TypeId": "Doug",
+      "AgentName": "Doug",
+      "Category": "Survivor",
       "MaxHealth": 3,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 3,
       "Behaviours": []
     },
     {
-      "TypeId": "Walker",
+      "AgentName": "Walker",
+      "Category": "Zombie",
       "MaxHealth": 1,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 1,
       "Behaviours": []
     },
     {
-      "TypeId": "Runner",
+      "AgentName": "Runner",
+      "Category": "Zombie",
       "MaxHealth": 1,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 2,
       "Behaviours": []
     },
     {
-      "TypeId": "Fatty",
+      "AgentName": "Fatty",
+      "Category": "Zombie",
       "MaxHealth": 2,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 1,

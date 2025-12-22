@@ -5,11 +5,11 @@ using BarelyAlive.Rules.Adapter.Mappers;
 using BarelyAlive.Rules.Core.Behaviours;
 using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
-using TurnForge.Engine.Entities.Actors.Definitions;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.ValueObjects;
 using ArgumentException = System.ArgumentException;
@@ -61,7 +61,8 @@ public sealed class MissionLoader
 
     private static AgentDescriptor MapAgent(AgentDto dto, Dictionary<Vector, TileId> map)
     {
-        var typeId = new AgentTypeId(dto.TypeId);
+        var category = dto.Category;
+        var agentName = dto.AgentName;
 
         Position? position = null;
         if (dto.Position != null)
@@ -74,21 +75,16 @@ public sealed class MissionLoader
             }
         }
         // Agents in mission must have a position
-        if (position == null) throw new ArgumentException($"Agent {typeId} must have a valid position in the mission.");
+        if (position == null) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
 
         var behaviours = dto.Behaviours
             .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
             .ToList();
 
-        // Note: Definitions like Health/Movement are usually loaded from Catalog, 
-        // but here we might override or use them if Dto provides them.
-        // For now, creating mostly with TypeId and Position.
-        // AgentDescriptor constructor might need DefinitionId? 
-        // Engine's AgentDescriptor: (AgentTypeId TypeId, IReadOnlyCollection<IBehaviour> Behaviours, Position? Position)
-        // Let's check AgentDescriptor signature.
-
-        return new AgentDescriptor(typeId, position, behaviours);
+        return new AgentDescriptor(agentName, category, position, behaviours);
     }
+    
+
 
     private static SpatialDescriptor MapSpatial(SpatialDto dto, Dictionary<Vector, TileId> map)
     {
@@ -136,15 +132,15 @@ public sealed class MissionLoader
 
     private static PropDescriptor MapProp(PropDto dto, Dictionary<Vector, TileId> map)
     {
-        var typeId = new PropTypeId(dto.TypeId);
+        var definitionId = dto.TypeId;
 
         Position? position = null;
         if (dto.Position != null)
         {
-            var vec = dto.Position!.ToPosition();
-            if (map.TryGetValue(vec, out var tileId))
+            var vector = new TurnForge.Engine.ValueObjects.Vector(dto.Position.X, dto.Position.Y);
+            if (map.TryGetValue(vector, out var tileId))
             {
-                position = new Position(tileId);
+                position = new TurnForge.Engine.ValueObjects.Position(tileId);
             }
         }
 
@@ -152,6 +148,6 @@ public sealed class MissionLoader
             .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
             .ToList();
 
-        return new PropDescriptor(typeId, position, behaviours);
+        return new PropDescriptor(definitionId, position, behaviours);
     }
 }

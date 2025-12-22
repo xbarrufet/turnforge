@@ -10,23 +10,57 @@ using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
-using TurnForge.Engine.Orchestrator;
-using TurnForge.Engine.Orchestrator.Interfaces;
+using TurnForge.Engine.Core.Orchestrator;
+using TurnForge.Engine.Core.Orchestrator.Interfaces;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
-public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectSink, IGameRepository repository, IOrchestrator orchestrator) : IGameEngine
+public sealed class GameEngineRuntime : IGameEngine
 {
-    private readonly CommandBus _commandBus = commandBus;
-    private readonly IGameRepository _repository = repository;
-    private readonly IOrchestrator _orchestrator = orchestrator;
+    private readonly CommandBus _commandBus;
+    private readonly IGameRepository _repository;
+    private readonly IOrchestrator _orchestrator;
+    private readonly IGameLogger _logger;
     private FsmController? _fsmController;
+
+    private readonly bool _useCommandTransation = true; // Default
+
+    private readonly IBoardFactory _boardFactory;
+
+    public GameEngineRuntime(CommandBus commandBus, IGameRepository repository, IOrchestrator orchestrator, IGameLogger logger, IBoardFactory boardFactory)
+    {
+        _commandBus = commandBus;
+        _repository = repository;
+        _orchestrator = orchestrator;
+        _logger = logger;
+        _boardFactory = boardFactory;
+
+        _orchestrator.SetLogger(_logger);
+    }
+
+    public void InitializeBoard(Entities.Board.Descriptors.BoardDescriptor descriptor)
+    {
+        // 1. Build the board using the factory
+        var board = _boardFactory.Build(descriptor);
+
+        // 2. Load current state, update it with the board, and save it
+        var state = _repository.LoadGameState();
+        var newState = state.WithBoard(board);
+        _repository.SaveGameState(newState);
+
+        // 3. Sync Orchestrator
+        _orchestrator.SetState(newState);
+        
+        _logger.Log($"Board initialized with {descriptor.Zones.Count} zones.");
+    }
 
     public void SetFsmController(FsmController controller)
     {
         _fsmController = controller;
         _fsmController.SetOrchestrator(_orchestrator);
+        _fsmController.SetLogger(_logger);
     }
 
     // SUMMARY:
@@ -65,14 +99,14 @@ public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectS
                     _orchestrator.Enqueue(result.Decisions);
                     state = _orchestrator.CurrentState; // Update state with new scheduler
                 }
-                // Standard reaction
+                // Standard reaction, here is where we process the command effects in the FSM
                 var stepResult = _fsmController.HandleCommand(command, state, result);
                 effects.AddRange(stepResult.Effects);
                 // we need to check if there is a transition
                 _repository.SaveGameState(stepResult.State);
                 if (stepResult.TransitionRequested)
                 {
-                    var transitionResult = _fsmController.MoveForwardRequest(stepResult.State, effectSink);
+                    var transitionResult = _fsmController.MoveForwardRequest(stepResult.State);
                     effects.AddRange(transitionResult.Effects);
                     _repository.SaveGameState(transitionResult.State);
                 }
@@ -83,11 +117,13 @@ public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectS
                 return transaction;
             }
             transaction.Result = result;
+            _logger.Log($"Command {command.GetType().Name} executed. Success: {result.Success}");
             return transaction;
         }
         catch (Exception ex)
         {
             //5- handle exception. send a failure response
+            _logger.LogError($"Error executing command {command.GetType().Name}", ex);
             transaction.Result = CommandResult.Fail(ex.Message);
             return transaction;
         }
@@ -122,6 +158,6 @@ public sealed class GameEngineRuntime(CommandBus commandBus, IEffectSink effectS
 
     public void Subscribe(Action<IGameEffect> handler)
     {
-        effectSink.Subscribe(handler);
+        // Removed EffectSink subscription
     }
 }

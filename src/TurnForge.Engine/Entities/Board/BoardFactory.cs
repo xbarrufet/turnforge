@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Components;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Spatial;
 using TurnForge.Engine.Spatial.Interfaces;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board;
 
@@ -15,7 +16,19 @@ public sealed class BoardFactory : IBoardFactory
     public GameBoard Build(IGameEntityDescriptor<GameBoard> descriptor)
     {
         var boardDescriptor = (BoardDescriptor)descriptor;
-        return new GameBoard(BuildSpatialModel(boardDescriptor.Spatial));
+        var board = new GameBoard(BuildSpatialModel(boardDescriptor.Spatial));
+
+        foreach (var zoneDesc in boardDescriptor.Zones)
+        {
+            ZoneDefinition zoneDefinition = new ZoneDefinition(
+                new EntityId(GenerateGuid(zoneDesc.Id.Value)), zoneDesc.Bound);
+            var zone = new Zone(
+               zoneDefinition,
+                new BaseBehaviourComponent(zoneDesc.Behaviours.Cast<BaseBehaviour>()));
+            board.AddZone(zone);
+        }
+
+        return board;
     }
 
     private ISpatialModel BuildSpatialModel(SpatialDescriptor spatial)
@@ -37,5 +50,11 @@ public sealed class BoardFactory : IBoardFactory
         }
 
         return new ConnectedGraphSpatialModel(graph);
+    }
+
+    private static Guid GenerateGuid(string input)
+    {
+        var hash = System.Security.Cryptography.MD5.HashData(System.Text.Encoding.Default.GetBytes(input));
+        return new Guid(hash);
     }
 }

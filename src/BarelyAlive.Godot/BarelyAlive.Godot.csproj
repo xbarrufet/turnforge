@@ -8,10 +8,8 @@
     <Folder Include="Scenes\units\" />
     <Folder Include="src\core\" />
     <Folder Include="src\helpers\" />
-    <Folder Include="src\model\" />
     <Folder Include="src\resources\" />
-    <Folder Include="TurnForge.GodotAdapter\Dto\" />
-    <Folder Include="TurnForge.GodotAdapter\Mappers\" />
+    <Folder Include="TurnForge.GodotAdapter\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="memoryBank\GameAdapterDocumentation.md" />

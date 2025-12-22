@@ -12,19 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Core\Actors\Npcs\" />
-      <Folder Include="Core\Actors\Props\" />
-      <Folder Include="Core\Actors\Units\" />
-      <Folder Include="Core\Rules\" />
       <Folder Include="Core\Strategies\Combat\" />
       <Folder Include="Core\Strategies\Movement\" />
-      <Folder Include="Infrastructure\Factories\" />
-      <Folder Include="Registration\" />
       <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Core\Actors\.DS_Store" />
       <Content Include="Core\Strategies\.DS_Store" />
       <Content Include="Core\Behaviours\.DS_Store" />
     </ItemGroup>

@@ -1,19 +1,20 @@
 using System.Collections.Generic;
-using BarelyAlive.Godot.TurnForge.GodotAdapter.Adapters;
+using BarelyAlive.Godot.Adapter.Adapters;
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Game;
 using Godot;
 
-namespace BarelyAlive.Godot.TurnForge.GodotAdapter;
+namespace BarelyAlive.Godot.Adapter;
 
-public partial class GodotAdapter : Node
+public partial class TurnForgeAdapter : Node
 {
-    public static GodotAdapter Instance { get; private set; }
+    public static TurnForgeAdapter Instance { get; private set; }
     private BarelyAliveGame _engineRuntime;
     
     public bool IsInitialized => _engineRuntime != null;
 
     public MissionAdapter Mission { get; private set; }
+    public QueryCatalogAdapter QueryCatalog { get; private set; }
 
     [Signal]
     public delegate void GameInitializedEventHandler(bool success);
@@ -26,8 +27,9 @@ public partial class GodotAdapter : Node
     public void Bootstrap()
     {
         GD.Print("Bootstrap started");
-        _engineRuntime = BarelyAliveGame.CreateNewGame();
+        _engineRuntime = BarelyAliveGame.CreateNewGame(new Infrastructure.GodotLogger());
         Mission = new MissionAdapter(_engineRuntime);
+        QueryCatalog = new QueryCatalogAdapter(_engineRuntime);
         GD.Print("Bootstrap completed");
     }
 
@@ -38,89 +40,54 @@ public partial class GodotAdapter : Node
             GD.PushWarning("[GodotAdapter] Engine not initialized. Cannot get survivors.");
             return new List<SurvivorDefinition>();
         }
-        return _engineRuntime.BarelyAliveApis.GetAvailableSurvivors();
+        return QueryCatalog.GetSurvivorsFromCatalog();
     }
+    public void StartGame(string[] survivorIds)
+    {
+        if (_engineRuntime == null)
+        {
+            GD.PushWarning("[GodotAdapter] Engine not initialized. Cannot start game.");
+            return;
+        }
+
+        GD.Print($"[GodotAdapter] Starting game with {survivorIds.Length} survivors...");
+        var response = _engineRuntime.BarelyAliveApis.StartGame(survivorIds);
+        
+        if (response.Success)
+        {
+             GD.Print($"[GodotAdapter] Game Started Successfully! Entities: {response.Payload?.Created?.Count ?? 0}");
+             // Potentially emit another signal here like GameStarted
+        }
+        else
+        {
+            
+            GD.PrintErr($"[GodotAdapter] Failed to start game: {response.Error}");
+        }
+    }
+  
 
     public async void LoadMission(BarelyAlive.Godot.Resources.Missions.MissionResource mission)
     {
-        GD.Print($"[GodotAdapter] Loading mission: {mission.MissionName}");
-
         try
         {
-            // 1. Populate UI Model (GameContext) - Keep on Main Thread
-            var areas = ParseAreasFrom(mission.JsonMissionData);
-
-            GameSession.Instance.SetMissionContext(
-                mission.MissionName,
-                mission.MapSize,
-                mission.Map,
-                areas
-            );
-
-            // 2. Call Engine Async
-            GD.Print("[GodotAdapter] Initializing Engine (Async)...");
-
-            var response = await System.Threading.Tasks.Task.Run(() =>
-            {
-                return Mission.LoadMissionFromJson(mission.JsonMissionData);
-            });
-
-            // 3. Back on Main Thread
+            var response = await Mission.LoadMissionInEngineAsync(mission);
+            
             if (response.Success)
             {
-                GD.Print($"[GodotAdapter] Engine Initialized! Created: {response.Payload?.Created?.Count ?? 0} entities.");
-                EmitSignal(global::TurnForge.GodotAdapter.GodotAdapter.SignalName.GameInitialized, true);
+                 GD.Print($"[GodotAdapter] Engine Initialized! Created: {response.Payload?.Created?.Count ?? 0} entities.");
+                 EmitSignal(SignalName.GameInitialized, true);
+                 _engineRuntime.BarelyAliveApis.Ack();
             }
             else
             {
-                GD.PrintErr($"[GodotAdapter] Engine Initialization failed: {response.Error}");
-                EmitSignal(global::TurnForge.GodotAdapter.GodotAdapter.SignalName.GameInitialized, false);
+                 GD.PrintErr($"[GodotAdapter] Engine Initialization failed: {response.Error}");
+                 EmitSignal(SignalName.GameInitialized, false);
             }
         }
         catch (System.Exception e)
         {
             GD.PrintErr($"[GodotAdapter] Failed to load mission: {e}");
-            EmitSignal(global::TurnForge.GodotAdapter.GodotAdapter.SignalName.GameInitialized, false);
+            EmitSignal(SignalName.GameInitialized, false);
         }
-    }
-
-    private Dictionary<string, Rect2> ParseAreasFrom(string json)
-    {
-        var rects = new Dictionary<string, Rect2>();
-        using var doc = System.Text.Json.JsonDocument.Parse(json);
-        
-        // Try legacy "areas"
-        if (doc.RootElement.TryGetProperty("areas", out var areasArray))
-        {
-            foreach (var element in areasArray.EnumerateArray())
-            {
-                string id = element.GetProperty("id").GetString() ?? System.Guid.NewGuid().ToString();
-                float x = element.GetProperty("x").GetSingle();
-                float y = element.GetProperty("y").GetSingle();
-                float w = element.GetProperty("width").GetSingle();
-                float h = element.GetProperty("height").GetSingle();
-                rects[id] = new Rect2(x, y, w, h);
-            }
-        }
-        // Try new "zones"
-        else if (doc.RootElement.TryGetProperty("zones", out var zonesArray))
-        {
-            foreach (var element in zonesArray.EnumerateArray())
-            {
-                string id = element.GetProperty("id").GetString() ?? System.Guid.NewGuid().ToString();
-                
-                // Case sensitive check for "Area" or "area"
-                System.Text.Json.JsonElement areaElem;
-                if (element.TryGetProperty("Area", out areaElem) || element.TryGetProperty("area", out areaElem))
-                {
-                    float x = areaElem.GetProperty("x").GetSingle();
-                    float y = areaElem.GetProperty("y").GetSingle();
-                    float w = areaElem.GetProperty("width").GetSingle();
-                    float h = areaElem.GetProperty("height").GetSingle();
-                    rects[id] = new Rect2(x, y, w, h);
-                }
-            }
-        }
-        return rects;
     }
 }

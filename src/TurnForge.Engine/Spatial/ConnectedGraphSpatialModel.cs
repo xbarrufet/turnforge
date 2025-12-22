@@ -1,5 +1,6 @@
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
@@ -27,8 +28,8 @@ public sealed class ConnectedGraphSpatialModel : ISpatialModel
 
     public bool CanMove(Actor actor, Position target)
     {
-        if (actor.GetComponent<PositionComponent>()?.IsDiscrete != true) return false;
-        return _tileGraph.AreAdjacent(actor.GetComponent<PositionComponent>()!.CurrentPosition.TileId, target.TileId);
+        if (actor.GetComponent<IPositionComponent>()?.IsDiscrete != true) return false;
+        return _tileGraph.AreAdjacent(actor.GetComponent<IPositionComponent>()!.CurrentPosition.TileId, target.TileId);
     }
 
     public int Distance(Position from, Position to)

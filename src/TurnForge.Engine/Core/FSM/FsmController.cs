@@ -9,7 +9,7 @@ using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Appliers.Interfaces;
 using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
-using TurnForge.Engine.Orchestrator.Interfaces;
+using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm
@@ -32,11 +32,34 @@ namespace TurnForge.Engine.Core.Fsm
         public FsmController(FsmNode root, NodeId initialId)
         {
             _navigator = new FlowNavigator(root);
-            _currentStateId = initialId;
 
-            // Indexamos para acceso rápido a las instancias de los nodos
+            // Index for quick access to node instances
             _nodesById = new Dictionary<NodeId, FsmNode>();
             Flatten(root);
+
+            _currentStateId = initialId;
+            if (_nodesById.TryGetValue(initialId, out var node) && node is BranchNode branch)
+            {
+                var leaf = FindFirstLeaf(branch);
+                if (leaf != null)
+                {
+                    _currentStateId = leaf.Id;
+                }
+            }
+        }
+
+        private FsmNode? FindFirstLeaf(BranchNode branch)
+        {
+            foreach (var child in branch.Children)
+            {
+                if (child is LeafNode leaf) return leaf;
+                if (child is BranchNode b) 
+                {
+                    var found = FindFirstLeaf(b);
+                    if (found != null) return found;
+                }
+            }
+            return null;
         }
 
         public void SetOrchestrator(IOrchestrator orchestrator)
@@ -44,7 +67,14 @@ namespace TurnForge.Engine.Core.Fsm
             _orchestrator = orchestrator;
         }
 
-        // Recorre el árbol de nodos y los indexa para acceso rápido
+        private IGameLogger? _logger;
+
+        public void SetLogger(IGameLogger logger)
+        {
+            _logger = logger;
+        }
+
+        // Traverse the node tree and index them for quick access
         private void Flatten(FsmNode node)
         {
             _nodesById[node.Id] = node;
@@ -55,22 +85,22 @@ namespace TurnForge.Engine.Core.Fsm
         }
 
         /// <summary>
-        /// Solicita avanzar al siguiente estado lógico en el árbol.
+        /// Requests to advance to the next logical state in the tree.
         /// </summary>
-        public FsmStepResult MoveForwardRequest(GameState currentState, IEffectSink effectSink)
+        public FsmStepResult MoveForwardRequest(GameState currentState)
         {
             var nextId = _navigator.GetNextStateId(_currentStateId);
 
             if (nextId == null)
             {
-                // Aquí se podría disparar un evento de Fin de Juego
+                // Here a Game Over event could be triggered
                 return new FsmStepResult(currentState, false, []);
             }
-            return ExecuteTransition(_currentStateId, nextId.Value, currentState, effectSink);
+            return ExecuteTransition(_currentStateId, nextId.Value, currentState);
         }
 
-        // Ejecuta una transición entre dos estados
-        private FsmStepResult ExecuteTransition(NodeId fromId, NodeId toId, GameState state, IEffectSink effectSink)
+        // Executes a transition between two states
+        private FsmStepResult ExecuteTransition(NodeId fromId, NodeId toId, GameState state)
         {
             var fromNode = _nodesById[fromId];
             var toNode = _nodesById[toId];
@@ -80,7 +110,7 @@ namespace TurnForge.Engine.Core.Fsm
             // Sync Orchestrator
             _orchestrator?.SetState(state);
 
-            // 1. Ejecutamos el cierre del nodo actual
+            // 1. Execute closure of the current node
 
             // Orchestrator Trigger: OnEnd State
             if (_orchestrator != null && !string.IsNullOrEmpty(fromNode.Name))
@@ -99,7 +129,7 @@ namespace TurnForge.Engine.Core.Fsm
                 effects.AddRange(applierResponse.GameEffects);
             }
 
-            // 2. Ejecutamos la apertura del nuevo nodo
+            // 2. Execute opening of the new node
 
             // Sync Orchestrator again if legacy changed state
             _orchestrator?.SetState(state);
@@ -120,12 +150,12 @@ namespace TurnForge.Engine.Core.Fsm
                 effects.AddRange(applierResponse.GameEffects);
             }
 
-            // 3. Applier interno para actualizar el puntero CurrentStateId en el GameState
+            // 3. Internal applier to update the CurrentStateId pointer in GameState
             var changeStateApplierResponse = new ChangeStateApplier(toId).Apply(state);
             state = changeStateApplierResponse.GameState;
             effects.AddRange(changeStateApplierResponse.GameEffects);
 
-            // Actualizamos la referencia local del controlador
+            // Update local controller reference
             _currentStateId = toId;
 
             // Final Sync
@@ -135,15 +165,18 @@ namespace TurnForge.Engine.Core.Fsm
         }
 
         /// <summary>
-        /// Delega el comando al nodo hoja actual si es válido.
+        /// Delegates the command to the current leaf node if it is valid.
         /// </summary>
         public FsmStepResult HandleCommand(ICommand command, GameState state, CommandResult result)
         {
+            _logger?.Log($"[FsmController] HandleCommand: {command.GetType().Name} - Result: Success={result.Success}, Tags={string.Join(",", result.Tags ?? [])}");
+
             // Sync Orchestrator
             _orchestrator?.SetState(state);
             var effects = new List<IGameEffect>();
             if (_nodesById[_currentStateId] is LeafNode leaf)
             {
+                
                 var appliersOnCommand = leaf.OnCommandExecuted(command, result, out bool transitionRequested);
                 // Legacy
                 foreach (var applier in appliersOnCommand)
@@ -157,7 +190,8 @@ namespace TurnForge.Engine.Core.Fsm
                 if (_orchestrator != null)
                 {
                     _orchestrator.SetState(state); // Sync if legacy changed it
-                    _orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd");
+                    effects.AddRange(_orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd"));
+                    _logger?.Log("[FsmController] Orchestrator OnCommandExecutionEnd executed effects size" + effects.Count);
                     state = _orchestrator.CurrentState;
                 }
 

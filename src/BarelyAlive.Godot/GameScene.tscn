@@ -1,66 +1,115 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5lnxxauxv6m6"]
+[gd_scene load_steps=11 format=3 uid="uid://b5lnxxauxv6m6"]
 
 [ext_resource type="Script" uid="uid://d18jkd5t8kjrw" path="res://src/controllers/RootController.cs" id="1_hvuor"]
-[ext_resource type="Script" uid="uid://dvgm3vhn6xht7" path="res://src/Infrastructure/MissionLoader.cs" id="2_b5kf5"]
 [ext_resource type="Script" uid="uid://dugsgspsqr3ld" path="res://src/Infrastructure/BarelyAliveBootstrap.cs" id="2_haeiw"]
+[ext_resource type="Resource" uid="uid://tbrrjej5konr" path="res://src/resources/Missions/mission01.tres" id="2_kj823"]
 [ext_resource type="Script" uid="uid://c0637g03yp4oi" path="res://src/controllers/MapPresenter.cs" id="3_b5kf5"]
+[ext_resource type="Script" uid="uid://b1nloilnwhp8k" path="res://src/controllers/MissionSetUpController.cs" id="4_l6ya2"]
 [ext_resource type="Texture2D" uid="uid://bn4nkbi3tevk4" path="res://Assets/textures/avatar/z_fatty.png" id="5_0exr2"]
+[ext_resource type="Script" uid="uid://bss5vcb7egqjm" path="res://src/model/GameSession.cs" id="7_ed8b8"]
+[ext_resource type="Script" uid="uid://bopwwkmqlupbv" path="res://src/model/MapContext.cs" id="8_l6ya2"]
+[ext_resource type="Script" uid="uid://dfm8otw8qffo" path="res://src/model/ViewModel.cs" id="9_oieil"]
+[ext_resource type="Script" uid="uid://cpm6ee2lmyjfy" path="res://src/Adapter/TurnForgeAdapter.cs" id="10_l6ya2"]
+[ext_resource type="Script" path="res://src/controllers/SurvivorSelectionController.cs" id="11_survivor_controller"]
+[ext_resource type="PackedScene" path="res://src/UI/SurvivorSelection/SurvivorSelectionRow.tscn" id="12_survivor_row"]
 
-[node name="Root" type="Node" node_paths=PackedStringArray("_gameWorldPanel", "_mapPresenter")]
+[node name="Root" type="Node" node_paths=PackedStringArray("_gameWorldPanel", "_mapPresenter", "_survivorSelectionController")]
 script = ExtResource("1_hvuor")
-_gameWorldPanel = NodePath("UI/MainContainer/GameWorldPanel")
-_mapPresenter = NodePath("GameScene/World/MapPresenter")
+_gameWorldPanel = NodePath("View/UI/MainContainer/GameWorldPanel")
+_mapPresenter = NodePath("View/GameScene/World/MapPresenter")
+_survivorSelectionController = NodePath("View/UI/MainContainer/SidebarPanel/SurvivorSelectionController")
+StartingMission = ExtResource("2_kj823")
 
-[node name="Boot" type="Node" parent="."]
-script = ExtResource("2_haeiw")
+[node name="Model" type="Node" parent="."]
 
-[node name="MissionLoader" type="Node" parent="Boot"]
-script = ExtResource("2_b5kf5")
+[node name="GameSession" type="Node" parent="Model"]
+script = ExtResource("7_ed8b8")
 
-[node name="GameEngineAdapter" type="Node" parent="."]
+[node name="MapContext" type="Node" parent="Model/GameSession"]
+script = ExtResource("8_l6ya2")
 
-[node name="GodotGameAdapter" type="Node" parent="GameEngineAdapter"]
-
-[node name="GameScene" type="Node" parent="."]
-
-[node name="World" type="Node2D" parent="GameScene"]
-
-[node name="ModelsPresenter" type="Node2D" parent="GameScene/World"]
-
-[node name="MapPresenter" type="Node2D" parent="GameScene/World"]
-script = ExtResource("3_b5kf5")
-
-[node name="MapTexture" type="Sprite2D" parent="GameScene/World/MapPresenter"]
-scale = Vector2(1, 1.167)
-texture = ExtResource("5_0exr2")
-centered = false
-
-[node name="AreaHighlightNode" type="Node2D" parent="GameScene/World/MapPresenter"]
-
-[node name="Camera2D" type="Camera2D" parent="GameScene/World"]
-anchor_mode = 0
-
-[node name="UI" type="Node" parent="."]
-
-[node name="MainContainer" type="HBoxContainer" parent="UI"]
-offset_right = 2004.0
-offset_bottom = 1400.0
-mouse_filter = 2
-mouse_default_cursor_shape = 7
-
-[node name="GameWorldPanel" type="MarginContainer" parent="UI/MainContainer"]
-custom_minimum_size = Vector2(1400, 1400)
-layout_mode = 2
-mouse_filter = 2
-mouse_default_cursor_shape = 15
-
-[node name="SidebarPanel" type="PanelContainer" parent="UI/MainContainer"]
-custom_minimum_size = Vector2(600, 1400)
-layout_mode = 2
-mouse_filter = 1
+[node name="ViewModel" type="Node" parent="Model/GameSession"]
+script = ExtResource("9_oieil")
 
 [node name="Input" type="Node" parent="."]
 
 [node name="InteractionController" type="Node" parent="Input"]
 
 [node name="HoverDetectionService" type="Node" parent="Input"]
+
+[node name="View" type="Node" parent="."]
+
+[node name="GameScene" type="Node" parent="View"]
+
+[node name="World" type="Node2D" parent="View/GameScene"]
+
+[node name="ModelsPresenter" type="Node2D" parent="View/GameScene/World"]
+
+[node name="MapPresenter" type="Node2D" parent="View/GameScene/World"]
+script = ExtResource("3_b5kf5")
+
+[node name="MapTexture" type="Sprite2D" parent="View/GameScene/World/MapPresenter"]
+scale = Vector2(1, 1.167)
+texture = ExtResource("5_0exr2")
+centered = false
+
+[node name="AreaHighlightNode" type="Node2D" parent="View/GameScene/World/MapPresenter"]
+
+[node name="Camera2D" type="Camera2D" parent="View/GameScene/World"]
+anchor_mode = 0
+
+[node name="UI" type="Node" parent="View"]
+
+[node name="MainContainer" type="HBoxContainer" parent="View/UI"]
+offset_right = 2004.0
+offset_bottom = 1400.0
+mouse_filter = 2
+mouse_default_cursor_shape = 7
+
+[node name="GameWorldPanel" type="MarginContainer" parent="View/UI/MainContainer"]
+custom_minimum_size = Vector2(1400, 1400)
+layout_mode = 2
+mouse_filter = 2
+mouse_default_cursor_shape = 15
+
+[node name="SidebarPanel" type="PanelContainer" parent="View/UI/MainContainer"]
+custom_minimum_size = Vector2(600, 1400)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="SurvivorSelectionController" type="Control" parent="View/UI/MainContainer/SidebarPanel" node_paths=PackedStringArray("_listContainer", "_startGameButton")]
+layout_mode = 2
+script = ExtResource("11_survivor_controller")
+_rowScene = ExtResource("12_survivor_row")
+_listContainer = NodePath("VBoxContainer/ScrollContainer/VBoxContainer")
+_startGameButton = NodePath("VBoxContainer/StartGameButton")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="View/UI/MainContainer/SidebarPanel/SurvivorSelectionController"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="View/UI/MainContainer/SidebarPanel/SurvivorSelectionController/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="View/UI/MainContainer/SidebarPanel/SurvivorSelectionController/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StartGameButton" type="Button" parent="View/UI/MainContainer/SidebarPanel/SurvivorSelectionController/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "START MISSION"
+
+[node name="Adapter" type="Node" parent="."]
+script = ExtResource("10_l6ya2")
+
+[node name="Boot" type="Node" parent="."]
+script = ExtResource("2_haeiw")
+
+[node name="MissionSetUp" type="Node" parent="Boot"]
+script = ExtResource("4_l6ya2")

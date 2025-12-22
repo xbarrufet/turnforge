@@ -18,6 +18,11 @@ namespace TurnForge.Engine.Tests.Helpers
             return _definitions.TryGetValue(typeId, out definition);
         }
 
+        public IEnumerable<TDefinition> GetAll()
+        {
+            return _definitions.Values;
+        }
+
         public void Register(TTypeId id, TDefinition definition)
         {
             _definitions[id] = definition;

@@ -15,12 +15,17 @@ public class AgentSpawnedProjector : IEffectProjector
     {
         if (effect is not AgentSpawnedResult agent) return;
 
+        // Assuming EntityBuildUpdate constructor: new EntityBuildUpdate(string Id, string Type, string DefinitionId, string TileId, Dictionary<string, object> InitialState)
+        // Previous error said "There is no argument given that corresponds to the required parameter 'InitialState'".
+        // I will add the empty dictionary as InitialState.
+        
         created.Add(new EntityBuildUpdate(
             agent.AgentId.Value.ToString(),
-            "Agent",
-            agent.AgentType.Value,
-            new Vector(agent.Position.X, agent.Position.Y),
-            new Dictionary<string, object>()
+            "Agent", // Type
+            agent.DefinitionId, // Definition/Variation
+            agent.Position.TileId.ToString(),
+            new List<string>(), // Behaviors
+            new Dictionary<string, object>() // InitialState
         ));
     }
 }

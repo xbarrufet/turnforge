@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Game;
 
-namespace BarelyAlive.Godot.TurnForge.GodotAdapter.Adapters;
+namespace BarelyAlive.Godot.Adapter.Adapters;
 
 public class QueryCatalogAdapter
 {
