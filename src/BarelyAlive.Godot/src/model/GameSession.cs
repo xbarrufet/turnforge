@@ -1,11 +1,16 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using BarelyAlive.Godot.Model;
 
 public partial class GameContext : Node
 {
     public static GameContext Instance { get; private set; }
+    
+    public UIModel UIModel { get; } = new UIModel();
+    
     Texture2D _mapTexture;
+    
     Dictionary<string, Rect2> _areas = new Dictionary<string, Rect2>();
     public Texture2D MapTexture => _mapTexture;
     public Dictionary<string, Rect2> Areas => _areas;   
@@ -18,14 +23,15 @@ public partial class GameContext : Node
     public Vector2 MapWorldSize => _mapWorldSize;
     public bool HasMissionContext => _mapTexture != null && _areas.Count > 0;
 
+    
+    
+    
     [Signal]
     public delegate void MissionContextChangedEventHandler();
 
     public override void _Ready()
     {
         Instance = this;
-        
-        
     }
     
     public void SetMissionContext(string missionName, Vector2 mapWorldSize,Texture2D texture,Dictionary<string, Rect2> areas)
