@@ -30,16 +30,11 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
             var builder = new GameFlowBuilder();
 
             _sequence = builder
-                .AddRoot<BattleRound>("Battle Round", rootConfig =>
-                {
-                    rootConfig.AddBranch<MovementPhase>("Movement Phase", moveConfig =>
-                    {
-                        moveConfig.AddLeaf<NormalMove>("Normal Move");
-                        moveConfig.AddLeaf<Reinforcements>("Reinforcements");
-                    });
-
-                    rootConfig.AddLeaf<ShootingPhase>("Shooting Phase");
-                })
+                .AddNode<BattleRound>("Battle Round") // Used to be Root, now just first node
+                .AddNode<MovementPhase>("Movement Phase")
+                .AddNode<NormalMove>("Normal Move")
+                .AddNode<Reinforcements>("Reinforcements")
+                .AddNode<ShootingPhase>("Shooting Phase")
                 .Build();
         }
 
@@ -55,7 +50,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
         {
             Assert.That(_sequence[0], Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.InitialStateNode>());
             Assert.That(_sequence[1], Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.BoardReadyNode>());
-            Assert.That(_sequence[2], Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode>());
+            Assert.That(_sequence[2], Is.TypeOf<TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode>()); // WorldReady
         }
 
         [Test]

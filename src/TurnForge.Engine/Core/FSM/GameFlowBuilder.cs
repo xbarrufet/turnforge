@@ -11,22 +11,29 @@ namespace TurnForge.Engine.Infrastructure.Registration
     {
         private readonly List<FsmNode> _userSequence = new();
 
-        public GameFlowBuilder AddRoot<T>(string name, Action<BranchBuilder>? configure = null) where T : FsmNode, new()
+        public GameFlowBuilder AddNode<T>(string name, Action<NodeFlowBuilder>? configure = null) where T : FsmNode, new()
         {
-            var root = new T
+            var node = new T
             {
                 Id = NodeId.New(),
                 Name = name
             };
 
-            _userSequence.Add(root);
+            _userSequence.Add(node);
 
+            // Optional config if user still wants to nest logically, though it's flat
             if (configure != null)
             {
-                var builder = new BranchBuilder(_userSequence);
+                var builder = new NodeFlowBuilder(_userSequence);
                 configure(builder);
             }
             return this;
+        }
+
+        [Obsolete("Use AddNode instead for flat FSM definition")]
+        public GameFlowBuilder AddRoot<T>(string name, Action<NodeFlowBuilder>? configure = null) where T : FsmNode, new()
+        {
+            return AddNode<T>(name, configure);
         }
 
         public List<FsmNode> Build()
@@ -45,22 +52,28 @@ namespace TurnForge.Engine.Infrastructure.Registration
                 Id = NodeId.New(),
                 Name = "BoardReady"
             };
-
-            var prepared = new TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode
+            var gameReady = new TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode
             {
                 Id = NodeId.New(),
-                Name = "GamePrepared"
+                Name = "WorldReady"
             };
+
 
             finalSequence.Add(initial);
             finalSequence.Add(boardReady);
-            finalSequence.Add(prepared);
+            finalSequence.Add(gameReady);
+            
 
             // 2. User Defined Logic
+            // Append user nodes sequentially.
+            // If the user used AddRoot/AddBranch, they populated _userSequence.
+            // We just ensure they are appended after system nodes.
+            
             if (_userSequence.Count == 0)
             {
                 throw new InvalidOperationException("FSM Error: Sequence is empty. Add at least one user node.");
             }
+            
             finalSequence.AddRange(_userSequence);
 
             return finalSequence;

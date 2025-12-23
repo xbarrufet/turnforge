@@ -37,4 +37,9 @@ public abstract class FsmNode
     /// </summary>
     public virtual NodeExecutionResult OnCommandExecuted(ICommand command, CommandResult result)
         => NodeExecutionResult.Empty();
+    /// <summary>
+    /// Checks if the game should end while in this node.
+    /// Default: false.
+    /// </summary>
+    public virtual bool IsGameOver(GameState state) => false;
 }

@@ -11,5 +11,6 @@ public sealed class CommandTransaction(ICommand command)
     public ICommand Command { get; init; } = command;
     public CommandResult Result { get; set; } = CommandResult.Fail("Unknown error");
     public IGameEffect[] Effects { get; set; } = [];
+    public bool IsGameOver { get; set; }
 
 }

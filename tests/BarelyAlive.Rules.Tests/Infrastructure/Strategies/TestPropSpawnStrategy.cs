@@ -1,8 +1,8 @@
 using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities; // for GameState
-using TurnForge.Engine.ValueObjects; // for Position
+using TurnForge.Engine.Entities; 
+using TurnForge.Engine.ValueObjects;
 using BarelyAlive.Rules.Tests.Infrastructure;
 using System.Linq;
 
@@ -14,6 +14,38 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
         IReadOnlyList<PropDescriptor> descriptors,
         GameState state)
     {
+        // 1. Find ZombieSpawn position (using new ID)
+        Position? zombieSpawnPos = null;
+        
+        var zombieProp = state.GetProps().FirstOrDefault(p => 
+            p.DefinitionId == TestHelpers.SpawnZombieId); 
+            
+        if (zombieProp != null)
+        {
+             zombieSpawnPos = zombieProp.PositionComponent.CurrentPosition;
+        }
+        
+        if (zombieSpawnPos == null)
+        {
+            // Check in descriptors being spawned
+            var zDesc = descriptors.FirstOrDefault(d => d.DefinitionID == TestHelpers.SpawnZombieId);
+            zombieSpawnPos = zDesc?.Position;
+        }
+        
+        if (zombieSpawnPos == null)
+        {
+            return descriptors;
+        }
+
+        // 2. Assign position to those missing it (e.g. if logic requires)
+        foreach (var descriptor in descriptors)
+        {
+            if (descriptor.Position == null)
+            {
+                descriptor.Position = zombieSpawnPos;
+            }
+        }
+
         return descriptors;
     }
 }

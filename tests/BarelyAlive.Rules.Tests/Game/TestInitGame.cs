@@ -5,6 +5,7 @@ using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.ValueObjects;
 using System.Linq;
+using TurnForge.Engine.Commands.ACK;
 
 namespace BarelyAlive.Rules.Tests.Game;
 
@@ -17,7 +18,7 @@ public class TestInitGame
         // 1. Create Game with Custom Strategies
         var propStrategy = new TestPropSpawnStrategy();
         var agentStrategy = new TestAgentSpawnStrategy();
-        var bootstrap = TestBootstrap.CreateNewGame(propStrategy: propStrategy, agentStrategy: agentStrategy, enableFsm: false);
+        var bootstrap = TestBootstrap.CreateNewGame(propStrategy: propStrategy, agentStrategy: agentStrategy);
         
         // 2. Parse Mission
         var (spatial, zones, props, agents) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
@@ -29,10 +30,16 @@ public class TestInitGame
         var res1 = bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
         Assert.That(res1.Result.Success, Is.True, $"InitBoard failed: {res1.Result.Error}");
         
+        var ack1 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
+        
+
         // 3.2 Spawn Props (Triggers Prop Strategy)
         var res2 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
         Assert.That(res2.Result.Success, Is.True, $"SpawnProps failed: {res2.Result.Error}");
         
+
+        var ack2 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
+
         // 3.3 Spawn Agents (Triggers Agent Strategy)
         var res3 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnAgentsCommand(agents));
         Assert.That(res3.Result.Success, Is.True, $"SpawnAgents failed: {res3.Result.Error}");

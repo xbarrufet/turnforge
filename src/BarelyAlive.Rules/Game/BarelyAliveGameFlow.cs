@@ -16,14 +16,14 @@ public static class BarelyAliveGameFlow
     {
         var builder = new GameFlowBuilder();
 
-        // Root Node (Gameplay/Round)
-        // Contains the sequence of the round
-        builder.AddRoot<GameplayNode>("Gameplay", root =>
-        {
-            root.AddLeaf<PlayersPhaseNode>("Players Phase");
-            root.AddLeaf<ZombiesActivationNode>("Zombies Activation");
-            root.AddLeaf<ZombiesSpawnNode>("Zombies Spawn");
-        });
+        
+        // Flattened Sequence:
+        // [System Nodes] -> Players Phase -> Zombies Activation -> Zombies Spawn
+        
+        builder
+            .AddNode<PlayersPhaseNode>("Players Phase")
+            .AddNode<ZombiesActivationNode>("Zombies Activation")
+            .AddNode<ZombiesSpawnNode>("Zombies Spawn");
         
         var sequence = builder.Build();
 
@@ -35,22 +35,17 @@ public static class BarelyAliveGameFlow
         // Default base
     }
 
-    /// <summary>
-    /// Root node representing the start of gameplay/round.
-    /// Acts as a structural pass-through to enter the phases.
-    /// </summary>
-    public class GameplayNode : FsmNode
-    {
-         public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>(); 
-         public override bool IsCommandAllowed(Type commandType) => false;
-         
-         // Immediate completion to pass control to first child (Players Phase)
-         public override bool IsCompleted(GameState state) => true; 
-    }
+
 
     public class PlayersPhaseNode : BaseGameNode
     {
-        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+         public override IReadOnlyList<Type> GetAllowedCommands() => new[] 
+         { 
+            typeof(TurnForge.Engine.Commands.Board.InitializeBoardCommand),
+            typeof(TurnForge.Engine.Commands.Spawn.SpawnPropsCommand),
+            typeof(TurnForge.Engine.Commands.Spawn.SpawnAgentsCommand)
+         }; 
+
         public override bool IsCommandAllowed(Type commandType) => true; // Allow interaction
         
         // Stays active until logic determines end of phase (e.g. all AP used)

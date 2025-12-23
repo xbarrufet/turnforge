@@ -8,6 +8,7 @@ using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
+using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace TurnForge.Engine.Registration;
@@ -41,5 +42,30 @@ public static class EngineCommandRegistration
             (InitializeBoardCommandHandler)sp.GetService(typeof(InitializeBoardCommandHandler))!
         );
 
+        // =====================================================
+        // Spawn Commands
+        // =====================================================
+        
+        services.Register<SpawnPropsCommandHandler>(sp =>
+            new SpawnPropsCommandHandler(
+                (ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>))!,
+                (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
+                (IGameRepository)sp.GetService(typeof(IGameRepository))!
+            )
+        );
+        services.Register<ICommandHandler<SpawnPropsCommand>>(sp =>
+            (SpawnPropsCommandHandler)sp.GetService(typeof(SpawnPropsCommandHandler))!
+        );
+        
+        services.Register<SpawnAgentsCommandHandler>(sp =>
+            new SpawnAgentsCommandHandler(
+                (ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>))!,
+                (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
+                (IGameRepository)sp.GetService(typeof(IGameRepository))!
+            )
+        );
+        services.Register<ICommandHandler<SpawnAgentsCommand>>(sp =>
+            (SpawnAgentsCommandHandler)sp.GetService(typeof(SpawnAgentsCommandHandler))!
+        );
     }
 }

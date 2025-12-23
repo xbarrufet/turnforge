@@ -90,10 +90,18 @@ namespace TurnForge.Engine.Core.Fsm
                 if (execResult.CommandToLaunch != null)
                 {
                     _orchestrator?.SetState(currentState);
-                    return new FsmStepResult(currentState, false, accumulatedEffects, execResult.CommandToLaunch);
+                    return new FsmStepResult(currentState, false, accumulatedEffects, execResult.CommandToLaunch, execResult.IsGameOver);
+                }
+                
+                // 4 Check Game Over
+                if (execResult.IsGameOver || node.IsGameOver(currentState))
+                {
+                     _logger?.Log($"[FsmController] Game Over detected at node {node.Name}");
+                     _orchestrator?.SetState(currentState);
+                     return new FsmStepResult(currentState, false, accumulatedEffects, null, true);
                 }
 
-                // 4. Check for Completion (Transition)
+                // 5. Check for Completion (Transition)
                 if (node.IsCompleted(currentState))
                 {
                     // Move Next
@@ -151,18 +159,24 @@ namespace TurnForge.Engine.Core.Fsm
             var execResult = node.OnCommandExecuted(command, result);
             
             // Apply React Effects
-            if (execResult.Decisions != null)
-            {
-               foreach (var applier in execResult.Decisions)
-               {
-                    var response = applier.Apply(state);
-                    state = response.GameState;
-                    effects.AddRange(response.GameEffects);
-               }
-            }
+                if (execResult.Decisions != null)
+                {
+                   foreach (var applier in execResult.Decisions)
+                   {
+                        var response = applier.Apply(state);
+                        state = response.GameState;
+                        effects.AddRange(response.GameEffects);
+                   }
+                }
+                
+                if (execResult.IsGameOver || node.IsGameOver(state))
+                {
+                     // Return immediately with Game Over
+                     return new FsmStepResult(state, false, effects, null, true);
+                }
             
-            // Check flow again (State changed => Node might be completed now)
-            var flowResult = ProcessFlow(state);
+                // Check flow again (State changed => Node might be completed now)
+                var flowResult = ProcessFlow(state);
             
             var finalEffects = new List<IGameEffect>(effects);
             finalEffects.AddRange(flowResult.Effects);
@@ -171,5 +185,5 @@ namespace TurnForge.Engine.Core.Fsm
         }
     }
     
-    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEffect> Effects, ICommand? CommandToLaunch = null);
+    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEffect> Effects, ICommand? CommandToLaunch = null, bool IsGameOver = false);
 }

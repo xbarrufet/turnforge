@@ -43,7 +43,7 @@ public class MissionLoaderTests
         // User requested NO auto-generation. Doors are hardcoded in JSON.
         // Current JSON has 1 explicit door, 2 spawns, 9 zones (areas).
         // Total = 12.
-        var spawnProps = props.Where(p => p.DefinitionId == "BarelyAlive.Spawn").ToList();
+        var spawnProps = props.Where(p => p.DefinitionId == "Spawn.Zombie" || p.DefinitionId == "Spawn.Player").ToList();
         Assert.That(spawnProps.Count, Is.EqualTo(2), "Should have 2 spawns");
         Assert.That(spawnProps.All(s => s.Position.HasValue && !s.Position.Value.IsConnection), "Spawns should be on Tiles (not connections)");
         

@@ -74,16 +74,14 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             // 2. Build FSM Sequence
             var builder = new GameFlowBuilder();
             // Note: System nodes (Initial, BoardReady, GamePrepared) are added first
-            builder.AddRoot<SpyBranch>("Root", r =>
-            {
-                r.AddLeaf<SpyNode>("Child1");
-                r.AddLeaf<SpyNode>("Child2");
-            });
+            builder
+                .AddNode<SpyBranch>("Root")
+                .AddNode<SpyNode>("Child1")
+                .AddNode<SpyNode>("Child2");
             _sequence = builder.Build();
 
             // Extract Nodes
-            // Sequence: [0]Initial, [1]BoardReady, [2]GamePrepared, [3]Root(SpyBranch), [4]Child1, [5]Child2
-            // Wait, GameFlowBuilder order: Initial, BoardReady, GamePrepared, Then User Sequence.
+            // Sequence: [0]Initial, [1]BoardReady, [2]WorldReady, [3]Root(SpyBranch), [4]Child1, [5]Child2
             _root = (SpyBranch)_sequence[3];
             _child1 = (SpyNode)_sequence[4];
             _child2 = (SpyNode)_sequence[5];

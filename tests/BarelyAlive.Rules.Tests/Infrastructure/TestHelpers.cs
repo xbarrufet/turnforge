@@ -140,8 +140,8 @@ public static class TestHelpers
       },
       
       "props": [
-        { "typeId": "BarelyAlive.Spawn", "position": "d7de841d-64a5-48b3-9662-0fe757a8950e", "Behaviours": [{ "type": "ZombieSpawn", "order": 1 }] },
-        { "typeId": "BarelyAlive.Spawn", "position": "07ea7bbc-4f23-4bf0-a5c7-c527f36c3b53", "Behaviours": [{ "type": "PartySpawn"}] },
+        { "typeId": "Spawn.Zombie", "position": "d7de841d-64a5-48b3-9662-0fe757a8950e", "Behaviours": [{ "type": "ZombieSpawn", "order": 1 }] },
+        { "typeId": "Spawn.Player", "position": "07ea7bbc-4f23-4bf0-a5c7-c527f36c3b53", "Behaviours": [{ "type": "PartySpawn"}] },
         { "typeId": "Door", "position": "55f54395-6e94-4d1a-9694-824050f4a867" },
         
         { "typeId": "Area", "position": ["d7de841d-64a5-48b3-9662-0fe757a8950e"] },

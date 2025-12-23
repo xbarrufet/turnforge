@@ -72,6 +72,7 @@ public static class GameEngineFactory
         var boardFactory = services.Resolve<IBoardFactory>();
 
         // Register New Spawn Appliers (using new spawn pipeline)
+        orchestrator.RegisterApplier(new TurnForge.Engine.Appliers.Board.InitializeBoardApplier());
         orchestrator.RegisterApplier(new AgentSpawnApplier(genericActorFactory));
         orchestrator.RegisterApplier(new PropSpawnApplier(genericActorFactory));
 

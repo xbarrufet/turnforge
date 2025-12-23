@@ -83,12 +83,26 @@ public sealed class GameEngineRuntime : IGameEngine
                     _orchestrator.Enqueue(result.Decisions);
                     state = _orchestrator.CurrentState; // Update state with new scheduler
                 }
+
+                // Execute Immediate Decisions (OnCommandExecutionEnd)
+                var immediateEffects = _orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd");
+                effects.AddRange(immediateEffects);
+                state = _orchestrator.CurrentState; // Update state after application
                 
                 // Standard reaction (and auto-navigation)
                 var stepResult = _fsmController.HandleCommand(command, state, result);
                 effects.AddRange(stepResult.Effects);
                 
                 _repository.SaveGameState(stepResult.State);
+
+                if (stepResult.IsGameOver)
+                {
+                    _logger.Log("[Engine] Game Over detected. Stopping flow.");
+                    transaction.IsGameOver = true;
+                    transaction.Result = result;
+                    transaction.Effects = effects.ToArray();
+                    return transaction;
+                }
                 
                 // 5- Auto-Launch Command (Recursion)
                 if (stepResult.CommandToLaunch != null)
