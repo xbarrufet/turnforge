@@ -1,8 +1,8 @@
 using BarelyAlive.Rules.Adapter.Loaders;
 using NUnit.Framework;
-using TurnForge.Engine.Commands.Game.Descriptors;
+using TurnForge.Engine.Commands.Spawn.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
-using TurnForge.Engine.Entities.Actors.Definitions;
+using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
@@ -31,11 +31,11 @@ public class MissionLoaderTests
         Assert.That(result.Item2.Count, Is.EqualTo(9)); // Zones
         Assert.That(result.Item2.Any(z => z.Id.Value == "d7de841d-64a5-48b3-9662-0fe757a8950e"), Is.True);
 
-        Assert.That(result.Item3.Count, Is.EqualTo(2)); // Props
-        var spawnProp = result.Item3.FirstOrDefault(p => p.TypeId == new PropTypeId("BarelyAlive.Spawn"));
+        Assert.That(result.Item3.Count, Is.EqualTo(5)); // Props (2 explicit + 3 generated from Zones)
+        var spawnProp = result.Item3.FirstOrDefault(p => p.DefinitionId == "BarelyAlive.Spawn");
         Assert.That(spawnProp, Is.Not.Null);
         Assert.That(spawnProp!.Position, Is.Not.Null);
-        Assert.That(spawnProp.Position!.Value.IsDiscrete, Is.True, "Prop position should be discrete (TileId)");
-        Assert.That(spawnProp.ExtraBehaviours!.Any(b => b.GetType().Name == "ZombieSpawn"), Is.True);
+        Assert.That(spawnProp.Position!.Value.IsTile, Is.True, "Prop position should be discrete (TileId)");
+        Assert.That(spawnProp.ExtraComponents!.Any(b => b.GetType().Name == "ZombieSpawnComponent"), Is.True);
     }
 }

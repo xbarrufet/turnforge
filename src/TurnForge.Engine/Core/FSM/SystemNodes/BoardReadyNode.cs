@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Game;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 
 namespace TurnForge.Engine.Core.Fsm.SystemNodes;
 

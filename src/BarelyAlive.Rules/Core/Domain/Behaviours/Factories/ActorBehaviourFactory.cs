@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Text.Json;
-using BarelyAlive.Rules.Core.Behaviours.ActorBehaviours;
-using BarelyAlive.Rules.Core.Behaviours.Attributes;
+using BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
+using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 
-namespace BarelyAlive.Rules.Core.Behaviours.Factories;
+namespace BarelyAlive.Rules.Core.Domain.Behaviours.Factories;
 
 public static class ActorBehaviourFactory
 {

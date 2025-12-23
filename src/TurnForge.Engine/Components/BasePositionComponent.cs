@@ -1,14 +1,14 @@
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Components
+namespace TurnForge.Engine.Components
 {
     public sealed class BasePositionComponent : IPositionComponent
     {
         public Position CurrentPosition { get; set; } = Position.Empty;
 
-        public bool IsDiscrete => CurrentPosition.IsDiscrete;
-        public bool IsContinuous => CurrentPosition.IsContinuous;
+        public bool IsDiscrete => CurrentPosition.IsTile;
+        public bool IsContinuous => CurrentPosition.IsVector;
 
         public BasePositionComponent() { }
 

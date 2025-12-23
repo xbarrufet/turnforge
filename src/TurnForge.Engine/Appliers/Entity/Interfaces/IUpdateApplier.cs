@@ -1,7 +1,8 @@
-using TurnForge.Engine.Entities.Components.Interfaces;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
-namespace TurnForge.Engine.Entities.Appliers.Interfaces;
+namespace TurnForge.Engine.Appliers.Entity.Interfaces;
 
 public interface IUpdateApplier<in TDecision, TComponent> : IApplier<TDecision>
     where TDecision : IUpdateDecision<TComponent>

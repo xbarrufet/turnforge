@@ -6,9 +6,9 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
@@ -185,7 +185,6 @@ namespace TurnForge.Engine.Core.Fsm
                     state = response.GameState;
                     effects.AddRange(response.GameEffects);
                 }
-
                 // Orchestrator Trigger: OnCommandExecutionEnd
                 if (_orchestrator != null)
                 {

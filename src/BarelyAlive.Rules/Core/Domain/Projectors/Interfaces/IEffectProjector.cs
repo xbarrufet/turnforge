@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using BarelyAlive.Rules.Apis.Messaging;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Projectors.Interfaces;
 

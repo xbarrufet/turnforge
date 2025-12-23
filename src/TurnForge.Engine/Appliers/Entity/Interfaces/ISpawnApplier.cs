@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
-namespace TurnForge.Engine.Entities.Appliers.Interfaces;
+namespace TurnForge.Engine.Appliers.Entity.Interfaces;
 
 /// <summary>
 /// Applier for spawn decisions that carry pre-created entities.

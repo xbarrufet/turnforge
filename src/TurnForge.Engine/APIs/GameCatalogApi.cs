@@ -13,26 +13,31 @@ public class GameCatalogApi : IGameCatalogApi
         _catalog = catalog;
     }
 
-    public T GetDefinition<T>(string definitionId) where T : GameEntityDefinition
+    public T GetDefinition<T>(string definitionId) where T : BaseGameEntityDefinition
     {
         return _catalog.GetDefinition<T>(definitionId);
     }
 
     
-    public void RegisterDefinition<T>(string definitionId, T definition) where T:GameEntityDefinition
+    public void RegisterDefinition<T>(T definition) where T:BaseGameEntityDefinition
     {
-        _catalog.RegisterDefinition(definitionId, definition);
+        _catalog.RegisterDefinition( definition);
     }
 
 
-    public bool TryGetDefinition<T>(string definitionId, out T definition) where T : GameEntityDefinition
+    public bool TryGetDefinition<T>(string definitionId, out T definition) where T : BaseGameEntityDefinition
     {
         return _catalog.TryGetDefinition(definitionId, out definition);
     }
 
-    public IEnumerable<T> GetAllDefinitions<T>() where T : GameEntityDefinition
+    public IEnumerable<T> GetAllDefinitions<T>() where T : BaseGameEntityDefinition
     {
         return _catalog.GetAllDefinitions<T>();
+    }
+
+    public void RegisterDefinition(string definitionId, string name, string category)
+    {
+        _catalog.RegisterDefinition(definitionId, name, category);
     }
 }
 

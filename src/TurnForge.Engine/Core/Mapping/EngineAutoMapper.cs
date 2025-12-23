@@ -1,8 +1,8 @@
 using System.Reflection;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Behaviours.Interfaces;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 
 namespace TurnForge.Engine.Core.Mapping;
 

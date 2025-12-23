@@ -24,8 +24,6 @@
     <Folder Include="Commands\Player\" />
     <Folder Include="Entities\Actors\Descriptors\" />
     <Folder Include="Results\" />
-    <Folder Include="Snapshots\" />
-    <Folder Include="States\" />
   </ItemGroup>
 
   <ItemGroup>

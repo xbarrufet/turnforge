@@ -1,5 +1,5 @@
 using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Integration.Entities;

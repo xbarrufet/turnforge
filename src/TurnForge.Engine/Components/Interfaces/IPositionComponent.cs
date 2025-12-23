@@ -1,6 +1,6 @@
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Components.Interfaces
+namespace TurnForge.Engine.Components.Interfaces
 {
     public interface IPositionComponent:IGameEntityComponent
     {

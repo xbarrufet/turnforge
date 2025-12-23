@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.ValueObjects;
@@ -212,7 +212,7 @@ public class EntitySystemIntegrationTests
     /// <summary>
     /// Test definition for Survivor with basic attributes
     /// </summary>
-    private class TestSurvivorDefinition : GameEntityDefinition
+    private class TestSurvivorDefinition : BaseGameEntityDefinition
     {
         [MapToComponent(typeof(IHealthComponent), "MaxHealth")]
         public int MaxHealth { get; set; }
@@ -233,7 +233,7 @@ public class EntitySystemIntegrationTests
     /// Test definition with custom component (Faction)
     /// </summary>
     [EntityType(typeof(Survivor))]
-    private class TestSurvivorDefinitionWithCustomComponent : GameEntityDefinition
+    private class TestSurvivorDefinitionWithCustomComponent : BaseGameEntityDefinition
     {
         [MapToComponent(typeof(IHealthComponent), nameof(IHealthComponent.MaxHealth))]
         public int MaxHealth { get; set; }

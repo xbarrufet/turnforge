@@ -32,7 +32,7 @@ public static class DescriptorBuilder
     /// </remarks>
     public static TDescriptor Build<TDescriptor>(
         SpawnRequest request,
-        GameEntityDefinition definition)
+        BaseGameEntityDefinition definition)
         where TDescriptor : IGameEntityBuildDescriptor
     {
         // 1. Create descriptor instance
@@ -69,7 +69,7 @@ public static class DescriptorBuilder
     /// </remarks>
     private static TDescriptor CreateDescriptor<TDescriptor>(
         string definitionId,
-        GameEntityDefinition definition)
+        BaseGameEntityDefinition definition)
         where TDescriptor : IGameEntityBuildDescriptor
     {
         // Check for [DescriptorType] attribute on definition

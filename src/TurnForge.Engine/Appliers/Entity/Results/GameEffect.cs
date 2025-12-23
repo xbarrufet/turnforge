@@ -1,7 +1,7 @@
 using System;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
-namespace TurnForge.Engine.Entities.Appliers.Results;
+namespace TurnForge.Engine.Appliers.Entity.Results;
 
 /// <summary>
 /// Base record for game effects with common metadata.

@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 
-namespace TurnForge.Engine.Entities.Components;
+namespace TurnForge.Engine.Components;
 
 public class BaseMovementComponent : IMovementComponent
 {

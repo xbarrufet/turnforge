@@ -24,6 +24,15 @@ While the Engine is UI-agnostic, we recommend the following integration pattern:
 *   **Behaviours (Metadata)**: Tags or logic modifiers attached to entities (e.g., `Fly`, `Aggressive`). They influence *Strategies*.
 *   **Strategies (Logic)**: The "Brain". They accept Context + Inputs and produce **Decisions**. They do *not* mutate state directly.
 
+### How TurnForge is expected to be used
+
+TurnForge is built around a **strict separation of concerns** between presentation, game rules, and execution.
+
+![TurnForge Architecture](..docs/architecture.svg)
+
+### Conceptual Model
+
+
 ---
 
 ## 2. Architecture & Data Flow

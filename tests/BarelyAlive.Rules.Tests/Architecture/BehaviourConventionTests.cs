@@ -1,5 +1,5 @@
 using System.Reflection;
-using BarelyAlive.Rules.Core.Behaviours.Attributes;
+using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
 using NUnit.Framework;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Board;

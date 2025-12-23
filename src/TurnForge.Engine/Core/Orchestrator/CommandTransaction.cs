@@ -1,7 +1,7 @@
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
 namespace TurnForge.Engine.Core.Orchestrator;
 

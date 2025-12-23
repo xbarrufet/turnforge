@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Commands;
 

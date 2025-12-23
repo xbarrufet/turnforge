@@ -4,7 +4,7 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Appliers;
+using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Factories.Interfaces;
@@ -64,7 +64,11 @@ public static class GameEngineFactory
         var orchestrator = new TurnForgeOrchestrator();
 
         // Resolve factories for appliers
-        var genericActorFactory = services.Resolve<GenericActorFactory>();
+        var actorFactory = services.Resolve<IActorFactory>();
+        if (actorFactory is not GenericActorFactory genericActorFactory)
+        {
+            throw new InvalidOperationException($"Expected implementation {nameof(GenericActorFactory)} for IActorFactory");
+        }
         var boardFactory = services.Resolve<IBoardFactory>();
 
         // Register New Spawn Appliers (using new spawn pipeline)

@@ -1,4 +1,4 @@
-namespace BarelyAlive.Rules.Core.Behaviours.ZoneBehaviours;
+namespace BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
 
 public class ZoneBehaviourNames
 {

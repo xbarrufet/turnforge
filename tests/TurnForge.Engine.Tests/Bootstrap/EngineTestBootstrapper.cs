@@ -1,4 +1,4 @@
-using TurnForge.Engine.Commands.Game;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities;
@@ -8,6 +8,8 @@ using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Repositories;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Tests.Helpers;
+using TurnForge.Engine.Components;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Bootstrap;
 
@@ -30,10 +32,10 @@ internal static class EngineTestBootstrapper
                     DefinitionId = "Survivor1",
                     AgentName = "Survivor1",
                     Category = "Test",
-                    PositionComponent = new TurnForge.Engine.Entities.Components.BasePositionComponent(TurnForge.Engine.ValueObjects.Position.Empty),
+                    PositionComponent = new BasePositionComponent(Position.Empty),
                     MaxHealth = 100,
                     MaxMovement = 3,
-                    Behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
+                    Behaviours = new List<IActorBehaviour>()
                 });
 
         agentDefs.Register("Survivor2",
@@ -42,10 +44,10 @@ internal static class EngineTestBootstrapper
                  DefinitionId = "Survivor2",
                  AgentName = "Survivor2",
                  Category = "Test",
-                 PositionComponent = new TurnForge.Engine.Entities.Components.BasePositionComponent(TurnForge.Engine.ValueObjects.Position.Empty),
+                 PositionComponent = new BasePositionComponent(Position.Empty),
                  MaxHealth = 100,
                  MaxMovement = 3,
-                 Behaviours = new List<TurnForge.Engine.Entities.Actors.Interfaces.IActorBehaviour>()
+                 Behaviours = new List<IActorBehaviour>()
              });
 
         /*var gameContext = new GameEngineContext(

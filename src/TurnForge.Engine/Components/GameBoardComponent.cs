@@ -1,10 +1,10 @@
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Components;
+namespace TurnForge.Engine.Components;
 
 public class GameBoardComponent(ISpatialModel spatialModel) : IGameEntityComponent
 {

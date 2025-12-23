@@ -1,6 +1,6 @@
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Decisions.Board;
 

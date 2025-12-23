@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors.Interfaces;
 using BarelyAlive.Rules.Core.Domain.ValueObjects;
-using TurnForge.Engine.Commands.GameStart.Effects;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Effects;
+using TurnForge.Engine.Appliers.Entity.Effects;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Projectors.Handlers;
 

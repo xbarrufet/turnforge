@@ -9,7 +9,7 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.Entities.Board.Interfaces;

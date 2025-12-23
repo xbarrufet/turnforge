@@ -1,8 +1,9 @@
+using TurnForge.Engine.Appliers.Entity;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Core;
 using TurnForge.Engine.Decisions.Board;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
-using TurnForge.Engine.Entities.Effects.Board;
+using TurnForge.Engine.Appliers.Effects;
 
 namespace TurnForge.Engine.Appliers.Board;
 

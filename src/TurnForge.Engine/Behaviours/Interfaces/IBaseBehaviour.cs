@@ -1,3 +1,3 @@
-namespace TurnForge.Engine.Entities.Behaviours.Interfaces;
+namespace TurnForge.Engine.Behaviours.Interfaces;
 
 public interface IBaseBehaviour;

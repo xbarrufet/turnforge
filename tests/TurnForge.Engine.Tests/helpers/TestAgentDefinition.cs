@@ -1,14 +1,14 @@
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 
 namespace TurnForge.Engine.Tests.Helpers;
 
 /// <summary>
 /// Test definition for Agent entities - used in tests only
 /// </summary>
-public class TestAgentDefinition : GameEntityDefinition
+public class TestAgentDefinition : BaseGameEntityDefinition
 {
     [MapToComponent(typeof(IPositionComponent), nameof(IPositionComponent.CurrentPosition))]
     public IPositionComponent? PositionComponent { get; set; }

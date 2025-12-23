@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Behaviours.Interfaces;
+using TurnForge.Engine.Behaviours.Interfaces;
 
 namespace TurnForge.Engine.Entities.Actors.Interfaces;
 

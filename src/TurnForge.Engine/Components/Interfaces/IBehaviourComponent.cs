@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Behaviours.Interfaces;
+using TurnForge.Engine.Behaviours.Interfaces;
 
-namespace TurnForge.Engine.Entities.Components.Interfaces;
+namespace TurnForge.Engine.Components.Interfaces;
 
 /// <summary>
 /// Component that manages behaviours attached to an entity.

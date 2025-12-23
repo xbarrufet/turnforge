@@ -1,21 +1,18 @@
 using TurnForge.Engine.Entities.Board.Interfaces;
-using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board;
 
 
-public sealed class Zone : GameEntity
+public sealed class Zone
 {
+    public ZoneId Id => _definition.Id;
+    public string Name => _definition.Name;
     private readonly ZoneDefinition _definition;
 
-    public Zone(
-        ZoneDefinition definition,
-        IBehaviourComponent behaviourComponent) : base(definition.Id, string.Empty, string.Empty, string.Empty)
+    public Zone(ZoneDefinition definition)
     {
         _definition = definition;
-        AddComponent(behaviourComponent);
     }
 
     public bool Contains(Position position)

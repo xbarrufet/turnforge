@@ -1,10 +1,12 @@
-using TurnForge.Engine.Commands.GameStart.Effects;
+using TurnForge.Engine.Core;
+using TurnForge.Engine.Appliers.Effects;
 using TurnForge.Engine.Decisions.Spawn;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Appliers;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace TurnForge.Engine.Appliers.Spawn;
 

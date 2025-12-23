@@ -2,8 +2,8 @@ using System.Linq;
 using System.Text.Json;
 using BarelyAlive.Rules.Adapter.Dto;
 using BarelyAlive.Rules.Adapter.Mappers;
-using BarelyAlive.Rules.Core.Behaviours;
-using TurnForge.Engine.Commands.Game.Descriptors;
+using BarelyAlive.Rules.Core.Domain.Behaviours;
+using TurnForge.Engine.Commands.Spawn.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Entities.Actors.Interfaces;
@@ -11,7 +11,7 @@ using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.ValueObjects;
 using ArgumentException = System.ArgumentException;
@@ -54,11 +54,22 @@ public sealed class MissionLoader
         var spatialDescriptor = MapSpatial(missionDto.Spatial, coordinateMap);
 
         // 3. Map Zones & Props
-        var zoneDescriptors = missionDto.Zones.Select(z => MapZone(z, coordinateMap)).ToArray();
-        var propDescriptors = missionDto.Props.Select(p => MapProp(p, coordinateMap)).ToArray();
+        var zoneDescriptors = new List<ZoneDescriptor>();
+        var generatedProps = new List<SpawnRequest>();
+
+        foreach (var zone in missionDto.Zones)
+        {
+            var (descriptor, requests) = MapZone(zone, coordinateMap);
+            zoneDescriptors.Add(descriptor);
+            generatedProps.AddRange(requests);
+        }
+
+        var propRequests = missionDto.Props.Select(p => MapProp(p, coordinateMap)).ToList();
+        propRequests.AddRange(generatedProps);
+        
         var agentDescriptors = missionDto.Agents.Select(a => MapAgent(a, coordinateMap)).ToArray();
 
-        return (spatialDescriptor, zoneDescriptors, propDescriptors, agentDescriptors);
+        return (spatialDescriptor, zoneDescriptors.ToArray(), propRequests.ToArray(), agentDescriptors);
     }
 
     private static SpawnRequest MapAgent(AgentDto dto, Dictionary<Vector, TileId> map)
@@ -117,7 +128,7 @@ public sealed class MissionLoader
         return new DiscreteSpatialDescriptor(nodes, connections);
     }
 
-    private static ZoneDescriptor MapZone(ZoneDto dto, Dictionary<Vector, TileId> map)
+    private static (ZoneDescriptor, IEnumerable<SpawnRequest>) MapZone(ZoneDto dto, Dictionary<Vector, TileId> map)
     {
         var zoneId = new ZoneId(dto.Id);
 
@@ -136,7 +147,24 @@ public sealed class MissionLoader
             .Select(BarelyAliveBehaviourFactory.CreateZoneBehaviour)
             .ToList();
 
-        return new ZoneDescriptor(zoneId, bound, behaviours);
+        var requests = new List<SpawnRequest>();
+        if (behaviours.Any())
+        {
+            var tiles = dto.Bound.Tiles
+                .Select(t => t.ToPosition())
+                .Where(map.ContainsKey) // Ensure we only include valid mapped tiles
+                .Select(v => map[v])
+                .ToArray();
+
+            var component = new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(behaviours);
+            requests.Add(new SpawnRequest(
+                DefinitionId: "BarelyAlive.ZoneEffect",
+                Position: new Position(tiles),
+                ExtraComponents: new List<IGameEntityComponent> { component }
+            ));
+        }
+
+        return (new ZoneDescriptor(zoneId, bound, new List<IZoneBehaviour>()), requests);
     }
 
     private static SpawnRequest MapProp(PropDto dto, Dictionary<Vector, TileId> map)
@@ -153,11 +181,22 @@ public sealed class MissionLoader
             }
         }
 
+        // Behaviors are mapped from DTO if present
+        // Using CreateActorBehaviour as props share similar behavior structure in this context
+        var behaviours = dto.Behaviours
+            .Select(b => 
+            {
+                var obj = BarelyAliveBehaviourFactory.CreateActorBehaviour(b);
+                if (obj is IGameEntityComponent c) return c;
+                throw new InvalidCastException($"Behaviour {obj.GetType().Name} does not implement IGameEntityComponent");
+            })
+            .ToList();
+
         // Create SpawnRequest for Prop
         return new SpawnRequest(
             DefinitionId: definitionId,
-            Position: position
-            // No extra behaviors for props in this mapping for now, or add if needed
+            Position: position,
+            ExtraComponents: behaviours
         );
     }
 }

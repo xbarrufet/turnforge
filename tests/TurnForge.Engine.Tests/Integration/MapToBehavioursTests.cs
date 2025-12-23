@@ -1,11 +1,12 @@
 using NUnit.Framework;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Behaviours;
 
 namespace TurnForge.Engine.Tests.Integration;
 
@@ -84,7 +85,7 @@ public class MapToBehavioursTests
 
     #region Test Helper Classes
 
-    private class TestDefinitionWithBehaviours : GameEntityDefinition
+    private class TestDefinitionWithBehaviours : BaseGameEntityDefinition
     {
         [MapToComponent(typeof(IHealthComponent), "MaxHealth")]
         public int MaxHealth { get; set; }

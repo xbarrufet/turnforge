@@ -1,9 +1,10 @@
+using TurnForge.Engine.Behaviours;
 using System.Linq;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
-using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Components;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Spatial;
 using TurnForge.Engine.Spatial.Interfaces;
@@ -21,10 +22,10 @@ public sealed class BoardFactory : IBoardFactory
         foreach (var zoneDesc in boardDescriptor.Zones)
         {
             ZoneDefinition zoneDefinition = new ZoneDefinition(
-                new EntityId(GenerateGuid(zoneDesc.Id.Value)), zoneDesc.Bound);
-            var zone = new Zone(
-               zoneDefinition,
-                new BaseBehaviourComponent(zoneDesc.Behaviours.Cast<BaseBehaviour>()));
+                new ZoneId(zoneDesc.Id.Value), 
+                zoneDesc.Id.Value, // Using Id as Name since no dedicated Name field in descriptor yet
+                zoneDesc.Bound);
+            var zone = new Zone(zoneDefinition);
             board.AddZone(zone);
         }
 

@@ -10,6 +10,8 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Registration;
 using BarelyAlive.Rules.Core.Domain.Definitions;
 using TurnForge.Engine.Entities;
+using BarelyAlive.Rules.Core.Domain.Entities;
+using SurvivorDefinition = BarelyAlive.Rules.Core.Domain.Definitions.SurvivorDefinition;
 
 
 namespace BarelyAlive.Rules.Game;
@@ -19,6 +21,19 @@ namespace BarelyAlive.Rules.Game;
 /// </summary>
 public sealed class BarelyAliveGame
 {
+
+
+private static string mike="3f8a1d4e-9b7c-4e2a-8b1d-6c7a5f2e9d41";
+private static string doug="b2c9e6a4-1f73-4d5a-9c8e-0a7f6b5d4c21";
+private static string zrunner="7a4e9c1d-2b6f-4e8a-9d3c-5f1b0a2e6c47";
+private static string zfat="c5d7b1a9-3e6f-4c2d-8a9b-1f0e6d4c5a72";
+private static string znormal="1e6a9f2b-4d3c-8a5f-7b9c-0d1e2c4a6f58";
+private static string spawZombie="9c4e6f2a-1b7d-5a3c-8f0e-2d6b9a1c4e35";
+private static string spawnPlayer="4a6d2c9e-7f1b-5e8a-3c0d-9b6f1a2e4c78";
+private static string porta="988c5977-d33f-4bdc-a775-53caefcab413";
+private static string zona="6afac418-e205-4125-839a-48452ec273e2";
+
+
     private readonly TurnForge.Engine.Core.TurnForge _turnForge;
     private readonly TurnForge.Engine.Core.Interfaces.IGameLogger _logger;
 
@@ -46,7 +61,34 @@ public sealed class BarelyAliveGame
         return game;
     }
 
+    // FOR TESTING THE PROCESS OF CREATING NEW ASSETS
+    private void RegisterGameDefinitions() {
+        //resgstrem les definitions
+        //_catalog.RegisterDefinition("Survivors.Mike", survivorDef);
+        //survivors
+        var mikeDef = new SurvivorDefinition(mike, "Mike", 3);
+        var dougDef = new SurvivorDefinition(doug, "Doug", 3);
+        _turnForge.GameCatalog.RegisterDefinition(mikeDef);
+        _turnForge.GameCatalog.RegisterDefinition(dougDef);
+        //zombies
+        _turnForge.GameCatalog.RegisterDefinition(zrunner,"Zombie Runner", "Zombie");
+        _turnForge.GameCatalog.RegisterDefinition(zfat,"Zombie Fat", "Zombie");
+        _turnForge.GameCatalog.RegisterDefinition(znormal,"Zombie Normal", "Zombie");
+        //spawn
+        _turnForge.GameCatalog.RegisterDefinition(spawnPlayer,"Spawn Player", "Spawn");
+        var zombiSpawn = new ZombieSpawnDefinition(spawZombie,"Spawn Zombie", "Spawn", 1);
+        _turnForge.GameCatalog.RegisterDefinition(zombiSpawn);
 
+        //zones
+        _turnForge.GameCatalog.RegisterDefinition(zona,"Tile", "Board");
+        //doors
+        var door = new DoorDefinition(porta,"Door", "Connections");
+        _turnForge.GameCatalog.RegisterDefinition(door);
+    } 
+
+
+
+    /*
     private void RegisterGameDefinitions()
     {
         var filePath = Path.Combine(AppContext.BaseDirectory, "Units_BarelyAlive.json");
@@ -72,6 +114,9 @@ public sealed class BarelyAliveGame
             // I will re-implement RegisterProp below.
              RegisterProp(prop);
         }
+
+        // Register System Definitions
+        RegisterSystemProp("BarelyAlive.ZoneEffect");
     }
 
     private void RegisterAgent(AgentDto agent)
@@ -88,6 +133,16 @@ public sealed class BarelyAliveGame
 
     private void RegisterProp(PropDto prop)
     {
+        if (prop.TypeId == "BarelyAlive.Spawn")
+        {
+             var spawnDef = new BarelyAlive.Rules.Core.Domain.Entities.ZombieSpawnDefinition(
+                prop.TypeId, 
+                prop.TypeId, 
+                "Prop");
+             _turnForge.GameCatalog.RegisterDefinition(spawnDef.DefinitionId, spawnDef);
+             return;
+        }
+
         var propDef = new BarelyAlivePropDefinition
         {
             DefinitionId = prop.TypeId,
@@ -96,6 +151,18 @@ public sealed class BarelyAliveGame
         };
         _turnForge.GameCatalog.RegisterDefinition(propDef.DefinitionId, propDef);
     }
+
+    private void RegisterSystemProp(string id)
+    {
+        var propDef = new BarelyAlivePropDefinition
+        {
+            DefinitionId = id,
+            Name = id,
+            Category = "System"
+        };
+        _turnForge.GameCatalog.RegisterDefinition(propDef.DefinitionId, propDef);
+    }
+    */
 
     private class BarelyAliveConfig
     {

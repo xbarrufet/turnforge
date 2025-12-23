@@ -5,7 +5,7 @@ using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 
 namespace TurnForge.Engine.Tests.Infrastructure.Registration
 {

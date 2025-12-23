@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Behaviours.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Behaviours.Interfaces;
 
-namespace TurnForge.Engine.Entities.Components;
+namespace TurnForge.Engine.Behaviours;
 
 /// <summary>
 /// Base class for all entity behaviours. Behaviours add dynamic logic to entities.

@@ -3,12 +3,12 @@ using BarelyAlive.Rules.Core.Domain.Projectors;
 using Moq;
 using NUnit.Framework;
 using TurnForge.Engine.Commands; // For CommandResult
-using TurnForge.Engine.Commands.Game;
-using TurnForge.Engine.Commands.GameStart.Effects;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Actors.Definitions; // For AgentTypeId
-using TurnForge.Engine.Entities.Appliers.Results;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Entities; // For AgentTypeId equivalent
+using TurnForge.Engine.Commands.Board;
+using TurnForge.Engine.Appliers.Entity.Results;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.ValueObjects;
 
@@ -66,7 +66,11 @@ public class InitializeGameHandlerTests
         };
 
         _mockGameEngine
-            .Setup(e => e.ExecuteCommand(It.IsAny<InitGameCommand>()))
+            .Setup(e => e.ExecuteCommand(It.IsAny<InitializeBoardCommand>()))
+            .Returns(mockTransaction);
+        
+        _mockGameEngine
+            .Setup(e => e.ExecuteCommand(It.IsAny<SpawnPropsCommand>()))
             .Returns(mockTransaction);
 
         // Act
@@ -78,7 +82,7 @@ public class InitializeGameHandlerTests
             Assert.That(result.Response.Success, Is.True);
             Assert.That(result.Response.TransactionId, Is.EqualTo(mockTransaction.Id));
             Assert.That(result.Agents, Has.Count.EqualTo(1));
-            Assert.That(result.Agents.First().AgentName, Is.EqualTo("Survivor"));
+            Assert.That(result.Agents.First().DefinitionId, Is.EqualTo("Survivor"));
             // Payload should NOT contain agents as they are not spawned yet
             Assert.That(result.Response.Payload.Created, Is.Empty);
         });

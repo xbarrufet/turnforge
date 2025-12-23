@@ -1,7 +1,9 @@
-using TurnForge.Engine.Entities.Behaviours.Interfaces;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Behaviours;
+using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Entities;
 
-namespace TurnForge.Engine.Entities.Components;
+namespace TurnForge.Engine.Components;
 
 public class BaseBehaviourComponent : IBehaviourComponent
 {

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Components;
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Components;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Entities.Factories.Interfaces;
@@ -22,7 +22,7 @@ public sealed class GenericActorFactory(
 
     public Prop BuildProp(PropDescriptor descriptor)
     {
-        var definition = gameCatalog.GetDefinition<GameEntityDefinition>(descriptor.DefinitionID);
+        var definition = gameCatalog.GetDefinition<BaseGameEntityDefinition>(descriptor.DefinitionID);
         
         // Determine concrete type from attributes
         var entityType = GetEntityType<Prop>(descriptor.GetType(), definition);
@@ -46,7 +46,7 @@ public sealed class GenericActorFactory(
 
      public Agent BuildAgent(AgentDescriptor descriptor)
     {
-        var definition = gameCatalog.GetDefinition<GameEntityDefinition>(descriptor.DefinitionID);
+        var definition = gameCatalog.GetDefinition<BaseGameEntityDefinition>(descriptor.DefinitionID);
         
         // Determine concrete type from attributes
         var entityType = GetEntityType<Agent>(descriptor.GetType(), definition);
@@ -70,7 +70,7 @@ public sealed class GenericActorFactory(
 
     /// Determines the concrete entity type from EntityType attribute on descriptor or definition
 /// </summary>
-private Type GetEntityType<TDefault>(Type descriptorType, GameEntityDefinition definition) 
+private Type GetEntityType<TDefault>(Type descriptorType, BaseGameEntityDefinition definition) 
     where TDefault : GameEntity
 {
     // Priority 1: Check descriptor type
@@ -89,7 +89,7 @@ private Type GetEntityType<TDefault>(Type descriptorType, GameEntityDefinition d
 /// <summary>
 /// Creates entity instance using reflection
 /// </summary>
-private T CreateEntityInstance<T>(Type concreteType, string definitionId, GameEntityDefinition definition) 
+private T CreateEntityInstance<T>(Type concreteType, string definitionId, BaseGameEntityDefinition definition) 
     where T : GameEntity
 {
     var instance = Activator.CreateInstance(

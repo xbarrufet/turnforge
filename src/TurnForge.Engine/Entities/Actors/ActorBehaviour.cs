@@ -1,4 +1,6 @@
-using TurnForge.Engine.Entities.Components;
+using TurnForge.Engine.Behaviours;
+using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Components;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace TurnForge.Engine.Entities.Actors;

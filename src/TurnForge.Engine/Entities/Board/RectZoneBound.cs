@@ -7,7 +7,7 @@ public readonly record struct RectZoneBound(int X, int Y, int Width, int Height)
 {
     public bool Contains(Position pos)
     {
-        if (!pos.IsDiscrete)
+        if (!pos.IsTile)
         {
             return false;
         }

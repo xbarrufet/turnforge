@@ -1,15 +1,15 @@
 using System.Linq;
 using Moq;
 using NUnit.Framework;
-using TurnForge.Engine.Entities.Appliers;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 using TFGameState = TurnForge.Engine.Entities.GameState;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Tests.Core.Orchestrator;
 

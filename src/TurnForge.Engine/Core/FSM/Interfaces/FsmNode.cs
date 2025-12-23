@@ -2,7 +2,7 @@ using System;
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm.Interfaces;

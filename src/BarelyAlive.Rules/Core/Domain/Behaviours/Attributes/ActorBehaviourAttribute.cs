@@ -1,4 +1,4 @@
-namespace BarelyAlive.Rules.Core.Behaviours.Attributes;
+namespace BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class ActorBehaviourAttribute : Attribute

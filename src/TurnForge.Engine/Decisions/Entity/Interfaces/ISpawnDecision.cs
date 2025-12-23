@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
-namespace TurnForge.Engine.Entities.Decisions.Interfaces;
+namespace TurnForge.Engine.Decisions.Entity.Interfaces;
 
 /// <summary>
 /// Spawn decision that carries a pre-created entity ready to be added to GameState.

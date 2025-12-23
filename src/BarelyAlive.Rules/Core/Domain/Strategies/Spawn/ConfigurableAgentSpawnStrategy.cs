@@ -1,4 +1,4 @@
-using BarelyAlive.Rules.Core.Behaviours.ActorBehaviours;
+using BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
@@ -54,7 +54,7 @@ public class ConfigurableAgentSpawnStrategy(
     /// </summary>
     private void SetDescriptorPosition(AgentDescriptor descriptor, Position position)
     {
-        // Set Position property if available (added to GameEntityBuildDescriptor)
+        // Set Position property on descriptor
         descriptor.Position = position;
     }
     

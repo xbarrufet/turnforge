@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 
-namespace TurnForge.Engine.Entities.Appliers.Interfaces;
+namespace TurnForge.Engine.Appliers.Entity.Interfaces;
 
 public interface IBuildApplier<in TDecision, TEntity> : IApplier<TDecision>
     where TDecision : IBuildDecision<TEntity>

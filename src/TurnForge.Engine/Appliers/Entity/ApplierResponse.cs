@@ -1,7 +1,7 @@
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
-namespace TurnForge.Engine.Entities.Appliers;
+namespace TurnForge.Engine.Appliers.Entity;
 
 public sealed record ApplierResponse(GameState GameState, IGameEffect[] GameEffects);

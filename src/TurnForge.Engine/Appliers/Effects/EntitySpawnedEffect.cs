@@ -1,8 +1,8 @@
-using TurnForge.Engine.Entities.Appliers.Results;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Commands.GameStart.Effects;
+namespace TurnForge.Engine.Appliers.Effects;
 
 /// <summary>
 /// Effect generated when an entity is spawned.

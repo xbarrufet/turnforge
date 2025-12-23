@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 
 namespace TurnForge.Engine.Core.Orchestrator;

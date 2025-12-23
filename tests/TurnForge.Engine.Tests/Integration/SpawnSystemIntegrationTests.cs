@@ -152,7 +152,7 @@ public class SpawnSystemIntegrationTests
     {
         // Arrange
         var request = new SpawnRequest("TestAgent", Count: 1);
-        var definition = _catalog.GetDefinition<GameEntityDefinition>("TestAgent");
+        var definition = _catalog.GetDefinition<BaseGameEntityDefinition>("TestAgent");
 
         // Act
         var descriptor = DescriptorBuilder.Build<AgentDescriptor>(request, definition);
@@ -167,7 +167,7 @@ public class SpawnSystemIntegrationTests
     {
         // Arrange: SpawnRequest
         var request = new SpawnRequest("TestAgent", Count: 1);
-        var definition = _catalog.GetDefinition<GameEntityDefinition>("TestAgent");
+        var definition = _catalog.GetDefinition<BaseGameEntityDefinition>("TestAgent");
 
         // Act 1: Build Descriptor
         var descriptor = DescriptorBuilder.Build<AgentDescriptor>(request, definition);
@@ -191,7 +191,7 @@ public class SpawnSystemIntegrationTests
     {
         // Arrange
         var request = new SpawnRequest("TestAgent", Count: 3);
-        var definition = _catalog.GetDefinition<GameEntityDefinition>("TestAgent");
+        var definition = _catalog.GetDefinition<BaseGameEntityDefinition>("TestAgent");
 
         // Act: Simulate batch spawn (Count = 3)
         for (int i = 0; i < request.Count; i++)
@@ -210,7 +210,7 @@ public class SpawnSystemIntegrationTests
     /// <summary>
     /// Test definition for agents
     /// </summary>
-    private class TestAgentDefinition : GameEntityDefinition
+    private class TestAgentDefinition : BaseGameEntityDefinition
     {
         public int MaxHealth { get; set; }
     }
@@ -218,7 +218,7 @@ public class SpawnSystemIntegrationTests
     /// <summary>
     /// Test definition for props
     /// </summary>
-    private class TestPropDefinition : GameEntityDefinition
+    private class TestPropDefinition : BaseGameEntityDefinition
     {
         public bool IsBlocking { get; set; }
     }

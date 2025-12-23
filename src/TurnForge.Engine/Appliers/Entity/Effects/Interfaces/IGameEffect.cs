@@ -1,7 +1,7 @@
 using System;
-using TurnForge.Engine.Entities.Appliers.Results;
+using TurnForge.Engine.Appliers.Entity.Results;
 
-namespace TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+namespace TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
 /// <summary>
 /// Base interface for all game effects.

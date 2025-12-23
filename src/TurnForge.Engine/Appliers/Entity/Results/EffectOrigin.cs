@@ -1,6 +1,6 @@
 using System;
 
-namespace TurnForge.Engine.Entities.Appliers.Results;
+namespace TurnForge.Engine.Appliers.Entity.Results;
 
 /// <summary>
 /// Identifies the source/origin of an effect during command execution.

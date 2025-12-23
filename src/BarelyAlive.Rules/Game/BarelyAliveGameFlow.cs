@@ -1,10 +1,10 @@
 using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Game;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure.Registration;
 
 namespace BarelyAlive.Rules.Game;
@@ -17,7 +17,7 @@ public static class BarelyAliveGameFlow
 
         var rootNode = builder.AddRoot<TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode>("Root", root =>
         {
-            root.AddLeaf<GameplayNode>("Gameplay");
+            root.Add<GameplayNode>("Gameplay");
         }).Build();
 
         return new FsmController(rootNode, rootNode.Id);
@@ -56,5 +56,25 @@ public static class BarelyAliveGameFlow
              transitionRequested = false; // Stay in gameplay
              return [];
          }
+    }
+
+    public class PlayersPhaseNode : BaseGameNode
+    {
+        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
+    }
+
+    public class ZombiesActivationNode : BaseGameNode
+    {
+        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
+    }
+
+    public class ZombiesTurn : BaseGameNode
+    {
+        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
+        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
+        {
+            transitionRequested = false; // Stay in gameplay
+            return [];
+        }
     }
 }

@@ -1,4 +1,4 @@
-namespace BarelyAlive.Rules.Core.Behaviours.ActorBehaviours;
+namespace BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 
 public class ActorBehaviourNames
 {

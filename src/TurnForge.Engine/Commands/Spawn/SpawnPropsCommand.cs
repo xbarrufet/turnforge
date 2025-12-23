@@ -1,7 +1,7 @@
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.Spawn;
 
-namespace TurnForge.Engine.Commands.Game;
+namespace TurnForge.Engine.Commands.Spawn;
 
 /// <summary>
 /// Command to spawn props in the game.

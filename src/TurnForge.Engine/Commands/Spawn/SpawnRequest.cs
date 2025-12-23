@@ -1,3 +1,7 @@
+using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.Spawn;
@@ -25,5 +29,5 @@ public sealed record SpawnRequest(
     int Count = 1,       // Optional: number of entities to spawn (batch spawn)
     Position? Position = null,  // Optional: spawn position (null = strategy decides)
     Dictionary<string, object>? PropertyOverrides = null,  // Optional: override specific descriptor properties
-    IEnumerable<TurnForge.Engine.Entities.Components.Interfaces.IGameEntityComponent>? ExtraComponents = null // Optional: extra components/behaviors
+    IEnumerable<IGameEntityComponent>? ExtraComponents = null // Optional: extra components/behaviors
 );

@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core.Orchestrator;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
 
 namespace TurnForge.Engine.Decisions.Spawn;

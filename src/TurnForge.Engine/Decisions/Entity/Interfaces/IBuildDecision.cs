@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 
-namespace TurnForge.Engine.Entities.Decisions.Interfaces;
+namespace TurnForge.Engine.Decisions.Entity.Interfaces;
 
 using TurnForge.Engine.Entities.Descriptors.Interfaces;
 

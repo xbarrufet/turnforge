@@ -1,6 +1,7 @@
-using TurnForge.Engine.Entities.Components.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Components.Interfaces;
 
-namespace TurnForge.Engine.Entities.Decisions.Interfaces;
+namespace TurnForge.Engine.Decisions.Entity.Interfaces;
 
 public interface IUpdateDecision<T> : IDecision where T : IGameEntityComponent
 {

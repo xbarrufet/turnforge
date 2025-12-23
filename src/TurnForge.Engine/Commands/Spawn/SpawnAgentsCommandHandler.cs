@@ -3,12 +3,12 @@ using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Factories;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Decisions.Interfaces;
+using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
-namespace TurnForge.Engine.Commands.Game;
+namespace TurnForge.Engine.Commands.Spawn;
 
 /// <summary>
 /// Handler for spawning agents using the new spawn pipeline.
@@ -68,7 +68,7 @@ public sealed class SpawnAgentsCommandHandler : ICommandHandler<SpawnAgentsComma
         foreach (var request in requests)
         {
             // Get definition from catalog
-            var definition = _catalog.GetDefinition<GameEntityDefinition>(request.DefinitionId);
+            var definition = _catalog.GetDefinition<BaseGameEntityDefinition>(request.DefinitionId);
             if (definition == null)
             {
                 // Log warning and skip - definition not found

@@ -1,9 +1,9 @@
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
-using TurnForge.Engine.Entities.Appliers.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Appliers.Results;
+namespace TurnForge.Engine.Appliers.Entity.Results;
 
 public record AgentSpawnedResult : GameEffect
 {

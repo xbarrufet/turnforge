@@ -7,16 +7,16 @@
 
     internal sealed class InMemoryGameCatalog : IGameCatalog
     {
-        public IDefinitionRegistry<string, GameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, GameEntityDefinition>();
+        public IDefinitionRegistry<string, BaseGameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, BaseGameEntityDefinition>();
 
         
 
-        public T GetDefinition<T>(string definitionId) where T : GameEntityDefinition
+        public T GetDefinition<T>(string definitionId) where T : BaseGameEntityDefinition
         {
             return Entities.Get(definitionId) as T;
         }
 
-        public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : GameEntityDefinition
+        public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition
         {
             try
             {
@@ -36,14 +36,19 @@
             }
         }
 
-        public IEnumerable<T> GetAllDefinitions<T>() where T : GameEntityDefinition
+        public IEnumerable<T> GetAllDefinitions<T>() where T : BaseGameEntityDefinition
         {
             return Entities.GetAll().OfType<T>();
         }
 
-        public void RegisterDefinition<T>(string definitionId, T definition) where T : GameEntityDefinition
+        public void RegisterDefinition<T>( T definition) where T : BaseGameEntityDefinition
         {
-            Entities.Register(definitionId, definition);
+            Entities.Register(definition.DefinitionId, definition);
+        }
+
+        public void RegisterDefinition(string definitionId, string name, string category)
+        {
+            Entities.Register(definitionId, new BaseGameEntityDefinition(definitionId, name, category));
         }
 
         public InMemoryGameCatalog()

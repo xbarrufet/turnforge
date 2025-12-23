@@ -1,8 +1,8 @@
-using BarelyAlive.Rules.Core.Behaviours.Attributes;
+using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
 
-namespace BarelyAlive.Rules.Core.Behaviours.ZoneBehaviours;
+namespace BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
 
 /// <summary>
 /// Behaviour que marca una zona como interior.

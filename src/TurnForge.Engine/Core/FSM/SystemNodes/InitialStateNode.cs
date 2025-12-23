@@ -6,7 +6,7 @@ using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Appliers.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Interfaces;
 
 namespace TurnForge.Engine.Core.Fsm.SystemNodes
 {
