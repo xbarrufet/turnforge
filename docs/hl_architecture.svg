@@ -86,16 +86,16 @@
   </text>
 
   <text x="550" y="185" font-size="13" fill="#cbd5e1" text-anchor="middle">
-    • Entities & Components
+    • Entities and Components
   </text>
   <text x="550" y="205" font-size="13" fill="#cbd5e1" text-anchor="middle">
     • Turn Structure (FSM)
   </text>
   <text x="550" y="225" font-size="13" fill="#cbd5e1" text-anchor="middle">
-    • Commands & Decisions
+    • Commands and Decisions
   </text>
   <text x="550" y="245" font-size="13" fill="#cbd5e1" text-anchor="middle">
-    • Rules & Constraints
+    • Rules and Constraints
   </text>
   <text x="550" y="265" font-size="13" fill="#cbd5e1" text-anchor="middle">
     • Victory / Failure Conditions
