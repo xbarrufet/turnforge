@@ -100,6 +100,7 @@ The Game UI layer is responsible for:
 * Rendering (2D / 3D)
 * Animations and visual effects
 * Player input
+* Keeps its own view model
 * Camera and audio
 * UX flow and feedback
 
