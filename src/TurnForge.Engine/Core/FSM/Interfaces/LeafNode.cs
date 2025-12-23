@@ -1,16 +1,13 @@
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
-using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Core.Fsm;
 
 namespace TurnForge.Engine.Core.Fsm.Interfaces;
 
 public abstract class LeafNode : FsmNode
 {
     private readonly HashSet<Type> _allowedCommands = new();
-    public abstract bool IsCommandValid(ICommand command, GameState state);
-    public abstract IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested);
 
     public void AddAllowedCommand<T>() where T : ICommand
     {
@@ -26,17 +23,13 @@ public abstract class LeafNode : FsmNode
     {
         return _allowedCommands.ToList();
     }
+    
+    // By default, LeafNodes serve as stops, so Execute does nothing unless overridden.
+    public override NodeExecutionResult Execute(GameState state) => NodeExecutionResult.Empty();
 
-    public void ClearAllowedCommands()
-    {
-        _allowedCommands.Clear();
-    }
-
-    public void RemoveAllowedCommand<T>() where T : ICommand
-    {
-        _allowedCommands.Remove(typeof(T));
-    }
-
-
+    // LeafNode is NEVER completed automatically. It relies on state changes triggered by commands.
+    // Subclasses MUST override if they have an exit condition. Or they stay forever?
+    // Actually, Interactive Node waits for input.
+    // We default to false.
+    public override bool IsCompleted(GameState state) => false;
 }
-

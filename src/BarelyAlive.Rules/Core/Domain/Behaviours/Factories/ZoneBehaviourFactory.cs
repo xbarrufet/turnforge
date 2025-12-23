@@ -30,6 +30,8 @@ public static class ZoneBehaviourFactory
             );
     }
 
+    public static bool IsRegistered(string type) => _behaviourTypes.ContainsKey(type);
+
     public static IZoneBehaviour Create(string type, Dictionary<string, JsonElement> data)
     {
         if (!_behaviourTypes.TryGetValue(type, out var behaviourType))

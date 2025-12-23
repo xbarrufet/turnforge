@@ -1,4 +1,4 @@
-
+using System;
 using System.Collections.Generic;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities;
@@ -19,6 +19,8 @@ public class ChangeStateApplier : IFsmApplier
 
     public ApplierResponse Apply(GameState state)
     {
-        return new ApplierResponse(state.WithCurrentStateId(_newStateId), []);
+        if (state == null) throw new ArgumentNullException(nameof(state), "GameState cannot be null when applying ChangeStateApplier.");
+        
+        return new ApplierResponse(state.WithCurrentStateId(_newStateId), Array.Empty<IGameEffect>());
     }
 }

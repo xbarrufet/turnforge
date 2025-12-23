@@ -1,3 +1,4 @@
+using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
@@ -16,8 +17,11 @@ public class Survivor : Agent
 [EntityType(typeof(Survivor))]
 public class SurvivorDefinition : BaseGameEntityDefinition
 {
+    [MapToComponent(typeof(IHealthComponent), TurnForgeComponents.Prop_HealthComponent_MaxHealth)]
+    public int MaxHealth { get; set; }
     public SurvivorDefinition(string definitionId, string name) : base(definitionId, name, "Survivor")
     {
+        
     }
 }
 

@@ -37,37 +37,30 @@ public sealed class MissionLoader
         var missionDto = JsonSerializer.Deserialize<MissionDto>(json, options)
                          ?? throw new ArgumentException("Failed to deserialize mission JSON");
 
-        // 1. Build Coordinate Map (Vector -> TileId)
-        var coordinateMap = new Dictionary<Vector, TileId>();
+        // 1. Build Maps
+        var idToTileMap = new Dictionary<string, TileId>();
+        var vectorToTileMap = new Dictionary<Vector, TileId>();
 
         // Collect nodes
         foreach (var nodeDto in missionDto.Spatial.Nodes)
         {
-            var vec = nodeDto.ToPosition();
-            if (!coordinateMap.ContainsKey(vec))
-            {
-                coordinateMap[vec] = TileId.New();
-            }
+             if (Guid.TryParse(nodeDto.Id, out var checklistGuid))
+             {
+                 var tileId = new TileId(checklistGuid);
+                 idToTileMap[nodeDto.Id] = tileId;
+                 var vec = new Vector(nodeDto.X, nodeDto.Y);
+                 vectorToTileMap[vec] = tileId;
+             }
         }
 
-        // 2. Map Spatial
-        var spatialDescriptor = MapSpatial(missionDto.Spatial, coordinateMap);
+        // 2. Map Spatial (Including Zones now)
+        var (spatialDescriptor, zoneDescriptors) = MapSpatialAndZones(missionDto.Spatial, idToTileMap);
 
-        // 3. Map Zones & Props
-        var zoneDescriptors = new List<ZoneDescriptor>();
-        var generatedProps = new List<SpawnRequest>();
-
-        foreach (var zone in missionDto.Zones)
-        {
-            var (descriptor, requests) = MapZone(zone, coordinateMap);
-            zoneDescriptors.Add(descriptor);
-            generatedProps.AddRange(requests);
-        }
-
-        var propRequests = missionDto.Props.Select(p => MapProp(p, coordinateMap)).ToList();
-        propRequests.AddRange(generatedProps);
+        // Map explicit props (Spawns, Doors, Areas)
+        // Pass both maps to MapProp to handle different positioning types
+        var propRequests = missionDto.Props.Select(p => MapProp(p, idToTileMap, vectorToTileMap)).ToList();
         
-        var agentDescriptors = missionDto.Agents.Select(a => MapAgent(a, coordinateMap)).ToArray();
+        var agentDescriptors = missionDto.Agents.Select(a => MapAgent(a, vectorToTileMap)).ToArray();
 
         return (spatialDescriptor, zoneDescriptors.ToArray(), propRequests.ToArray(), agentDescriptors);
     }
@@ -81,7 +74,7 @@ public sealed class MissionLoader
         if (dto.Position != null)
         {
             var posDto = (PositionDto)dto.Position;
-            var vec = posDto.ToPosition();
+            var vec = posDto.ToPosition(); // Ensure ToPosition uses just X,Y
             if (map.TryGetValue(vec, out var tileId))
             {
                 position = new Position(tileId);
@@ -90,113 +83,156 @@ public sealed class MissionLoader
         // Agents in mission must have a position
         if (position == null) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
 
-        // Behaviors are mapped from DTO if present (assuming factory creates base components)
         var behaviours = dto.Behaviours
             .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
-            .Cast<IGameEntityComponent>() // Cast to common interface
+            .Cast<IGameEntityComponent>() 
             .ToList();
 
         // Create SpawnRequest instead of Descriptor
         return new SpawnRequest(
-            DefinitionId: agentName, // AgentName is DefinitionId in this context
+            DefinitionId: agentName,
             Position: position,
             ExtraComponents: behaviours
         );
     }
     
 
-
-    private static SpatialDescriptor MapSpatial(SpatialDto dto, Dictionary<Vector, TileId> map)
+    private static (SpatialDescriptor, List<ZoneDescriptor>) MapSpatialAndZones(SpatialDto dto, Dictionary<string, TileId> idMap)
     {
         if (dto.Type != "DiscreteGraph")
             throw new NotSupportedException($"Spatial type '{dto.Type}' not supported");
 
         var nodes = dto.Nodes
-            .Select(n => map[n.ToPosition()])
+            .Where(n => idMap.ContainsKey(n.Id))
+            .Select(n => idMap[n.Id])
             .ToList();
 
-        var connections = new List<DiscreteConnectionDeacriptor>();
+        var connections = new List<DiscreteConnectionDescriptor>();
         foreach (var c in dto.Connections)
         {
-            if (map.TryGetValue(c.From.ToPosition(), out var fromId) &&
-                map.TryGetValue(c.To.ToPosition(), out var toId))
+            if (idMap.TryGetValue(c.From, out var fromId) &&
+                idMap.TryGetValue(c.To, out var toId))
             {
-                connections.Add(new DiscreteConnectionDeacriptor(fromId, toId));
+                // Parse Connection ID
+                var connectionId = !string.IsNullOrEmpty(c.Id) && Guid.TryParse(c.Id, out var cid) 
+                    ? new ConnectionId(cid) 
+                    : ConnectionId.New();
+
+                connections.Add(new DiscreteConnectionDescriptor(connectionId, fromId, toId));
             }
         }
-
-        return new DiscreteSpatialDescriptor(nodes, connections);
-    }
-
-    private static (ZoneDescriptor, IEnumerable<SpawnRequest>) MapZone(ZoneDto dto, Dictionary<Vector, TileId> map)
-    {
-        var zoneId = new ZoneId(dto.Id);
-
-        IZoneBound bound = dto.Bound.Type switch
+        
+        // Map Zones from Spatial
+        var zoneDescriptors = new List<ZoneDescriptor>();
+        foreach(var z in dto.Zones)
         {
-            "TileSet" => new TileSetZoneBound(
-                dto.Bound.Tiles
-                   .Select(t => t.ToPosition())
-                   .Where(map.ContainsKey) // Ensure we only include valid mapped tiles
-                   .Select(v => new Position(map[v]))
-            ),
-            _ => throw new NotSupportedException($"ZoneBound type '{dto.Bound.Type}' not supported")
-        };
-
-        var behaviours = dto.Behaviours
-            .Select(BarelyAliveBehaviourFactory.CreateZoneBehaviour)
-            .ToList();
-
-        var requests = new List<SpawnRequest>();
-        if (behaviours.Any())
-        {
-            var tiles = dto.Bound.Tiles
-                .Select(t => t.ToPosition())
-                .Where(map.ContainsKey) // Ensure we only include valid mapped tiles
-                .Select(v => map[v])
-                .ToArray();
-
-            var component = new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(behaviours);
-            requests.Add(new SpawnRequest(
-                DefinitionId: "BarelyAlive.ZoneEffect",
-                Position: new Position(tiles),
-                ExtraComponents: new List<IGameEntityComponent> { component }
-            ));
+             var zoneId = new ZoneId(z.Id);
+             IZoneBound bound = z.Bound.Type switch
+             {
+                 "TileSet" => new TileSetZoneBound(
+                     z.Bound.Tiles
+                        .Where(idMap.ContainsKey) 
+                        .Select(id => new Position(idMap[id]))
+                 ),
+                 _ => throw new NotSupportedException($"ZoneBound type '{z.Bound.Type}' not supported")
+             };
+             zoneDescriptors.Add(new ZoneDescriptor(zoneId, bound));
         }
 
-        return (new ZoneDescriptor(zoneId, bound, new List<IZoneBehaviour>()), requests);
+        return (new DiscreteSpatialDescriptor(nodes, connections), zoneDescriptors);
     }
+    
+    // MapZone method removed as it is now integrated into spatial mapping and no longer generates props.
 
-    private static SpawnRequest MapProp(PropDto dto, Dictionary<Vector, TileId> map)
+    private static SpawnRequest MapProp(PropDto dto, Dictionary<string, TileId> idMap, Dictionary<Vector, TileId> vectorMap)
     {
         var definitionId = dto.TypeId;
 
         Position? position = null;
         if (dto.Position != null)
         {
-            var vector = new TurnForge.Engine.ValueObjects.Vector(dto.Position.X, dto.Position.Y);
-            if (map.TryGetValue(vector, out var tileId))
+            if (dto.Position is JsonElement elem)
             {
-                position = new TurnForge.Engine.ValueObjects.Position(tileId);
+                if (elem.ValueKind == JsonValueKind.String)
+                {
+                    var idStr = elem.GetString();
+                    if (!string.IsNullOrEmpty(idStr))
+                    {
+                        if (idMap.TryGetValue(idStr, out var tileId))
+                        {
+                            position = new Position(tileId);
+                        }
+                        else if (Guid.TryParse(idStr, out var guid))
+                        {
+                            position = new Position(new ConnectionId(guid));
+                        }
+                    }
+                }
+                else if (elem.ValueKind == JsonValueKind.Object)
+                {
+                    var posDto = JsonSerializer.Deserialize<PositionDto>(elem.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (posDto != null)
+                    {
+                        var vec = new Vector(posDto.X, posDto.Y);
+                        if (vectorMap.TryGetValue(vec, out var tileId))
+                        {
+                            position = new Position(tileId);
+                        }
+                    }
+                }
+                else if (elem.ValueKind == JsonValueKind.Array)
+                {
+                    // Array of IDs (strings) for Area
+                    var ids = new List<string>();
+                    foreach (var item in elem.EnumerateArray())
+                    {
+                        if(item.ValueKind == JsonValueKind.String) ids.Add(item.GetString() ?? "");
+                    }
+                    
+                    var tiles = ids.Where(idMap.ContainsKey).Select(id => idMap[id]).ToArray();
+                    if (tiles.Any())
+                    {
+                        position = new Position(tiles);
+                    }
+                }
             }
         }
 
-        // Behaviors are mapped from DTO if present
-        // Using CreateActorBehaviour as props share similar behavior structure in this context
-        var behaviours = dto.Behaviours
-            .Select(b => 
-            {
-                var obj = BarelyAliveBehaviourFactory.CreateActorBehaviour(b);
-                if (obj is IGameEntityComponent c) return c;
-                throw new InvalidCastException($"Behaviour {obj.GetType().Name} does not implement IGameEntityComponent");
-            })
-            .ToList();
+        var actorComponents = new List<IGameEntityComponent>();
+        var zoneBehaviours = new List<IZoneBehaviour>();
 
-        // Create SpawnRequest for Prop
+        foreach (var bDto in dto.Behaviours)
+        {
+            // Special handling for Zombies/Spawns handled in BarelyAliveBehaviourFactory
+            // Usually BarelyAliveBehaviourFactory.CreateActorBehaviour handles "ZombieSpawn"
+            // We can check if it's that OR registered in ActorFactory.
+            if (bDto.Type == "ZombieSpawn" || 
+                BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ActorBehaviourFactory.IsRegistered(bDto.Type))
+            {
+                var component = BarelyAliveBehaviourFactory.CreateActorBehaviour(bDto);
+                if (component is IGameEntityComponent c) actorComponents.Add(c);
+            }
+            else if (BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ZoneBehaviourFactory.IsRegistered(bDto.Type))
+            {
+                // It's a zone behavior (Indoor, Dark)
+                var zb = BarelyAliveBehaviourFactory.CreateZoneBehaviour(bDto);
+                zoneBehaviours.Add(zb);
+            }
+            else
+            {
+                throw new NotSupportedException($"Behaviour '{bDto.Type}' is not registered as Actor or Zone behaviour.");
+            }
+        }
+        
+        if (zoneBehaviours.Any())
+        {
+            actorComponents.Add(new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(zoneBehaviours));
+        }
+
         return new SpawnRequest(
             DefinitionId: definitionId,
             Position: position,
-            ExtraComponents: behaviours
+            ExtraComponents: actorComponents
         );
     }
 }

@@ -30,6 +30,8 @@ public static class ActorBehaviourFactory
             );
     }
 
+    public static bool IsRegistered(string type) => _behaviourTypes.ContainsKey(type);
+
     public static IActorBehaviour Create(string type, Dictionary<string, JsonElement> data)
     {
         if (!_behaviourTypes.TryGetValue(type, out var behaviourType))

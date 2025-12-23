@@ -1,63 +1,45 @@
 using System;
+using System.Collections.Generic;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Infrastructure.Registration
+namespace TurnForge.Engine.Core.FSM
 {
     public class BranchBuilder
     {
-        private readonly BranchNode _parent;
-        private FsmNode? _lastNodeAdded = null;
+        private readonly List<FsmNode> _sequence;
 
-        public BranchBuilder(BranchNode parent)
+        public BranchBuilder(List<FsmNode> sequence)
         {
-            // Rationale: Si por algún error de lógica interna llegamos aquí 
-            // con algo que no es una rama, cortamos en seco.
-            _parent = parent ?? throw new ArgumentNullException(nameof(parent));
+            _sequence = sequence ?? throw new ArgumentNullException(nameof(sequence));
         }
 
-        // Validación: Solo permite clases que hereden de LeafNode
-        public BranchBuilder AddLeaf<T>(string name) where T : LeafNode, new()
+        public BranchBuilder AddLeaf<T>(string name) where T : FsmNode, new()
         {
-            var leaf = new T { Id = NodeId.New(), Name = name };
-            ConfigureNode(leaf);
+            var node = new T { Id = NodeId.New(), Name = name };
+            _sequence.Add(node);
             return this;
         }
-
-        // Validación: Solo permite clases que hereden de BranchNode
-        public BranchBuilder AddBranch<T>(string name, Action<BranchBuilder>? configure = null) where T : BranchNode, new()
+        
+        // Alias for AddLeaf - since differentiation is removed
+        public BranchBuilder AddNode<T>(string name) where T : FsmNode, new()
         {
-            var branch = new T { Id = NodeId.New(), Name = name };
-            ConfigureNode(branch);
+            return AddLeaf<T>(name);
+        }
 
-            // Rationale: Las ramas son las únicas que pueden tener un bloque de configuración
-            // porque son las únicas que pueden contener otros nodos.
+        public BranchBuilder AddBranch<T>(string name, Action<BranchBuilder>? configure = null) where T : FsmNode, new()
+        {
+            var node = new T { Id = NodeId.New(), Name = name };
+            _sequence.Add(node);
+
             if (configure != null)
             {
-                var subBuilder = new BranchBuilder(branch);
-                configure(subBuilder);
+                // Pass the same sequence to flatten children into the main list
+                // Order: BranchNode (Container) -> Child1 -> Child2
+                configure(this);
             }
             return this;
-        }
-
-        private void ConfigureNode(FsmNode newNode)
-        {
-            // Rationale: Aquí garantizamos que la estructura Rama-Hoja sea íntegra.
-            newNode.Parent = _parent;
-
-            if (_parent.FirstChild == null)
-            {
-                _parent.FirstChild = newNode;
-            }
-
-            if (_lastNodeAdded != null)
-            {
-                _lastNodeAdded.NextSibling = newNode;
-            }
-
-            _lastNodeAdded = newNode;
-            _parent.Children.Add(newNode);
         }
     }
 }

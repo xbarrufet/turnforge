@@ -1,11 +1,12 @@
+using System;
+using System.Collections.Generic;
 using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure.Registration;
+using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Game;
 
@@ -15,66 +16,61 @@ public static class BarelyAliveGameFlow
     {
         var builder = new GameFlowBuilder();
 
-        var rootNode = builder.AddRoot<TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode>("Root", root =>
+        // Root Node (Gameplay/Round)
+        // Contains the sequence of the round
+        builder.AddRoot<GameplayNode>("Gameplay", root =>
         {
-            root.Add<GameplayNode>("Gameplay");
-        }).Build();
+            root.AddLeaf<PlayersPhaseNode>("Players Phase");
+            root.AddLeaf<ZombiesActivationNode>("Zombies Activation");
+            root.AddLeaf<ZombiesSpawnNode>("Zombies Spawn");
+        });
+        
+        var sequence = builder.Build();
 
-        return new FsmController(rootNode, rootNode.Id);
+        return new FsmController(sequence);
     }
 
     public abstract class BaseGameNode : LeafNode
     {
-        // Default implementation: Valid if type is in allowed list
-        public override bool IsCommandValid(ICommand command, GameState state)
-        {
-            return GetAllowedCommands().Contains(command.GetType());
-        }
-
-        // Default implementation: No specific effects, always request transition if command succeeds
-        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-        {
-            transitionRequested = result.Success;
-            return [];
-        }
+        // Default base
     }
 
-    public class GameplayNode : BaseGameNode
+    /// <summary>
+    /// Root node representing the start of gameplay/round.
+    /// Acts as a structural pass-through to enter the phases.
+    /// </summary>
+    public class GameplayNode : FsmNode
     {
-         public override IReadOnlyList<System.Type> GetAllowedCommands() => []; 
-
-         // Override IsCommandValid to allow all for now, since we haven't listed all commands
-         public override bool IsCommandValid(ICommand command, GameState state)
-         {
-             return true; 
-         }
+         public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>(); 
+         public override bool IsCommandAllowed(Type commandType) => false;
          
-         // Gameplay usually doesn't transition automatically after every command
-         // So we override execution
-         public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-         {
-             transitionRequested = false; // Stay in gameplay
-             return [];
-         }
+         // Immediate completion to pass control to first child (Players Phase)
+         public override bool IsCompleted(GameState state) => true; 
     }
 
     public class PlayersPhaseNode : BaseGameNode
     {
-        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
+        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+        public override bool IsCommandAllowed(Type commandType) => true; // Allow interaction
+        
+        // Stays active until logic determines end of phase (e.g. all AP used)
+        public override bool IsCompleted(GameState state) => false; 
     }
 
     public class ZombiesActivationNode : BaseGameNode
     {
-        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
+        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+        public override bool IsCommandAllowed(Type commandType) => false; // Automated?
+        
+        // Placeholder: immediate pass or wait for logic
+        public override bool IsCompleted(GameState state) => false; 
     }
 
-    public class ZombiesTurn : BaseGameNode
+    public class ZombiesSpawnNode : BaseGameNode
     {
-        public override IReadOnlyList<System.Type> GetAllowedCommands() => [];
-        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-        {
-            transitionRequested = false; // Stay in gameplay
-            return [];
-        }
+        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+        public override bool IsCommandAllowed(Type commandType) => false;
+        
+        public override bool IsCompleted(GameState state) => false; 
     }
 }

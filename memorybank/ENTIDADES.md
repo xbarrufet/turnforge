@@ -139,14 +139,39 @@ var faction = entity.GetComponent<IFactionComponent>(); // ✅ Works
 
 The FSM controls game flow through phases (setup, player turn, enemy turn, etc.).
 
+
 ### Node Types
 
-| Type | Purpose | Can Handle Commands | Example |
-|------|---------|---------------------|---------|
-| **BranchNode** | Organizer/container | ❌ No | `SystemRootNode` |
-| **LeafNode** | Executable state | ✅ Yes | `InitialStateNode`, `PlayerTurnNode` |
+| Type | Nature | Can Handle Commands | Behavior | Example |
+|------|--------|---------------------|----------|---------|
+| **BranchNode** | Structural | ❌ No | Grouping only. Passes control to children. | `SystemRootNode` |
+| **PassNode** | Background | ❌ No | Executes logic, applies decisions, auto-advances. | `SetupNode` |
+| **LeafNode** | Interactive | ✅ Yes | Stops recursion. Waiting for user/command input. | `PlayerTurnNode` |
 
-**Rule:** Only `LeafNode` can process commands. `BranchNode` groups related states.
+**Rule:** Recursion continues through `BranchNode` and `PassNode` until a `LeafNode` (or a `LaunchCommand` result) is reached.
+
+### Recursive Navigation & Phases
+
+The FSM engine uses a **Recursive Navigation** system (v2.0).
+
+**NodePhaseResult:**
+Nodes return a standardized result from `OnStart`/`OnEnd` events:
+
+```csharp
+public struct NodePhaseResult
+{
+    public PhaseResult Result;                 // Pass, LaunchCommand, ApplyDecisions
+    public ICommand? Command;                  // If LaunchCommand
+    public IEnumerable<IFsmApplier>? Decisions; // Effects to apply immediately
+}
+```
+
+1. **Pass**: Engine moves to the next sibling immediately.
+2. **ApplyDecisions**: Engine applies effects to state, then moves to next sibling.
+3. **LaunchCommand**: recursion STOPS, and the Engine executes the returned Command (as if it came from User). Matches `StopLeafNode` behavior but automatic.
+
+**Loop Guard:**
+The controller acts as a circuit breaker, detecting infinite loops (e.g. A -> B -> A) and terminating execution to prevent freezes.
 
 ### Auto-Navigation
 

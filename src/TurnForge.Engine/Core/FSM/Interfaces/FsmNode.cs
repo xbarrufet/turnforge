@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm.Interfaces;
@@ -12,14 +12,29 @@ public abstract class FsmNode
     public NodeId Id { get; internal init; }
     public string Name { get; init; } = string.Empty;
 
-    // Estos son datos, no lógica. El nodo no los usa nunca.
-    public FsmNode? NextSibling { get; internal set; }
-    public BranchNode? Parent { get; internal set; }
+    // Hierarchy removed (Parent, Children, NextSibling) - Flat List Architecture
 
     public abstract bool IsCommandAllowed(Type commandType);
     public abstract IReadOnlyList<Type> GetAllowedCommands();
 
-    // El nodo solo se ocupa de su propia vida
-    public virtual IEnumerable<IFsmApplier> OnStart(GameState state) => Enumerable.Empty<IFsmApplier>();
-    public virtual IEnumerable<IFsmApplier> OnEnd(GameState state) => Enumerable.Empty<IFsmApplier>();
+    /// <summary>
+    /// Executes the node's main logic.
+    /// Returns a set of application decisions/effects and optionally a command to launch.
+    /// </summary>
+    public virtual NodeExecutionResult Execute(GameState state) 
+        => NodeExecutionResult.Empty();
+
+    /// <summary>
+    /// Determines if the current node has completed its work and the engine should move to the next node.
+    /// Default: true (Pass-through node).
+    /// Interactive nodes (Leafs) should return false until a condition is met.
+    /// </summary>
+    public virtual bool IsCompleted(GameState state) => true;
+    
+    /// <summary>
+    /// Called when a command is executed while this node is active.
+    /// Used by interactive nodes to react to external input logic (legacy support or specific logic).
+    /// </summary>
+    public virtual NodeExecutionResult OnCommandExecuted(ICommand command, CommandResult result)
+        => NodeExecutionResult.Empty();
 }

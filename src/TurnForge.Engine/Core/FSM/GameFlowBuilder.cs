@@ -1,15 +1,17 @@
 using System;
+using System.Collections.Generic;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
+using TurnForge.Engine.Core.FSM;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Infrastructure.Registration
 {
     public class GameFlowBuilder
     {
-        private FsmNode? _root = null;
+        private readonly List<FsmNode> _userSequence = new();
 
-        public GameFlowBuilder AddRoot<T>(string name, Action<BranchBuilder>? configure = null) where T : BranchNode, new()
+        public GameFlowBuilder AddRoot<T>(string name, Action<BranchBuilder>? configure = null) where T : FsmNode, new()
         {
             var root = new T
             {
@@ -17,32 +19,31 @@ namespace TurnForge.Engine.Infrastructure.Registration
                 Name = name
             };
 
-            _root = root;
+            _userSequence.Add(root);
 
             if (configure != null)
             {
-                var builder = new BranchBuilder(root);
+                var builder = new BranchBuilder(_userSequence);
                 configure(builder);
             }
             return this;
         }
 
-        public FsmNode Build()
+        public List<FsmNode> Build()
         {
-            if (_root == null)
-                throw new InvalidOperationException("FSM Error: Se debe definir un nodo Raíz (Root) para el flujo.");
+            var finalSequence = new List<FsmNode>();
 
-            // Create System Wrapper
-            var systemRoot = new TurnForge.Engine.Core.Fsm.SystemNodes.SystemRootNode
-            {
-                Id = NodeId.New(),
-                Name = "SystemRoot"
-            };
-
+            // 1. System Initialization Nodes
             var initial = new TurnForge.Engine.Core.Fsm.SystemNodes.InitialStateNode
             {
                 Id = NodeId.New(),
                 Name = "InitialState"
+            };
+
+            var boardReady = new TurnForge.Engine.Core.Fsm.SystemNodes.BoardReadyNode
+            {
+                Id = NodeId.New(),
+                Name = "BoardReady"
             };
 
             var prepared = new TurnForge.Engine.Core.Fsm.SystemNodes.GamePreparedNode
@@ -51,22 +52,18 @@ namespace TurnForge.Engine.Infrastructure.Registration
                 Name = "GamePrepared"
             };
 
-            // Link Hierarchy (Parent/Children)
-            systemRoot.Children.Add(initial);
-            systemRoot.Children.Add(prepared);
-            systemRoot.Children.Add(_root);
+            finalSequence.Add(initial);
+            finalSequence.Add(boardReady);
+            finalSequence.Add(prepared);
 
-            initial.Parent = systemRoot;
-            prepared.Parent = systemRoot;
-            _root.Parent = systemRoot;
+            // 2. User Defined Logic
+            if (_userSequence.Count == 0)
+            {
+                throw new InvalidOperationException("FSM Error: Sequence is empty. Add at least one user node.");
+            }
+            finalSequence.AddRange(_userSequence);
 
-            // Link Navigation (FirstChild/Siblings)
-            systemRoot.FirstChild = initial;
-            initial.NextSibling = prepared;
-            prepared.NextSibling = _root;
-            _root.NextSibling = null; // Encapsulation: User root is last.
-
-            return systemRoot;
+            return finalSequence;
         }
     }
 }

@@ -64,7 +64,7 @@ public sealed class GameEngineRuntime : IGameEngine
             //2- check if we are in a valid state to execute the command
             if (_fsmController != null)
             {
-                ValidateIfValidState(_fsmController.CurrentState, command);
+                ValidateIfValidState(_fsmController.CurrentNode, command);
             }
 
             //3- execute the command
@@ -83,17 +83,39 @@ public sealed class GameEngineRuntime : IGameEngine
                     _orchestrator.Enqueue(result.Decisions);
                     state = _orchestrator.CurrentState; // Update state with new scheduler
                 }
-                // Standard reaction, here is where we process the command effects in the FSM
+                
+                // Standard reaction (and auto-navigation)
                 var stepResult = _fsmController.HandleCommand(command, state, result);
                 effects.AddRange(stepResult.Effects);
-                // we need to check if there is a transition
+                
                 _repository.SaveGameState(stepResult.State);
-                if (stepResult.TransitionRequested)
+                
+                // 5- Auto-Launch Command (Recursion)
+                if (stepResult.CommandToLaunch != null)
                 {
-                    var transitionResult = _fsmController.MoveForwardRequest(stepResult.State);
-                    effects.AddRange(transitionResult.Effects);
-                    _repository.SaveGameState(transitionResult.State);
+                    _logger.Log($"[Engine] Auto-Launching Command: {stepResult.CommandToLaunch.GetType().Name}");
+                    // Execute the auto-launched command immediately
+                    // Note: We return the result of the chain. 
+                    // Effects from previous steps are lost? No, we should merge them?
+                    // Typically, if a command triggers another, the UI receives the FINAL sequence.
+                    // But effectively, this is a distinct transaction.
+                    // For simplicity, we return the transaction of the launched command, 
+                    // BUT UI might miss effects of the trigger?
+                    // Ideally, we chain transactions or effects.
+                    // IMPORTANT: TurnForge returns single Transaction.
+                    // If we recurse, we get a NEW transaction.
+                    // We must merge effects?
+                    
+                    var subTransaction = ExecuteCommand(stepResult.CommandToLaunch);
+                    
+                    // Merge effects from valid execution
+                    var mergedEffects = new List<IGameEffect>(effects);
+                    if (subTransaction.Effects != null) mergedEffects.AddRange(subTransaction.Effects);
+                    
+                    subTransaction.Effects = mergedEffects.ToArray();
+                    return subTransaction;
                 }
+
                 // activate ACK state in FSM 
                 _fsmController.WaittingForACK = true;
                 transaction.Result = CommandResult.ACKResult;

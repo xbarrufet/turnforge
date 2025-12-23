@@ -19,6 +19,5 @@ using TurnForge.Engine.ValueObjects;
 public sealed record ZoneDescriptor
 (
     ZoneId Id,
-    IZoneBound Bound,
-    IReadOnlyList<IZoneBehaviour> Behaviours
+    IZoneBound Bound
 );

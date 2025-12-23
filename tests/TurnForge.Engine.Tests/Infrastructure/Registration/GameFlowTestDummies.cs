@@ -1,44 +1,38 @@
-
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
+using TurnForge.Engine.Entities;
 
 namespace TurnForge.Engine.Tests.Infrastructure.Registration
 {
-    internal class BattleRound : BranchNode { } // Root
-    internal class MovementPhase : BranchNode { } // Child of Root
+    // Formerly BranchNode, now FsmNode acting as structural pass-through
+    internal class BattleRound : FsmNode 
+    { 
+        public override bool IsCommandAllowed(Type type) => false;
+        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+        public override bool IsCompleted(GameState state) => true; 
+    }
+
+    internal class MovementPhase : FsmNode 
+    { 
+        public override bool IsCommandAllowed(Type type) => false;
+        public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
+        public override bool IsCompleted(GameState state) => true; 
+    }
 
     internal class ShootingPhase : LeafNode
     {
-        public override bool IsCommandValid(ICommand command, TurnForge.Engine.Entities.GameState state) => true;
-        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-        {
-            transitionRequested = false;
-            return Enumerable.Empty<IFsmApplier>();
-        }
+        // Interactive: waits.
+        public override bool IsCompleted(GameState state) => false;
     }
 
     internal class NormalMove : LeafNode
     {
-        public override bool IsCommandValid(ICommand command, TurnForge.Engine.Entities.GameState state) => true;
-        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-        {
-            transitionRequested = false;
-            return Enumerable.Empty<IFsmApplier>();
-        }
+        public override bool IsCompleted(GameState state) => false;
     }
 
     internal class Reinforcements : LeafNode
     {
-        public override bool IsCommandValid(ICommand command, TurnForge.Engine.Entities.GameState state) => true;
-        public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-        {
-            transitionRequested = false;
-            return Enumerable.Empty<IFsmApplier>();
-        }
+        public override bool IsCompleted(GameState state) => false;
     }
 }

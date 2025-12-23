@@ -45,7 +45,7 @@ public class EntitySystemIntegrationTests
         };
 
         // Act - Register the definition
-        _catalog.RegisterDefinition("Survivors.Mike", survivorDef);
+        _catalog.RegisterDefinition(survivorDef);
 
         // Assert - Retrieve and verify
         var retrieved = _catalog.GetDefinition<TestSurvivorDefinition>("Survivors.Mike");
@@ -68,7 +68,7 @@ public class EntitySystemIntegrationTests
             Category = "Survivor",
             MaxHealth = 8
         };
-        _catalog.RegisterDefinition("Survivors.Amy", survivorDef);
+        _catalog.RegisterDefinition(survivorDef);
 
         // Act
         var success = _catalog.TryGetDefinition<TestSurvivorDefinition>("Survivors.Amy", out var result);
@@ -108,7 +108,7 @@ public class EntitySystemIntegrationTests
             Name = "Mike",
             Category = "Survivor",
             MaxHealth = 10        };
-        _catalog.RegisterDefinition("Survivors.Mike", survivorDef);
+        _catalog.RegisterDefinition(survivorDef);
 
         // Create descriptor with position
         var descriptor = new TestSurvivorDescriptor("Survivors.Mike")
@@ -146,7 +146,7 @@ public class EntitySystemIntegrationTests
             MaxHealth = 12
         };
         // Act - Register
-        _catalog.RegisterDefinition("Survivors.Josh", survivorDef);
+        _catalog.RegisterDefinition(survivorDef);
 
         // Assert - Retrieve and verify custom component mapping
         var retrieved = _catalog.GetDefinition<TestSurvivorDefinitionWithCustomComponent>("Survivors.Josh");

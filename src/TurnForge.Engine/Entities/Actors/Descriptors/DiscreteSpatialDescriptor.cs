@@ -5,5 +5,5 @@ namespace TurnForge.Engine.Commands.LoadGame.Descriptors;
 
 public sealed record DiscreteSpatialDescriptor(
     IReadOnlyList<TileId> Nodes,
-    IReadOnlyList<DiscreteConnectionDeacriptor> Connections
+    IReadOnlyList<DiscreteConnectionDescriptor> Connections
 ) : SpatialDescriptor;

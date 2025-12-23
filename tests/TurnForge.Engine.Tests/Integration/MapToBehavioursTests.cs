@@ -41,7 +41,7 @@ public class MapToBehavioursTests
             }
         };
 
-        _catalog.RegisterDefinition(definition.DefinitionId, definition);
+        _catalog.RegisterDefinition(definition);
         var descriptor = new AgentDescriptor(definition.DefinitionId);
         var factory = new GenericActorFactory(_catalog);
 
@@ -70,7 +70,7 @@ public class MapToBehavioursTests
             Behaviours = new List<BaseBehaviour>() // Empty
         };
 
-        _catalog.RegisterDefinition(definition.DefinitionId, definition);
+        _catalog.RegisterDefinition(definition);
         var descriptor = new AgentDescriptor(definition.DefinitionId);
         var factory = new GenericActorFactory(_catalog);
 

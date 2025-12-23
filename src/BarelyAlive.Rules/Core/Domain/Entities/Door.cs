@@ -7,28 +7,33 @@ using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Core.Domain.Entities;
 
-public class ZombieSpawn : Prop
+public class Door : Prop
 {
-    public ZombieSpawn(EntityId id, string definitionId, string name, string category) : base(id, definitionId, name, category)
+    public Door(EntityId id, string definitionId, string name, string category) : base(id, definitionId, name, category)
     {
-        AddComponent(new ZombieSpawnComponent());
+        AddComponent(new ColorComponent());
     }
 }
 
-public class ZombieSpawnComponent : IGameEntityComponent
+public enum Color
 {
-    public int Order { get; set; }
-}
-[EntityType(typeof(ZombieSpawn))]
-public class ZombieSpawnDescriptor(string definitionId) : PropDescriptor(definitionId)
-{
-    [MapToComponent(typeof(ZombieSpawnComponent), nameof(Order))]
-    public int Order { get; set; }
+    Red,
+    Green,
+    Blue
 }
 
-[EntityType(typeof(ZombieSpawn))]
-public class ZombieSpawnDefinition(string definitionId, string name, string category, int order) : PropDefinition(definitionId, name, category)
+public class ColorComponent : IGameEntityComponent
 {
-    [MapToComponent(typeof(ZombieSpawnComponent), nameof(Order))]
-    public int Order { get; set; } = order;
+    public Color Color { get; set; }
 }
+
+[EntityType(typeof(Door))]
+public class DoorDescriptor(string definitionId, Color color) : PropDescriptor(definitionId)
+{
+    [MapToComponent(typeof(ColorComponent), nameof(Color))]
+    public Color Color { get; set; } = color;
+}
+
+[EntityType(typeof(Door))]
+public class DoorDefinition(string definitionId, string name, string category) : PropDefinition(definitionId, name, category)
+{}

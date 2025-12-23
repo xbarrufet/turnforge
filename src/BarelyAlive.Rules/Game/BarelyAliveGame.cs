@@ -76,7 +76,7 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
         _turnForge.GameCatalog.RegisterDefinition(znormal,"Zombie Normal", "Zombie");
         //spawn
         _turnForge.GameCatalog.RegisterDefinition(spawnPlayer,"Spawn Player", "Spawn");
-        var zombiSpawn = new ZombieSpawnDefinition(spawZombie,"Spawn Zombie", "Spawn", 1);
+        var zombiSpawn = new ZombieSpawnDefinition(spawZombie,"Spawn Zombie", 1);
         _turnForge.GameCatalog.RegisterDefinition(zombiSpawn);
 
         //zones
@@ -88,86 +88,6 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
 
 
 
-    /*
-    private void RegisterGameDefinitions()
-    {
-        var filePath = Path.Combine(AppContext.BaseDirectory, "Units_BarelyAlive.json");
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException($"Could not find configuration file at {filePath}");
-        }
-
-        var json = File.ReadAllText(filePath);
-        var config = JsonSerializer.Deserialize<BarelyAliveConfig>(json);
-
-        if (config == null) return;
-
-        foreach (var agent in config.Agents)
-        {
-            RegisterAgent(agent);
-        }
-
-        foreach (var prop in config.Props)
-        {
-            // RegisterProp(prop); // Assuming implementation exists or re-adding it
-            // Previous replace removed logic for props loop or maybe I missed it.
-            // I will re-implement RegisterProp below.
-             RegisterProp(prop);
-        }
-
-        // Register System Definitions
-        RegisterSystemProp("BarelyAlive.ZoneEffect");
-    }
-
-    private void RegisterAgent(AgentDto agent)
-    {
-        var agentDef = new SurvivorDefinition
-        {
-            DefinitionId = agent.AgentName,
-            Name = agent.AgentName,
-            Category = agent.Category,
-            MaxHealth = agent.MaxHealth
-        };
-        _turnForge.GameCatalog.RegisterDefinition(agentDef.DefinitionId, agentDef);
-    }
-
-    private void RegisterProp(PropDto prop)
-    {
-        if (prop.TypeId == "BarelyAlive.Spawn")
-        {
-             var spawnDef = new BarelyAlive.Rules.Core.Domain.Entities.ZombieSpawnDefinition(
-                prop.TypeId, 
-                prop.TypeId, 
-                "Prop");
-             _turnForge.GameCatalog.RegisterDefinition(spawnDef.DefinitionId, spawnDef);
-             return;
-        }
-
-        var propDef = new BarelyAlivePropDefinition
-        {
-            DefinitionId = prop.TypeId,
-            Name = prop.TypeId,
-            Category = "Prop"
-        };
-        _turnForge.GameCatalog.RegisterDefinition(propDef.DefinitionId, propDef);
-    }
-
-    private void RegisterSystemProp(string id)
-    {
-        var propDef = new BarelyAlivePropDefinition
-        {
-            DefinitionId = id,
-            Name = id,
-            Category = "System"
-        };
-        _turnForge.GameCatalog.RegisterDefinition(propDef.DefinitionId, propDef);
-    }
-    */
-
-    private class BarelyAliveConfig
-    {
-        public List<AgentDto> Agents { get; set; } = new();
-        public List<PropDto> Props { get; set; } = new();
-    }
+   
 }
 

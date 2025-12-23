@@ -28,13 +28,13 @@ public class SpawnSystemIntegrationTests
     {
         // Setup catalog with test definitions
         _catalog = new InMemoryGameCatalog();
-        _catalog.RegisterDefinition("TestAgent", new TestAgentDefinition
+        _catalog.RegisterDefinition(new TestAgentDefinition
         {
             DefinitionId = "TestAgent",
             Name = "Test Agent",
             Category = "TestCategory"
         });
-        _catalog.RegisterDefinition("TestProp", new TestPropDefinition
+        _catalog.RegisterDefinition(new TestPropDefinition
         {
             DefinitionId = "TestProp",
             Name = "Test Prop",

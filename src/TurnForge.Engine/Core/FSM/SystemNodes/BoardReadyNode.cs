@@ -1,11 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Spawn;
-using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
 
 namespace TurnForge.Engine.Core.Fsm.SystemNodes;
 
@@ -20,14 +15,11 @@ public class BoardReadyNode : LeafNode
         AddAllowedCommand<SpawnPropsCommand>();
     }
 
-    public override bool IsCommandValid(ICommand command, GameState state)
+    public override bool IsCompleted(GameState state)
     {
-        return command is SpawnPropsCommand;
-    }
-
-    public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
-    {
-        transitionRequested = result.Tags != null && result.Tags.Contains("PropsSpawned");
-        return Enumerable.Empty<IFsmApplier>();
+        // Require at least one prop? Or just check if command execution happened?
+        // Since we don't track execution history easily without orchestration, checking state is best.
+        // Assuming at least one prop exists (e.g. Spawn Points).
+        return state.GetProps().Any();
     }
 }

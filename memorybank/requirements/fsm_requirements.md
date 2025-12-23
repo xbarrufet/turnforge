@@ -1,3 +1,38 @@
+## simplficiacion
+que te parece esta simplificacion
+1) no hay nodos branch/leaf, todo son nodos
+2) los nodos todos tiene un metodo bool MoveToNext(GameState state) que dice cuando se avalua si moverse al 
+3) Los nodso tienen un unicp punto result = Action(state) que devuelve el resultado de la accion
+        
+     handlecommnd(command, state)   
+        pending = currentState.Action(state, pendingTimingDecisions)
+        resultType
+            - Decisions (incluidas las que esten con Ti)
+            - Commands
+            - Pass
+        moveToNextNode?
+        result = new Result
+        if decicions effects =  applyDecisions(out decisionstoapply) //elimina las ejecutadas
+        if command  resul.launchCommand=command
+        if moveToNextNode 
+            currentState = nextState
+        return result
+No hay onStart ni onend, simpklemente Action(state), implementar Onstart o oonend es añadir un estao despues
+
+
+CommadResult = executeCommand(command)
+decisions,finalNode = currentState.MoveNext(state)
+
+
+
+
+
+
+
+
+
+
+
 ## FSM Requirements
 
 Current implementation of the FSM system needs some adjustments to be able to handle with the game complexity
