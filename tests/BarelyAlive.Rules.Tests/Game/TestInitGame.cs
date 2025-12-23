@@ -17,7 +17,7 @@ public class TestInitGame
         // 1. Create Game with Custom Strategies
         var propStrategy = new TestPropSpawnStrategy();
         var agentStrategy = new TestAgentSpawnStrategy();
-        var bootstrap = TestBootstrap.CreateNewGame(propStrategy: propStrategy, agentStrategy: agentStrategy);
+        var bootstrap = TestBootstrap.CreateNewGame(propStrategy: propStrategy, agentStrategy: agentStrategy, enableFsm: false);
         
         // 2. Parse Mission
         var (spatial, zones, props, agents) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
@@ -26,13 +26,16 @@ public class TestInitGame
         // 3. Execute Commands (Mimic InitializeGameHandler + StartGame)
         
         // 3.1 Init Board
-        bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
+        var res1 = bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
+        Assert.That(res1.Result.Success, Is.True, $"InitBoard failed: {res1.Result.Error}");
         
         // 3.2 Spawn Props (Triggers Prop Strategy)
-        bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
+        var res2 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
+        Assert.That(res2.Result.Success, Is.True, $"SpawnProps failed: {res2.Result.Error}");
         
         // 3.3 Spawn Agents (Triggers Agent Strategy)
-        bootstrap.Engine.Runtime.ExecuteCommand(new SpawnAgentsCommand(agents));
+        var res3 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnAgentsCommand(agents));
+        Assert.That(res3.Result.Success, Is.True, $"SpawnAgents failed: {res3.Result.Error}");
         
         // 4. Verification
         var state = bootstrap.GameRepository.LoadGameState();
