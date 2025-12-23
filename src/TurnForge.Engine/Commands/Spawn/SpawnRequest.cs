@@ -24,5 +24,6 @@ public sealed record SpawnRequest(
     string DefinitionId,  // Required: entity definition ID to spawn
     int Count = 1,       // Optional: number of entities to spawn (batch spawn)
     Position? Position = null,  // Optional: spawn position (null = strategy decides)
-    Dictionary<string, object>? PropertyOverrides = null  // Optional: override specific descriptor properties
+    Dictionary<string, object>? PropertyOverrides = null,  // Optional: override specific descriptor properties
+    IEnumerable<TurnForge.Engine.Entities.Components.Interfaces.IGameEntityComponent>? ExtraComponents = null // Optional: extra components/behaviors
 );

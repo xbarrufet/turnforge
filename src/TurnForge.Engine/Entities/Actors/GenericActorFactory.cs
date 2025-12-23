@@ -32,7 +32,14 @@ public sealed class GenericActorFactory(
 
         // Map properties from definition and descriptor to components
         EngineAutoMapper.Map(definition, prop);
+        EngineAutoMapper.Map(definition, prop);
         EngineAutoMapper.Map(descriptor, prop);
+
+        // Add extra components from descriptor
+        foreach (var component in descriptor.ExtraComponents)
+        {
+            prop.AddComponent(component);
+        }
 
         return prop;
     }
@@ -49,7 +56,14 @@ public sealed class GenericActorFactory(
 
         // Map properties from definition and descriptor to components
         EngineAutoMapper.Map(definition, agent);
+        EngineAutoMapper.Map(definition, agent);
         EngineAutoMapper.Map(descriptor, agent);
+
+        // Add extra components from descriptor
+        foreach (var component in descriptor.ExtraComponents)
+        {
+            agent.AddComponent(component);
+        }
 
         return agent;
     }

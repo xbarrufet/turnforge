@@ -5,11 +5,13 @@ using BarelyAlive.Rules.Adapter.Mappers;
 using BarelyAlive.Rules.Core.Behaviours;
 using TurnForge.Engine.Commands.Game.Descriptors;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Entities.Components.Interfaces;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.ValueObjects;
 using ArgumentException = System.ArgumentException;
@@ -25,7 +27,7 @@ namespace BarelyAlive.Rules.Adapter.Loaders;
 public sealed class MissionLoader
 {
     //loads from a JSON string and creates the needed objects to call the InitializeGameCommand
-    public static (SpatialDescriptor, IReadOnlyList<ZoneDescriptor>, IReadOnlyList<PropDescriptor>, IReadOnlyList<AgentDescriptor>) ParseMissionString(string json)
+    public static (SpatialDescriptor, IReadOnlyList<ZoneDescriptor>, IReadOnlyList<SpawnRequest>, IReadOnlyList<SpawnRequest>) ParseMissionString(string json)
     {
         var options = new JsonSerializerOptions
         {
@@ -59,7 +61,7 @@ public sealed class MissionLoader
         return (spatialDescriptor, zoneDescriptors, propDescriptors, agentDescriptors);
     }
 
-    private static AgentDescriptor MapAgent(AgentDto dto, Dictionary<Vector, TileId> map)
+    private static SpawnRequest MapAgent(AgentDto dto, Dictionary<Vector, TileId> map)
     {
         var category = dto.Category;
         var agentName = dto.AgentName;
@@ -77,11 +79,18 @@ public sealed class MissionLoader
         // Agents in mission must have a position
         if (position == null) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
 
+        // Behaviors are mapped from DTO if present (assuming factory creates base components)
         var behaviours = dto.Behaviours
             .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
+            .Cast<IGameEntityComponent>() // Cast to common interface
             .ToList();
 
-        return new AgentDescriptor(agentName, category, position, behaviours);
+        // Create SpawnRequest instead of Descriptor
+        return new SpawnRequest(
+            DefinitionId: agentName, // AgentName is DefinitionId in this context
+            Position: position,
+            ExtraComponents: behaviours
+        );
     }
     
 
@@ -130,7 +139,7 @@ public sealed class MissionLoader
         return new ZoneDescriptor(zoneId, bound, behaviours);
     }
 
-    private static PropDescriptor MapProp(PropDto dto, Dictionary<Vector, TileId> map)
+    private static SpawnRequest MapProp(PropDto dto, Dictionary<Vector, TileId> map)
     {
         var definitionId = dto.TypeId;
 
@@ -144,10 +153,11 @@ public sealed class MissionLoader
             }
         }
 
-        var behaviours = dto.Behaviours
-            .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
-            .ToList();
-
-        return new PropDescriptor(definitionId, position, behaviours);
+        // Create SpawnRequest for Prop
+        return new SpawnRequest(
+            DefinitionId: definitionId,
+            Position: position
+            // No extra behaviors for props in this mapping for now, or add if needed
+        );
     }
 }

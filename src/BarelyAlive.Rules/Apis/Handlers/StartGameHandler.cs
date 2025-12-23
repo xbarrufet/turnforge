@@ -3,6 +3,7 @@ using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Commands.Spawn;
 
 namespace BarelyAlive.Rules.Apis.Handlers;
 
@@ -17,9 +18,10 @@ public class StartGameHandler
         _projector = projector;
     }
 
-    public GameResponse Handle(List<AgentDescriptor> agents)
+    public GameResponse Handle(IReadOnlyList<SpawnRequest> agents)
     {
-        var command = new StartGameCommand(agents);
+        // Use SpawnAgentsCommand - StartGameCommand was redundant
+        var command = new SpawnAgentsCommand(agents);
         var result = _gameEngine.ExecuteCommand(command);
 
         var payload = _projector.CreatePayload(result);

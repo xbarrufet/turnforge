@@ -56,15 +56,9 @@ public static class GameEngineFactory
         var resolver =
             new ServiceProviderCommandHandlerResolver(services);
 
-
-
-        //Infraestructura interna adicional
-        var gameLoop = new GameLoop();
         // 7️⃣ CommandBus (engine infra)
-        var commandBus = new CommandBus(
-            gameLoop,
-            resolver
-        );
+        // Command validation now handled by FSM
+        var commandBus = new CommandBus(resolver);
 
         // 7.5 Orchestrator & Appliers
         var orchestrator = new TurnForgeOrchestrator();

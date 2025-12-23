@@ -36,6 +36,11 @@
             }
         }
 
+        public IEnumerable<T> GetAllDefinitions<T>() where T : GameEntityDefinition
+        {
+            return Entities.GetAll().OfType<T>();
+        }
+
         public void RegisterDefinition<T>(string definitionId, T definition) where T : GameEntityDefinition
         {
             Entities.Register(definitionId, definition);

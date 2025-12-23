@@ -20,13 +20,6 @@ public abstract class GameEntity : IGameEntity
         DefinitionId = definitionId;
     }
 
-
-   /* protected GameEntity(EntityId id, string definitionId)
-    {
-        Id = id;
-        DefinitionId = definitionId;
-    }*/
-
     private readonly Dictionary<Type, IGameEntityComponent> _components = new()
     {
         { typeof(IBehaviourComponent), new BaseBehaviourComponent() }

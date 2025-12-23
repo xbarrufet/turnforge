@@ -40,22 +40,6 @@ public sealed class GameEngineRuntime : IGameEngine
         _orchestrator.SetLogger(_logger);
     }
 
-    public void InitializeBoard(Entities.Board.Descriptors.BoardDescriptor descriptor)
-    {
-        // 1. Build the board using the factory
-        var board = _boardFactory.Build(descriptor);
-
-        // 2. Load current state, update it with the board, and save it
-        var state = _repository.LoadGameState();
-        var newState = state.WithBoard(board);
-        _repository.SaveGameState(newState);
-
-        // 3. Sync Orchestrator
-        _orchestrator.SetState(newState);
-        
-        _logger.Log($"Board initialized with {descriptor.Zones.Count} zones.");
-    }
-
     public void SetFsmController(FsmController controller)
     {
         _fsmController = controller;

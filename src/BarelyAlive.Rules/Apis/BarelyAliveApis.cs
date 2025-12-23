@@ -4,7 +4,9 @@ using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Commands.Spawn;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BarelyAlive.Rules.Apis;
 
@@ -15,7 +17,7 @@ public class BarelyAliveApis : IBarelyAliveApis
     private readonly GetSurvivorsHandler _getSurvivorsHandler;
     private readonly IGameEngine _gameEngine;
 
-    private List<AgentDescriptor> _pendingAgents = new();
+    private List<SpawnRequest> _pendingAgents = new();
 
     public BarelyAliveApis(IGameEngine gameEngine, IGameCatalogApi catalog)
     {
@@ -29,30 +31,26 @@ public class BarelyAliveApis : IBarelyAliveApis
     public GameResponse InitializeGame(string missionJson)
     {
         var result = _initializeGameHandler.Handle(missionJson);
-        _pendingAgents = result.Agents;
+        _pendingAgents = result.Agents.ToList();
         return result.Response;
     }
 
     public GameResponse StartGame(string[] survivorIds)
     {
-        var survivorDescriptors = survivorIds.Select(CreateSurvivorDescriptor).ToList();
-        var allAgents = _pendingAgents.Concat(survivorDescriptors).ToList();
+        var survivorRequests = survivorIds.Select(CreateSurvivorRequest).ToList();
+        var allAgents = _pendingAgents.Concat(survivorRequests).ToList();
         
         var result = _startGameHandler.Handle(allAgents);
         _pendingAgents.Clear();
         return result;
     }
 
-    private AgentDescriptor CreateSurvivorDescriptor(string typeId)
+    private SpawnRequest CreateSurvivorRequest(string typeId)
     {
-        return new AgentDescriptor(
-            typeId, // AgentName
-            "Survivor",
-            null // Position
-        );
+        return new SpawnRequest(typeId);
     }
 
-    public List<SurvivorDefinition> GetAvailableSurvivors()
+    public List<BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition> GetAvailableSurvivors()
     {
         return _getSurvivorsHandler.Handle(new GetRegisteredSurvivorsQuery());
     }

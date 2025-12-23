@@ -49,6 +49,12 @@ public static class DescriptorBuilder
         {
             SetPosition(descriptor, request.Position.Value);
         }
+
+        // 4. Copy extra components if present
+        if (request.ExtraComponents != null)
+        {
+            descriptor.ExtraComponents.AddRange(request.ExtraComponents);
+        }
         
         return descriptor;
     }

@@ -29,5 +29,10 @@ public class GameCatalogApi : IGameCatalogApi
     {
         return _catalog.TryGetDefinition(definitionId, out definition);
     }
+
+    public IEnumerable<T> GetAllDefinitions<T>() where T : GameEntityDefinition
+    {
+        return _catalog.GetAllDefinitions<T>();
+    }
 }
 

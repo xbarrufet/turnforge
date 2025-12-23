@@ -1,8 +1,11 @@
 using BarelyAlive.Rules.Adapter.Loaders;
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors;
+using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Game;
+using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.Entities.Board.Descriptors;
 
 namespace BarelyAlive.Rules.Apis.Handlers;
 
@@ -17,12 +20,20 @@ public class InitializeGameHandler
         _projector = projector;
     }
 
-    public (GameResponse Response, List<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor> Agents) Handle(string missionJson)
+    public (GameResponse Response, IReadOnlyList<SpawnRequest> Agents) Handle(string missionJson)
     {
         var (spatial, zones, props, agents) = MissionLoader.ParseMissionString(missionJson);
-        var command = new InitGameCommand(spatial, zones, props);
-        var result = _gameEngine.ExecuteCommand(command);
+        
+        // 1. Initialize Board (using command!)
+        var boardDescriptor = new BoardDescriptor(spatial, zones);
+        var initBoardCommand = new InitializeBoardCommand(boardDescriptor);
+        _gameEngine.ExecuteCommand(initBoardCommand);  // Board setup (no response needed)
 
+        // 2. Spawn Props using SpawnPropsCommand
+        var spawnPropsCommand = new SpawnPropsCommand(props);
+        var result = _gameEngine.ExecuteCommand(spawnPropsCommand);
+
+        // Return projection from props spawn (board init is just setup)
         var payload = _projector.CreatePayload(result);
 
         var response = new GameResponse
@@ -32,6 +43,8 @@ public class InitializeGameHandler
             Error = result.Result.Error,
             Payload = payload
         };
-        return (response, agents.ToList());
+
+        // Return agent requests for later use in StartGame
+        return (response, agents);
     }
 }

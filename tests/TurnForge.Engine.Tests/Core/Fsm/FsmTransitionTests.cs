@@ -84,7 +84,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         public void Setup()
         {
             // 1. Setup Infrastructure
-            var commandBus = new CommandBus(new GameLoop(), new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()));
+            var commandBus = new CommandBus(new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()));
             _repository = new InMemoryGameRepository();
 
             // Initialize Repository with Empty State
@@ -180,7 +180,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
 
             // Re-setup runtime with this registry
             var resolver = new ServiceProviderCommandHandlerResolver(services);
-            var commandBus = new CommandBus(new GameLoop(), resolver);
+            var commandBus = new CommandBus(resolver);
             var stubBoardFactory = new StubBoardFactory();
             _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), stubBoardFactory);
 

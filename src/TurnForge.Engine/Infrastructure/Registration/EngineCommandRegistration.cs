@@ -1,3 +1,4 @@
+using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Game;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
@@ -27,27 +28,18 @@ public static class EngineCommandRegistration
         // =====================================================
 
         // =====================================================
-        // Game Initialization
+        // Board Initialization
         // =====================================================
-
-        services.Register<SpawnStartingPropsCommandHandler>(sp =>
-            new SpawnStartingPropsCommandHandler(
-                (IGameRepository)sp.GetService(typeof(IGameRepository))!,
-                (IPropSpawnStrategy)sp.GetService(typeof(IPropSpawnStrategy))!
-            )
-        );
-        services.Register<ICommandHandler<SpawnStartingPropsCommand>>(sp =>
-            (SpawnStartingPropsCommandHandler)sp.GetService(typeof(SpawnStartingPropsCommandHandler))!
-        );
-
-        services.Register<StartGameCommandHandler>(sp =>
-            new StartGameCommandHandler(
-                (IAgentSpawnStrategy)sp.GetService(typeof(IAgentSpawnStrategy))!,
+        
+        services.Register<InitializeBoardCommandHandler>(sp =>
+            new InitializeBoardCommandHandler(
+                (IBoardFactory)sp.GetService(typeof(IBoardFactory))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!
             )
         );
-        services.Register<ICommandHandler<StartGameCommand>>(sp =>
-            (StartGameCommandHandler)sp.GetService(typeof(StartGameCommandHandler))!
+        services.Register<ICommandHandler<InitializeBoardCommand>>(sp =>
+            (InitializeBoardCommandHandler)sp.GetService(typeof(InitializeBoardCommandHandler))!
         );
+
     }
 }

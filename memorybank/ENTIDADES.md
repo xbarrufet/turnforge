@@ -702,6 +702,185 @@ engine.ExecuteCommand(new EndTurnCommand());
 
 ---
 
+### FSM System Nodes (Game Initialization)
+
+TurnForge defines **System Nodes** that control the game initialization flow. These nodes enforce a strict order of setup operations.
+
+#### Game Initialization Flow
+
+```
+┌──────────────┐
+│ InitialState │ (Entry point)
+└──────┬───────┘
+       │ Allows: InitializeBoardCommand
+       │ Tag: "BoardInitialized"
+       ▼
+┌──────────────┐
+│ BoardReady   │ (Board configured)
+└──────┬───────┘
+       │ Allows: SpawnPropsCommand
+       │ Tag: "PropsSpawned"
+       ▼
+┌──────────────┐
+│ GamePrepared │ (Props placed)
+└──────┬───────┘
+       │ Allows: SpawnAgentsCommand
+       │ Tag: "AgentsSpawned"
+       ▼
+┌──────────────┐
+│ PlayerTurn   │ (Game ready to play)
+└──────────────┘
+```
+
+#### Node Definitions
+
+##### `InitialStateNode`
+**Purpose:** Entry point for game setup. Allows board initialization.
+
+**Allowed Commands:**
+- `InitializeBoardCommand`
+
+**Transition Trigger:**
+- Tag: `"BoardInitialized"`
+
+**Code:**
+```csharp
+public class InitialStateNode : LeafNode
+{
+    public InitialStateNode()
+    {
+        AddAllowedCommand<InitializeBoardCommand>();
+    }
+
+    public override bool IsCommandValid(ICommand command, GameState state)
+    {
+        return command is InitializeBoardCommand;
+    }
+
+    public override IEnumerable<IFsmApplier> OnCommandExecuted(
+        ICommand command, 
+        CommandResult result, 
+        out bool transitionRequested)
+    {
+        transitionRequested = result.Tags.Contains("BoardInitialized");
+        return Enumerable.Empty<IFsmApplier>();
+    }
+}
+```
+
+---
+
+##### `BoardReadyNode`
+**Purpose:** Board is initialized. Ready to spawn static props.
+
+**Allowed Commands:**
+- `SpawnPropsCommand`
+
+**Transition Trigger:**
+- Tag: `"PropsSpawned"`
+
+**Code:**
+```csharp
+public class BoardReadyNode : LeafNode
+{
+    public BoardReadyNode()
+    {
+        AddAllowedCommand<SpawnPropsCommand>();
+    }
+
+    public override bool IsCommandValid(ICommand command, GameState state)
+    {
+        return command is SpawnPropsCommand;
+    }
+
+    public override IEnumerable<IFsmApplier> OnCommandExecuted(
+        ICommand command, 
+        CommandResult result, 
+        out bool transitionRequested)
+    {
+        transitionRequested = result.Tags.Contains("PropsSpawned");
+        return Enumerable.Empty<IFsmApplier>();
+    }
+}
+```
+
+---
+
+##### `GamePreparedNode`
+**Purpose:** Props are placed. Ready to spawn dynamic agents.
+
+**Allowed Commands:**
+- `SpawnAgentsCommand`
+
+**Transition Trigger:**
+- Tag: `"AgentsSpawned"`
+
+**Code:**
+```csharp
+public class GamePreparedNode : LeafNode
+{
+    public GamePreparedNode()
+    {
+        AddAllowedCommand<SpawnAgentsCommand>();
+    }
+
+    public override bool IsCommandValid(ICommand command, GameState state)
+    {
+        return command is SpawnAgentsCommand;
+    }
+
+    public override IEnumerable<IFsmApplier> OnCommandExecuted(
+        ICommand command, 
+        CommandResult result, 
+        out bool transitionRequested)
+    {
+        transitionRequested = result.Tags.Contains("AgentsSpawned");
+        return Enumerable.Empty<IFsmApplier>();
+    }
+}
+```
+
+---
+
+#### Initialization Sequence Example
+
+```csharp
+// Step 1: Initialize Board
+var boardDescriptor = new BoardDescriptor(spatial, zones);
+var initBoardCmd = new InitializeBoardCommand(boardDescriptor);
+engine.ExecuteCommand(initBoardCmd);  
+// → FSM transitions: InitialState → BoardReady
+
+// Step 2: Spawn Props
+var spawnPropsCmd = new SpawnPropsCommand(propRequests);
+engine.ExecuteCommand(spawnPropsCmd);  
+// → FSM transitions: BoardReady → GamePrepared
+
+// Step 3: Spawn Agents
+var spawnAgentsCmd = new SpawnAgentsCommand(agentRequests);
+engine.ExecuteCommand(spawnAgentsCmd);  
+// → FSM transitions: GamePrepared → PlayerTurn
+
+// Game is now ready to play!
+```
+
+---
+
+#### Why This Order?
+
+| Step | Why? |
+|------|------|
+| **1. Board First** | Spatial model must exist before placing entities |
+| **2. Props Second** | Static objects (doors, spawn points) define environment |
+| **3. Agents Last** | Dynamic entities need props for spawn point detection |
+
+**Example:**
+- `PartySpawnPoint` prop → defines where survivors spawn
+- `ConfigurableAgentSpawnStrategy` → finds `PartySpawnPoint` → positions agents
+- ❌ If agents spawn before props → no spawn point found!
+
+---
+
 ## Spawn Strategy
 
 Spawn is the process of creating entities in the game. It is configurable through **SpawnStrategy** implementations.
@@ -1315,5 +1494,444 @@ Immediate → State Transition → OnCommandExecutionEnd ❌
 ✅ **Ordered execution:** FSM controls decision timing  
 ✅ **Effect tracking:** Metadata in `EntitySpawnedEffect`  
 ✅ **Hooks support:** OnPhaseStart/OnPhaseEnd integrate cleanly  
+
+---
+
+## COMMANDS
+
+TurnForge provides commands as the **primary interface** for game logic execution. Commands represent player or system actions that trigger state changes through the FSM→Handler→Orchestrator pipeline.
+
+### Command Architecture
+
+```
+┌──────────────┐
+│   Command    │  (Input - What to do)
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│   Handler    │  (Logic - How to do it)
+│ Returns:     │
+│ - Success    │
+│ - Decisions  │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Orchestrator │  (Execution - Apply changes)
+│ - Applies    │
+│   Decisions  │
+│ - Updates    │
+│   State      │
+└──────────────┘
+```
+
+All commands implement `ICommand`:
+
+```csharp
+public interface ICommand
+{
+    Type CommandType { get; }
+}
+```
+
+### Available Commands
+
+#### `CommandAck`
+**Purpose:** Acknowledges the completion of a command transaction, allowing the next command to be processed.
+
+**Usage:**
+```csharp
+engine.ExecuteCommand(new CommandAck());
+```
+
+**Flow:**
+1. Game executes a command
+2. Sets `WaitingForACK = true`
+3. UI displays results/animations
+4. User sends `CommandAck`
+5. System resets and accepts next command
+
+**Rationale:** Prevents command spam and allows UI to animate/display results before accepting new input.
+
+---
+
+#### `SpawnAgentsCommand`  
+**Purpose:** Spawns agents (playable/AI characters) using the spawn pipeline.
+
+**Parameters:**
+- `IReadOnlyList<SpawnRequest> Requests` - List of agent spawn requests
+
+**SpawnRequest Structure:**
+```csharp
+public record SpawnRequest(
+    string DefinitionId,                               // Required: "Survivors.Mike"
+    int Count = 1,                                     // Optional: batch spawn
+    Position? Position = null,                         // Optional: null = strategy decides
+    Dictionary<string, object>? PropertyOverrides = null,  // Optional: override descriptor properties
+    IEnumerable<IGameEntityComponent>? ExtraComponents = null  // Optional: inject custom components/behaviors
+);
+```
+
+**Usage:**
+```csharp
+var command = new SpawnAgentsCommand([
+    new SpawnRequest(
+        DefinitionId: "Survivors.Mike",
+        Count: 1,
+        Position: new Position(spawnTile),
+        PropertyOverrides: new() { ["Faction"] = "Police" },
+        ExtraComponents: [new StealthBehaviour()]
+    )
+]);
+
+var result = engine.ExecuteCommand(command);
+```
+
+**Pipeline:**
+1. Handler receives `SpawnRequest[]`
+2. `DescriptorBuilder` creates `AgentDescriptor` from definition + request
+3. Strategy validates and processes descriptors → `SpawnDecision<AgentDescriptor>[]`
+4. Applier creates entities using `GenericActorFactory`
+5. State updated with new agents
+
+**Flexibility:**
+- ✅ Position can be null → strategy decides spawn point
+- ✅ PropertyOverrides customize specific descriptor properties
+- ✅ ExtraComponents inject dynamic behaviors from mission files
+- ✅ Count enables batch spawn (e.g., spawn 5 zombies at once)
+
+---
+
+#### `InitializeBoardCommand`  
+**Purpose:** Initializes the game board with spatial model and zones. This is the first command executed during game setup, creating the foundational playing field before any entities spawn.
+
+**Parameters:**
+- `BoardDescriptor Descriptor` - Board configuration (spatial model + zones)
+
+**Usage:**
+```csharp
+var boardDescriptor = new BoardDescriptor(
+    Spatial: new SpatialDescriptor(GridType.Hex, Width: 10, Height: 10),
+    Zones: [
+        new ZoneDescriptor(
+            Id: new ZoneId("spawn-zone"),
+            Bound: new RectangleBound(x: 0, y: 0, width: 3, height: 3),
+            Behaviours: [new SafeZoneBehaviour()]
+        ),
+        new ZoneDescriptor(
+            Id: new ZoneId("danger-zone"),
+            Bound: new RectangleBound(x: 7, y: 7, width: 3, height: 3),
+            Behaviours: [new DangerousZoneBehaviour()]
+        )
+    ]
+);
+
+var command = new InitializeBoardCommand(boardDescriptor);
+var result = engine.ExecuteCommand(command);
+```
+
+**Pipeline:**
+1. Handler receives `BoardDescriptor`
+2. `BoardFactory` creates `GameBoard` with `ISpatialModel` and `Zone[]`
+3. Decision carries the constructed board → `InitializeBoardDecision(board)`
+4. Applier adds board to state → `state.WithBoard(board)`
+5. Returns `BoardInitializedEffect` with metadata (zone count, spatial type)
+
+**Key Characteristics:**
+- ✅ **Singleton operation**: Only executed once per game
+- ✅ **Zones have behaviors**: Zones are `GameEntity` with `BehaviourComponent` (e.g., Dangerous, Indoor)
+- ✅ **FSM integration**: Triggers transition from `InitialState` → `BoardReady`
+- ✅ **Effect generation**: UI can react to `BoardInitializedEffect`
+
+**Typical Flow:**
+```
+1. InitializeBoardCommand → Board created
+2. SpawnPropsCommand → Props placed on board
+3. SpawnAgentsCommand → Agents enter board
+```
+
+---
+
+#### `SpawnPropsCommand`  
+**Purpose:** Spawns props (static/interactive objects) using the spawn pipeline.
+
+**Parameters:**
+- `IReadOnlyList<SpawnRequest> Requests` - List of prop spawn requests
+
+**Usage:**
+```csharp
+var command = new SpawnPropsCommand([
+    new SpawnRequest(
+        DefinitionId: "Props.Door",
+        Position: new Position(doorTile),
+        PropertyOverrides: new() { ["IsLocked"] = true }
+    )
+]);
+```
+
+**Similar to `SpawnAgentsCommand`** but creates `PropDescriptor` and uses `PropSpawnStrategy`.
+
+---
+
+### Command Best Practices
+
+| ✅ Do | ❌ Don't |
+|-------|----------|
+| Use commands for all state changes | Directly mutate GameState |
+| Let handlers generate decisions | Put mutation logic in handlers |
+| Return CommandResult with decisions | Return entities or modified state |
+| Validate in handler before decisions | Validate in applier |
+| Use tags for FSM reactions | Use magic strings |
+
+---
+
+## SERVICES
+
+TurnForge provides **non-command services** for **read-only operations** that don't modify game state. These services enable queries and information retrieval without triggering the command pipeline.
+
+### Game Catalog API
+
+The **Game Catalog** is the central registry for entity definitions. It stores blueprints that define entity properties and serves them during spawn/creation.
+
+#### Interface: `IGameCatalogApi`
+
+```csharp
+public interface IGameCatalogApi
+{
+    void RegisterDefinition<T>(string definitionId, T definition) 
+        where T : GameEntityDefinition;
+    
+    T GetDefinition<T>(string definitionId) 
+        where T : GameEntityDefinition;
+    
+    bool TryGetDefinition<T>(string definitionId, out T? definition) 
+        where T : GameEntityDefinition;
+    
+    IEnumerable<T> GetAllDefinitions<T>() 
+        where T : GameEntityDefinition;
+}
+```
+
+---
+
+#### `RegisterDefinition<T>(definitionId, definition)`
+
+**Purpose:** Registers an entity definition in the catalog.
+
+**Usage:**
+```csharp
+var mikeDef = new SurvivorDefinition
+{
+    DefinitionId = "Survivors.Mike",
+    Name = "Mike",
+    Category = "Survivor",
+    MaxHealth = 10,
+    Faction = "Alliance"
+};
+
+catalog.RegisterDefinition("Survivors.Mike", mikeDef);
+```
+
+**Rules:**
+- ✅ DefinitionId must be unique
+- ✅ Called during game setup/initialization
+- ❌ Cannot register duplicate IDs (throws exception)
+
+---
+
+#### `GetDefinition<T>(definitionId)`
+
+**Purpose:** Retrieves a specific definition by ID.
+
+**Usage:**
+```csharp
+var mikeDef = catalog.GetDefinition<SurvivorDefinition>("Survivors.Mike");
+
+Console.WriteLine($"Name: {mikeDef.Name}, Health: {mikeDef.MaxHealth}");
+```
+
+**Behavior:**
+- Returns `T` if found
+- Throws exception if not found
+- Type-safe: ensures returned type matches `T`
+
+**Use Cases:**
+- Spawn pipeline: `DescriptorBuilder` fetches definition
+- UI: Display definition properties in character selection
+- Validation: Check if definition exists before spawn
+
+---
+
+#### `TryGetDefinition<T>(definitionId, out definition)`
+
+**Purpose:** Safe retrieval that doesn't throw exceptions.
+
+**Usage:**
+```csharp
+if (catalog.TryGetDefinition<SurvivorDefinition>("Survivors.Unknown", out var def))
+{
+    // Found
+    Console.WriteLine(def.Name);
+}
+else
+{
+    // Not found - handle gracefully
+    Console.WriteLine("Definition not found");
+}
+```
+
+**Benefits:**
+- ✅ No exceptions
+- ✅ Clean error handling
+- ✅ Useful for optional lookups
+
+---
+
+#### `GetAllDefinitions<T>()`
+
+**Purpose:** Retrieves all definitions of a specific type.
+
+**Usage:**
+```csharp
+// Get all survivor definitions
+var allSurvivors = catalog.GetAllDefinitions<SurvivorDefinition>();
+
+foreach (var survivor in allSurvivors)
+{
+    Console.WriteLine($"Available: {survivor.Name} (HP: {survivor.MaxHealth})");
+}
+```
+
+**Filtering Example:**
+```csharp
+// Get all survivors with high health
+var tankSurvivors = catalog.GetAllDefinitions<SurvivorDefinition>()
+    .Where(s => s.MaxHealth >= 8)
+    .ToList();
+```
+
+**Use Cases:**
+- **Character Selection UI:** Display all available survivors
+- **Balance Analysis:** Analyze distribution of entity stats
+- **Mission Generation:** Pick random enemies from pool
+- **Validation:** Ensure catalog has required definitions
+
+**Performance:**
+- Filters in-memory registry (fast)
+- Returns `IEnumerable<T>` (supports LINQ)
+- No database/IO overhead
+
+---
+
+### Service vs Command
+
+| Service (Read) | Command (Write) |
+|----------------|-----------------|
+| Queries data | Mutates state |
+| No FSM interaction | Goes through FSM |
+| Instant response | Asynchronous decisions |
+| No ACK required | Blocks until ACK |
+| Examples: GetDefinition, GetAllDefinitions | Examples: SpawnAgentsCommand, StartGameCommand |
+
+**When to use Services:**
+- 🔍 Displaying UI (character stats, available items)
+- 🔍 Validation (check if definition exists)
+- 🔍 Analysis (count entities, filter by criteria)
+
+**When to use Commands:**
+- ✏️ Creating entities
+- ✏️ Updating components
+- ✏️ Triggering game events
+
+---
+
+### Example: Character Selection Flow
+
+```csharp
+// 1. SERVICE: Get available survivors for UI
+var survivors = catalog.GetAllDefinitions<SurvivorDefinition>();
+
+// Display to user
+foreach (var s in survivors)
+{
+    Console.WriteLine($"{s.DefinitionId}: {s.Name} (HP {s.MaxHealth})");
+}
+
+// 2. User selects "Survivors.Mike" and "Survivors.Amy"
+
+// 3. SERVICE: Validate selections exist
+if (!catalog.TryGetDefinition<SurvivorDefinition>("Survivors.Mike", out _))
+{
+    Console.WriteLine("Invalid selection!");
+    return;
+}
+
+// 4. COMMAND: Spawn selected survivors
+var spawnRequests = new SpawnRequest[] {
+    new("Survivors.Mike"),
+    new("Survivors.Amy")
+};
+
+var command = new StartGameCommand(spawnRequests);
+var result = engine.ExecuteCommand(command);
+
+// 5. SERVICE: Confirm spawns (read current state)
+Console.WriteLine($"Game started with {result.Decisions.Count} agents");
+```
+
+---
+
+### Catalog Internal Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         IGameCatalogApi                 │  (Public Interface)
+│  - RegisterDefinition<T>                │
+│  - GetDefinition<T>                     │
+│  - TryGetDefinition<T>                  │
+│  - GetAllDefinitions<T>                 │
+└───────────────┬─────────────────────────┘
+                │
+                ▼
+┌─────────────────────────────────────────┐
+│         GameCatalogApi                  │  (Implementation)
+│  Delegates to IGameCatalog              │
+└───────────────┬─────────────────────────┘
+                │
+                ▼
+┌─────────────────────────────────────────┐
+│         IGameCatalog                    │  (Core Interface)
+│  Manages definition storage              │
+└───────────────┬─────────────────────────┘
+                │
+                ▼
+┌─────────────────────────────────────────┐
+│      InMemoryGameCatalog                │  (Concrete Storage)
+│  - Dictionary<string, GameEntityDef>    │
+│  - Type filtering                       │
+│  - Thread-safe (if needed)              │
+└─────────────────────────────────────────┘
+```
+
+**Rationale:**
+- `IGameCatalogApi`: Public contract for games
+- `GameCatalogApi`: Simple delegation layer
+- `IGameCatalog`: Internal abstraction
+- `InMemoryGameCatalog`: Fast in-memory storage (can be replaced with DB/file-based catalog)
+
+---
+
+### Future Services (Planned)
+
+| Service | Description |
+|---------|-------------|
+| **IGameStateQueryApi** | Read current game state (agents, props, board) |
+| **IPathfindingService** | Calculate paths between positions |
+| **IVisionService** | Calculate line-of-sight, visible tiles |
+| **IInventoryQueryApi** | Query agent inventories |
+| **IMissionLoaderService** | Load mission definitions from files |
+
+---
 
 

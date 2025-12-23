@@ -1,29 +1,19 @@
-using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Strategies.Spawn;
 
 /// <summary>
-/// Strategy that creates Prop entities from descriptors and wraps them in spawn decisions.
-/// Uses GenericActorFactory to create the actual entities.
+/// Modern strategy for prop spawning.
+/// Uses default implementation - no filtering or modification needed.
+/// Process() accepts all descriptors as-is.
+/// ToDecisions() wraps them in SpawnDecision<PropDescriptor>.
 /// </summary>
-public class ConfigurablePropSpawnStrategy(GenericActorFactory factory) : IPropSpawnStrategy
+public class ConfigurablePropSpawnStrategy : ISpawnStrategy<PropDescriptor>
 {
-    public IReadOnlyList<PropSpawnDecision> Decide(PropSpawnContext context)
-    {
-        var decisions = new List<PropSpawnDecision>();
-        
-        foreach (var descriptor in context.PropsToSpawn)
-        {
-            // Create the entity using the factory
-            var prop = factory.BuildProp(descriptor);
-            
-            // Wrap in decision
-            decisions.Add(new PropSpawnDecision(prop));
-        }
-        
-        return decisions;
-    }
+    // All methods inherited from ISpawnStrategy<PropDescriptor> with default implementations:
+    // - Process(descriptors, state) returns descriptors unchanged (accept all)
+    // - ToDecisions(descriptors) wraps descriptors in SpawnDecision<PropDescriptor>
+    
+    // No custom logic needed - props spawn exactly as requested in mission files
 }

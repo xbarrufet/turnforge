@@ -1,4 +1,5 @@
 using TurnForge.Engine.Core;
+using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Registration;
 
@@ -11,10 +12,14 @@ public static class GameBootstrap
         // Simple bootstrap for now. 
         // In a real scenario, this would configure DI, Strategies, etc.
 
+        // Note: Strategies now need GenericActorFactory.
+        // The factory is created and injected by GameEngineFactory from the catalog.
+        // For now, pass null - GameEngineFactory will resolve dependencies
+        
         var context = new GameEngineContext(
             new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository(),
-            new BarelyAlive.Rules.Core.Domain.Strategies.Spawn.ConfigurablePropSpawnStrategy(),
-            new BarelyAlive.Rules.Core.Domain.Strategies.Spawn.ConfigurableAgentSpawnStrategy(logger),
+            null, // PropStrategy - will be set by GameEngineFactory
+            null, // AgentStrategy - will be set by GameEngineFactory
             logger
         );
 

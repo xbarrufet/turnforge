@@ -14,18 +14,17 @@ namespace TurnForge.Engine.Core.Fsm.SystemNodes
     {
         public GamePreparedNode()
         {
-            //AddAllowedCommand<SpawnAgentsCommand>();
-            AddAllowedCommand<StartGameCommand>();
+            AddAllowedCommand<SpawnAgentsCommand>();
         }
 
         public override bool IsCommandValid(ICommand command, GameState state)
         {
-            return command is SpawnAgentsCommand || command is StartGameCommand;
+            return command is SpawnAgentsCommand;
         }
 
         public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
         {
-            transitionRequested = result.Tags != null && (result.Tags.Contains("AgentsSpawned") || result.Tags.Contains("GameStarted"));
+            transitionRequested = result.Tags != null && result.Tags.Contains("AgentsSpawned");
             return Enumerable.Empty<IFsmApplier>();
         }
     }

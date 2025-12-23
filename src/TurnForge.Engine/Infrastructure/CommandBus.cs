@@ -5,11 +5,12 @@ using TurnForge.Engine.Core.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
-public sealed class CommandBus(
-    IGameLoop gameLoop,
-    ICommandHandlerResolver handlerResolver)
+/// <summary>
+/// CommandBus routes commands to their handlers.
+/// Command validation is handled by FSM (FsmController.IsCommandAllowed).
+/// </summary>
+public sealed class CommandBus(ICommandHandlerResolver handlerResolver)
 {
-
     private bool _waitingForAck;
 
     public CommandResult Send(ICommand command)
@@ -18,15 +19,11 @@ public sealed class CommandBus(
         {
             if (_waitingForAck)
                 throw new InvalidOperationException("Waiting for ACK");
-            // 1️⃣ Validación del GameLoop (turnos, estado, etc.)
-            var loopResult = gameLoop.Validate(command);
-            if (!loopResult.IsAllowed)
-                throw new InvalidOperationException(loopResult.Reason);
-            // 2️⃣ Ejecutar el handler correspondiente
-            // 2️⃣ Ejecutar el handler correspondiente
+            
+            // Command validation is done by FSM before reaching here
+            // Execute handler
             var result = DispatchToHandler(command);
-            // 4️⃣ Gestión de ACK
-            _waitingForAck = loopResult.RequiresAck;
+            
             return result;
         }
         catch (Exception ex)

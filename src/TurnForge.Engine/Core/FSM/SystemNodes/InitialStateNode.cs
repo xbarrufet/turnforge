@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Game;
+using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Entities;
@@ -10,21 +10,25 @@ using TurnForge.Engine.Entities.Appliers.Interfaces;
 
 namespace TurnForge.Engine.Core.Fsm.SystemNodes
 {
+    /// <summary>
+    /// Initial node - allows board initialization.
+    /// Transitions to BoardReady after board is set up.
+    /// </summary>
     public class InitialStateNode : LeafNode
     {
         public InitialStateNode()
         {
-            AddAllowedCommand<SpawnStartingPropsCommand>();
+            AddAllowedCommand<InitializeBoardCommand>();
         }
 
         public override bool IsCommandValid(ICommand command, GameState state)
         {
-            return command is SpawnStartingPropsCommand;
+            return command is InitializeBoardCommand;
         }
 
         public override IEnumerable<IFsmApplier> OnCommandExecuted(ICommand command, CommandResult result, out bool transitionRequested)
         {
-            transitionRequested = result.Tags != null && result.Tags.Contains("StartingPropsSpawned");
+            transitionRequested = result.Tags != null && result.Tags.Contains("BoardInitialized");
             return Enumerable.Empty<IFsmApplier>();
         }
     }

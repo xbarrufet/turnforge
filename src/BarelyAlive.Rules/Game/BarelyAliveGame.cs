@@ -8,6 +8,8 @@ using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Core;
 
 using TurnForge.Engine.Registration;
+using BarelyAlive.Rules.Core.Domain.Definitions;
+using TurnForge.Engine.Entities;
 
 
 namespace BarelyAlive.Rules.Game;
@@ -74,25 +76,25 @@ public sealed class BarelyAliveGame
 
     private void RegisterAgent(AgentDto agent)
     {
-        var agentDef = new AgentDefinition
+        var agentDef = new SurvivorDefinition
         {
             DefinitionId = agent.AgentName,
-            AgentName = agent.AgentName,
+            Name = agent.AgentName,
             Category = agent.Category,
-            MaxHealth = agent.MaxHealth,
-            MaxMovement = agent.MaxBaseMovement
+            MaxHealth = agent.MaxHealth
         };
-        _turnForge.GameCatalog.RegisterAgentDefinition(agentDef.DefinitionId, agentDef);
+        _turnForge.GameCatalog.RegisterDefinition(agentDef.DefinitionId, agentDef);
     }
 
     private void RegisterProp(PropDto prop)
     {
-        var propDef = new PropDefinition
+        var propDef = new BarelyAlivePropDefinition
         {
             DefinitionId = prop.TypeId,
-            MaxHealth = prop.MaxHealth
+            Name = prop.TypeId,
+            Category = "Prop"
         };
-        _turnForge.GameCatalog.RegisterPropDefinition(propDef.DefinitionId, propDef);
+        _turnForge.GameCatalog.RegisterDefinition(propDef.DefinitionId, propDef);
     }
 
     private class BarelyAliveConfig

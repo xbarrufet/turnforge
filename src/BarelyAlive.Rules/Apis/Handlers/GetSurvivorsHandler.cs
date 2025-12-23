@@ -1,4 +1,5 @@
 using BarelyAlive.Rules.Apis.Messaging;
+using BarelyAlive.Rules.Core.Domain.Definitions;
 using BarelyAlive.Rules.Game;
 using TurnForge.Engine.APIs.Interfaces;
 
@@ -13,24 +14,26 @@ public class GetSurvivorsHandler
         _catalog = catalog;
     }
 
-    public List<SurvivorDefinition> Handle(GetRegisteredSurvivorsQuery query)
+    public List<BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition> Handle(GetRegisteredSurvivorsQuery query)
     {
-        var definitions = _catalog.GetAgentsByCategory("Survivor");
-        return definitions
-            .Select(MapToSurvivor)
+        // Get all definitions and filter by Survivor category
+        // Note: Using fully qualified names to avoid ambiguity between DTO and Domain Definition
+        var allDefs = _catalog.GetAllDefinitions<BarelyAlive.Rules.Core.Domain.Definitions.SurvivorDefinition>();
+        
+        return allDefs
+            .Select(MapToSurvivorDto)
             .ToList();
     }
 
-    private SurvivorDefinition MapToSurvivor(TurnForge.Engine.Entities.GameEntityDefinition def)
+    private BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition MapToSurvivorDto(BarelyAlive.Rules.Core.Domain.Definitions.SurvivorDefinition def)
     {
-        // Simple projection for now. 
-        // In the future, we might look up "Description" or "Sprite" from another source using the ID.
-        return new SurvivorDefinition(
-            Id: def.AgentName,
-            Name: def.AgentName, // Use ID as Name for now
+        return new BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition(
+            Id: def.DefinitionId,
+            Name: def.Name, 
             Description: "A survivor ready for action.",
             MaxHealth: def.MaxHealth,
-            MaxMovement: def.MaxMovement
+            MaxMovement: 3 // Default movement for now as it was removed from base definition
         );
     }
-}
+    }
+
