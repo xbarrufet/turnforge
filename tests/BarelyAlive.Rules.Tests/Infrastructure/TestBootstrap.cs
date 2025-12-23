@@ -3,6 +3,7 @@ using BarelyAlive.Rules.Apis.Interfaces;
 using BarelyAlive.Rules.Game;
 using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Infrastructure;
+using TurnForge.Engine.Repositories.Interfaces;
 
 namespace BarelyAlive.Rules.Tests.Infrastructure;
 
@@ -16,14 +17,20 @@ public class TestBootstrap
     // Internal generic accessor for specific assertions if needed
     public TurnForge.Engine.Core.TurnForge Engine => _turnForge;
 
-    private TestBootstrap(TurnForge.Engine.Core.Interfaces.IGameLogger? logger)
+    public IGameRepository GameRepository { get; }
+
+    private TestBootstrap(
+        TurnForge.Engine.Core.Interfaces.IGameLogger? logger,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>? propStrategy,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>? agentStrategy)
     {
         var safeLogger = logger ?? new TurnForge.Engine.Infrastructure.ConsoleLogger();
+        GameRepository = new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository();
         
         var context = new GameEngineContext(
-            new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository(),
-            null, // PropStrategy
-            null, // AgentStrategy
+            GameRepository,
+            propStrategy, 
+            agentStrategy,
             safeLogger
         );
 
@@ -36,9 +43,12 @@ public class TestBootstrap
         BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime, _turnForge.GameCatalog);
     }
 
-    public static TestBootstrap CreateNewGame(TurnForge.Engine.Core.Interfaces.IGameLogger? logger = null)
+    public static TestBootstrap CreateNewGame(
+        TurnForge.Engine.Core.Interfaces.IGameLogger? logger = null,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>? propStrategy = null,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>? agentStrategy = null)
     {
-        var bootstrap = new TestBootstrap(logger);
+        var bootstrap = new TestBootstrap(logger, propStrategy, agentStrategy);
         bootstrap.RegisterGameDefinitions();
         return bootstrap;
     }

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1100" height="420" viewBox="0 0 1100 420"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1100" height="420" fill="#0f1117"/>
+
+  <!-- Title -->
+  <text x="550" y="40"
+        font-size="22"
+        fill="#e6e6e6"
+        text-anchor="middle"
+        font-weight="600">
+    TurnForge — Architectural Overview
+  </text>
+
+  <!-- Subtitle -->
+  <text x="550" y="68"
+        font-size="14"
+        fill="#9aa4b2"
+        text-anchor="middle">
+    Phase-Driven · Deterministic · Headless Tactical Engine
+  </text>
+
+  <!-- ===================== -->
+  <!-- Game UI Box           -->
+  <!-- ===================== -->
+  <rect x="60" y="120" width="300" height="200" rx="14"
+        fill="#1b1f2a" stroke="#4da3ff" stroke-width="2"/>
+
+  <text x="210" y="150"
+        font-size="18"
+        fill="#e6e6e6"
+        text-anchor="middle"
+        font-weight="600">
+    Game UI
+  </text>
+
+  <text x="210" y="172"
+        font-size="13"
+        fill="#9aa4b2"
+        text-anchor="middle">
+    (General-Purpose Engine)
+  </text>
+
+  <text x="210" y="205" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Rendering / Animation
+  </text>
+  <text x="210" y="225" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Player Input
+  </text>
+  <text x="210" y="245" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Camera / Audio / UX
+  </text>
+  <text x="210" y="265" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Visual Feedback
+  </text>
+
+  <text x="210" y="300"
+        font-size="12"
+        fill="#7dd3fc"
+        text-anchor="middle"
+        font-style="italic">
+    No game rules • No state mutation
+  </text>
+
+  <!-- ===================== -->
+  <!-- Rules Specification   -->
+  <!-- ===================== -->
+  <rect x="400" y="100" width="300" height="240" rx="14"
+        fill="#1b1f2a" stroke="#22c55e" stroke-width="2"/>
+
+  <text x="550" y="130"
+        font-size="18"
+        fill="#e6e6e6"
+        text-anchor="middle"
+        font-weight="600">
+    Game Rules Specification
+  </text>
+
+  <text x="550" y="152"
+        font-size="13"
+        fill="#9aa4b2"
+        text-anchor="middle">
+    (Using TurnForge Abstractions)
+  </text>
+
+  <text x="550" y="185" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Entities & Components
+  </text>
+  <text x="550" y="205" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Turn Structure (FSM)
+  </text>
+  <text x="550" y="225" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Commands & Decisions
+  </text>
+  <text x="550" y="245" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Rules & Constraints
+  </text>
+  <text x="550" y="265" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Victory / Failure Conditions
+  </text>
+
+  <text x="550" y="305"
+        font-size="12"
+        fill="#86efac"
+        text-anchor="middle"
+        font-style="italic">
+    Pure logic • Deterministic • Testable
+  </text>
+
+  <!-- ===================== -->
+  <!-- TurnForge Runtime     -->
+  <!-- ===================== -->
+  <rect x="740" y="120" width="300" height="200" rx="14"
+        fill="#1b1f2a" stroke="#f59e0b" stroke-width="2"/>
+
+  <text x="890" y="150"
+        font-size="18"
+        fill="#e6e6e6"
+        text-anchor="middle"
+        font-weight="600">
+    TurnForge Runtime
+  </text>
+
+  <text x="890" y="172"
+        font-size="13"
+        fill="#9aa4b2"
+        text-anchor="middle">
+    (Execution Engine)
+  </text>
+
+  <text x="890" y="205" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Command Validation
+  </text>
+  <text x="890" y="225" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • FSM Enforcement
+  </text>
+  <text x="890" y="245" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Decision Scheduling
+  </text>
+  <text x="890" y="265" font-size="13" fill="#cbd5e1" text-anchor="middle">
+    • Single State Mutation
+  </text>
+
+  <text x="890" y="300"
+        font-size="12"
+        fill="#fde68a"
+        text-anchor="middle"
+        font-style="italic">
+    Headless • Deterministic • Authoritative
+  </text>
+
+  <!-- ===================== -->
+  <!-- Arrows                -->
+  <!-- ===================== -->
+
+  <!-- UI -> Rules -->
+  <line x1="360" y1="220" x2="400" y2="220"
+        stroke="#94a3b8" stroke-width="2"/>
+  <polygon points="400,220 392,214 392,226"
+           fill="#94a3b8"/>
+
+  <!-- Rules -> UI -->
+  <line x1="400" y1="245" x2="360" y2="245"
+        stroke="#94a3b8" stroke-width="2"/>
+  <polygon points="360,245 368,239 368,251"
+           fill="#94a3b8"/>
+
+  <!-- Rules -> Runtime -->
+  <line x1="700" y1="220" x2="740" y2="220"
+        stroke="#94a3b8" stroke-width="2"/>
+  <polygon points="740,220 732,214 732,226"
+           fill="#94a3b8"/>
+
+  <!-- Runtime -> Rules -->
+  <line x1="740" y1="245" x2="700" y2="245"
+        stroke="#94a3b8" stroke-width="2"/>
+  <polygon points="700,245 708,239 708,251"
+           fill="#94a3b8"/>
+
+  <!-- Arrow labels -->
+  <text x="380" y="208" font-size="12" fill="#cbd5e1" text-anchor="middle">
+    Commands
+  </text>
+  <text x="380" y="265" font-size="12" fill="#cbd5e1" text-anchor="middle">
+    Effects
+  </text>
+
+  <text x="720" y="208" font-size="12" fill="#cbd5e1" text-anchor="middle">
+    Rule Execution
+  </text>
+  <text x="720" y="265" font-size="12" fill="#cbd5e1" text-anchor="middle">
+    State & Effects
+  </text>
+
+</svg>
