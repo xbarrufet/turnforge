@@ -83,7 +83,7 @@ Este texto es **copy/paste-ready** para README o docs de arquitectura.
 
 TurnForge is built around a **strict separation of concerns** between presentation, game rules, and execution.
 
-![TurnForge Architecture](./docs/architecture.svg)
+![TurnForge Architecture](docs/hl_architecture.md.svg)
 
 ### Conceptual Model
 
