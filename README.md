@@ -1,4 +1,3 @@
-A continuación tienes un **README completo, listo para copy/paste**, coherente con ---
 
 # TurnForge
 
