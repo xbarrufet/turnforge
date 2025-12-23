@@ -83,16 +83,11 @@ Este texto es **copy/paste-ready** para README o docs de arquitectura.
 
 TurnForge is built around a **strict separation of concerns** between presentation, game rules, and execution.
 
-![TurnForge Architecture](docs/architecture.svg)
+![TurnForge Architecture](./docs/architecture.svg)
 
 ### Conceptual Model
 
-
-```
-
 Each layer has a **clear, non-overlapping responsibility**.
-
----
 
 ## 1. Game UI Layer
 
