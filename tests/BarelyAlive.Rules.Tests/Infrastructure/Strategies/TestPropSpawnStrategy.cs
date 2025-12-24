@@ -15,7 +15,7 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
         GameState state)
     {
         // 1. Find ZombieSpawn position (using new ID)
-        Position? zombieSpawnPos = null;
+        Position zombieSpawnPos = Position.Empty;
         
         var zombieProp = state.GetProps().FirstOrDefault(p => 
             p.DefinitionId == TestHelpers.SpawnZombieId); 
@@ -25,14 +25,14 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
              zombieSpawnPos = zombieProp.PositionComponent.CurrentPosition;
         }
         
-        if (zombieSpawnPos == null)
+        if (zombieSpawnPos == Position.Empty)
         {
             // Check in descriptors being spawned
             var zDesc = descriptors.FirstOrDefault(d => d.DefinitionID == TestHelpers.SpawnZombieId);
-            zombieSpawnPos = zDesc?.Position;
+            zombieSpawnPos = zDesc?.Position ?? Position.Empty;
         }
         
-        if (zombieSpawnPos == null)
+        if (zombieSpawnPos == Position.Empty)
         {
             return descriptors;
         }
@@ -40,7 +40,7 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
         // 2. Assign position to those missing it (e.g. if logic requires)
         foreach (var descriptor in descriptors)
         {
-            if (descriptor.Position == null)
+            if (descriptor.Position == Position.Empty)
             {
                 descriptor.Position = zombieSpawnPos;
             }

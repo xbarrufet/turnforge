@@ -19,19 +19,22 @@ public class TestAgentSpawnStrategy : ISpawnStrategy<AgentDescriptor>
         // Props are entities.
         
         var playerSpawn = state.GetProps()
-            .FirstOrDefault(e => e.DefinitionId == "BarelyAlive.Spawn" || e.DefinitionId == TestHelpers.SpawnPlayerId);
+            .FirstOrDefault(e => e.DefinitionId == "Spawn.Player" || e.DefinitionId == TestHelpers.SpawnPlayerId);
             
         // Refinement: Find the one that implies Player.
         // Let's scan for "BarelyAlive.Spawn".
-        var spawns = state.GetProps().Where(p => p.DefinitionId == "BarelyAlive.Spawn").ToList();
+        var spawns = state.GetProps().Where(p => p.DefinitionId == "Spawn.Player" || p.DefinitionId == TestHelpers.SpawnPlayerId).ToList();
         
         // Assume the one WITHOUT ZombieSpawnComponent is PlayerSpawn
         playerSpawn = spawns.FirstOrDefault(p => !p.Components.Any(c => c.GetType().Name.Contains("ZombieSpawn")));
         
         if (playerSpawn == null)
         {
+             System.Console.WriteLine("[TestAgentSpawnStrategy] PlayerSpawn NOT found! Returning descriptors unmodified.");
              return descriptors;
         }
+
+        System.Console.WriteLine($"[TestAgentSpawnStrategy] PlayerSpawn FOUND at {playerSpawn.PositionComponent.CurrentPosition}. Updating {descriptors.Count} descriptors.");
 
         foreach (var descriptor in descriptors)
         {

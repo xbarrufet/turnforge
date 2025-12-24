@@ -1,6 +1,7 @@
 using System.Reflection;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Attributes;
+using TurnForge.Engine.Core.Registries;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.ValueObjects;
@@ -44,10 +45,10 @@ public static class DescriptorBuilder
             ApplyOverrides(descriptor, request.PropertyOverrides);
         }
         
-        // 3. Apply position if specified
-        if (request.Position.HasValue)
+        // 3. Apply position if specified (not Position.Empty)
+        if (request.Position != Position.Empty)
         {
-            SetPosition(descriptor, request.Position.Value);
+            SetPosition(descriptor, request.Position);
         }
 
         // 4. Copy extra components if present
@@ -60,26 +61,54 @@ public static class DescriptorBuilder
     }
     
     /// <summary>
-    /// Creates descriptor instance, respecting DescriptorType attribute if present.
+    /// Creates descriptor instance, respecting descriptor type hierarchy.
     /// </summary>
     /// <remarks>
     /// Priority:
-    /// 1. Definition's [DescriptorType] attribute
-    /// 2. Default TDescriptor type
+    /// 1. Entity's [DescriptorType] attribute (via EntityTypeRegistry)
+    /// 2. Definition's [DescriptorType] attribute (legacy support)
+    /// 3. Default TDescriptor type
+    /// 
+    /// Lookup chain: Definition → Entity → Descriptor
     /// </remarks>
     private static TDescriptor CreateDescriptor<TDescriptor>(
         string definitionId,
         BaseGameEntityDefinition definition)
         where TDescriptor : IGameEntityBuildDescriptor
     {
-        // Check for [DescriptorType] attribute on definition
+        Type descriptorType;
+        
+        // 1. Try to get descriptor type via Definition → Entity → Descriptor chain
+        var entityType = EntityTypeRegistry.GetEntityType(definition.GetType());
+        
+        if (entityType != null)
+        {
+            // Get descriptor type from entity's [DescriptorType] attribute
+            var descriptorTypeFromEntity = EntityTypeRegistry.GetDescriptorType(entityType);
+            
+            if (descriptorTypeFromEntity != null)
+            {
+                descriptorType = descriptorTypeFromEntity;
+                
+                // Validate compatibility
+                if (!typeof(TDescriptor).IsAssignableFrom(descriptorType))
+                {
+                    throw new InvalidOperationException(
+                        $"DescriptorType '{descriptorType.Name}' on entity '{entityType.Name}' " +
+                        $"is not compatible with expected type '{typeof(TDescriptor).Name}'");
+                }
+                
+                // Create instance and return
+                return (TDescriptor)Activator.CreateInstance(descriptorType, definitionId)!;
+            }
+        }
+        
+        // 2. Legacy: Check for [DescriptorType] attribute on definition (backwards compatibility)
         var descriptorTypeAttr = definition.GetType()
             .GetCustomAttribute<DescriptorTypeAttribute>();
         
-        Type descriptorType;
         if (descriptorTypeAttr != null)
         {
-            // Use type specified by attribute
             descriptorType = descriptorTypeAttr.DescriptorType;
             
             // Validate it's compatible with TDescriptor
@@ -89,12 +118,12 @@ public static class DescriptorBuilder
                     $"DescriptorType '{descriptorType.Name}' on definition '{definition.DefinitionId}' " +
                     $"is not compatible with expected type '{typeof(TDescriptor).Name}'");
             }
+            
+            return (TDescriptor)Activator.CreateInstance(descriptorType, definitionId)!;
         }
-        else
-        {
-            // Use default TDescriptor
-            descriptorType = typeof(TDescriptor);
-        }
+        
+        // 3. Use default TDescriptor
+        descriptorType = typeof(TDescriptor);
         
         // Create instance via reflection (constructor with string parameter)
         var descriptor = (TDescriptor)Activator.CreateInstance(descriptorType, definitionId)!;

@@ -11,7 +11,7 @@ using TurnForge.Engine.Registration;
 using BarelyAlive.Rules.Core.Domain.Definitions;
 using TurnForge.Engine.Entities;
 using BarelyAlive.Rules.Core.Domain.Entities;
-using SurvivorDefinition = BarelyAlive.Rules.Core.Domain.Definitions.SurvivorDefinition;
+using SurvivorDefinition = BarelyAlive.Rules.Core.Domain.Entities.SurvivorDefinition;
 
 
 namespace BarelyAlive.Rules.Game;
@@ -66,8 +66,8 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
         //resgstrem les definitions
         //_catalog.RegisterDefinition("Survivors.Mike", survivorDef);
         //survivors
-        var mikeDef = new SurvivorDefinition(mike, "Mike", 3);
-        var dougDef = new SurvivorDefinition(doug, "Doug", 3);
+        var mikeDef = new SurvivorDefinition(mike, "Mike", "Survivor");
+        var dougDef = new SurvivorDefinition(doug, "Doug", "Survivor");
         _turnForge.GameCatalog.RegisterDefinition(mikeDef);
         _turnForge.GameCatalog.RegisterDefinition(dougDef);
         //zombies
@@ -76,7 +76,7 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
         _turnForge.GameCatalog.RegisterDefinition(znormal,"Zombie Normal", "Zombie");
         //spawn
         _turnForge.GameCatalog.RegisterDefinition(spawnPlayer,"Spawn Player", "Spawn");
-        var zombiSpawn = new ZombieSpawnDefinition(spawZombie,"Spawn Zombie", 1);
+        var zombiSpawn = new ZombieSpawnDefinition(spawZombie, "Spawn Zombie", "Spawn") { Order = 1 };
         _turnForge.GameCatalog.RegisterDefinition(zombiSpawn);
 
         //zones

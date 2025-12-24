@@ -16,8 +16,8 @@ public static class TestHelpers
     public const string DoorId = "Door";
     public const string AreaId = "Area";
 
-    public static readonly SurvivorDefinition MikeDef = new(MikeId, "Mike");
-    public static readonly SurvivorDefinition DougDef = new(DougId, "Doug");
+    public static readonly SurvivorDefinition MikeDef = new(MikeId, "Mike", "Survivor");
+    public static readonly SurvivorDefinition DougDef = new(DougId, "Doug", "Survivor");
     
     // Zombies
     public static readonly BaseGameEntityDefinition ZRunnerDef = new(ZRunnerId, "Zombie Runner", "Zombie");
@@ -25,8 +25,8 @@ public static class TestHelpers
     public static readonly BaseGameEntityDefinition ZNormalDef = new(ZNormalId, "Zombie Normal", "Zombie");
     
     // Spawn
-    public static readonly BaseGameEntityDefinition SpawnPlayerDef = new(SpawnPlayerId, "Spawn Player", "Spawn");
-    public static readonly ZombieSpawnDefinition ZombiSpawnDef = new(SpawnZombieId, "Spawn Zombie", 1);
+    public static readonly BaseGameEntityDefinition SpawnPlayerDef = new(SpawnPlayerId, "Spawn Player", "Spawn.Player");
+    public static readonly BaseGameEntityDefinition SpawnZombieDef = new(SpawnZombieId, "Spawn Zombie", "Spawn.Zombie");
 
     // Zones
     public static readonly BaseGameEntityDefinition AreaDef = new(AreaId, "Tile", "Board");
@@ -42,7 +42,7 @@ public static class TestHelpers
         catalog.RegisterDefinition(ZFatDef);
         catalog.RegisterDefinition(ZNormalDef);
         catalog.RegisterDefinition(SpawnPlayerDef);
-        catalog.RegisterDefinition(ZombiSpawnDef);
+        catalog.RegisterDefinition(SpawnZombieDef);
         catalog.RegisterDefinition(AreaDef);
         catalog.RegisterDefinition(DoorDef);
     }

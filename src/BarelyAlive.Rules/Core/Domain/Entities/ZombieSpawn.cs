@@ -1,34 +1,51 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
+using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Definitions;
-using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.ValueObjects;
+using BarelyAlive.Rules.Core.Domain.Descriptors;
 
 namespace BarelyAlive.Rules.Core.Domain.Entities;
 
+/// <summary>
+/// ZombieSpawn prop - spawn point for zombie waves.
+/// </summary>
+/// <remarks>
+/// This entity has a custom component (ZombieSpawnComponent) with an Order property
+/// that controls spawn wave priority. The descriptor allows type-safe spawn processing.
+/// </remarks>
+[DefinitionType(typeof(ZombieSpawnDefinition))]
+[DescriptorType(typeof(ZombieSpawnDescriptor))]
 public class ZombieSpawn : Prop
 {
-    public ZombieSpawn(EntityId id, string definitionId, string name, string category) : base(id, definitionId, name, category)
+    public ZombieSpawn(EntityId id, string definitionId, string name, string category) 
+        : base(id, definitionId, name, category)
     {
         AddComponent(new ZombieSpawnComponent());
     }
 }
 
+/// <summary>
+/// Component for ZombieSpawn entities that stores spawn wave order.
+/// </summary>
 public class ZombieSpawnComponent : IGameEntityComponent
 {
-    public int Order { get; set; }
-}
-[EntityType(typeof(ZombieSpawn))]
-public class ZombieSpawnDescriptor(string definitionId) : PropDescriptor(definitionId)
-{
-    [MapToComponent(typeof(ZombieSpawnComponent), nameof(Order))]
-    public int Order { get; set; }
+    /// <summary>
+    /// Spawn order for zombie waves (lower values spawn first).
+    /// </summary>
+    public int Order { get; set; } = 1;
 }
 
-[EntityType(typeof(ZombieSpawn))]
-public class ZombieSpawnDefinition(string definitionId, string name, int order) : PropDefinition(definitionId, name, "Spawn")
+/// <summary>
+/// Definition for ZombieSpawn props.
+/// </summary>
+public class ZombieSpawnDefinition : PropDefinition
 {
-    [MapToComponent(typeof(ZombieSpawnComponent), nameof(Order))]
-    public int Order { get; set; } = order;
+    public int Order { get; set; } = 1;
+    
+    public ZombieSpawnDefinition(string definitionId, string name, string category) 
+        : base(definitionId, name, category)
+    {
+    }
 }

@@ -2,6 +2,7 @@ using TurnForge.Engine.APIs;
 using TurnForge.Engine.Appliers.Spawn;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.Core.Registries;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Interfaces;
 using TurnForge.Engine.Appliers.Entity;
@@ -29,6 +30,12 @@ public static class GameEngineFactory
     public static Core.TurnForge Build(
         GameEngineContext gameEngineContext)
     {
+        // 0️⃣ Initialize global registries
+        // Centralized initialization ensures all type mappings are available
+        // before any component needs them. This eliminates lazy initialization
+        // overhead and makes the initialization flow explicit and predictable.
+        EntityTypeRegistry.Initialize();
+
         // 1️⃣ ServiceProvider del engine
         var services = new SimpleServiceProvider();
 

@@ -11,6 +11,7 @@ using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Core.Mapping;
 using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Core.Attributes;
+using TurnForge.Engine.Core.Registries;
 using System.Reflection;
 
 namespace TurnForge.Engine.Entities.Actors;
@@ -19,7 +20,6 @@ public sealed class GenericActorFactory(
     IGameCatalog gameCatalog)
     : IActorFactory
 {
-
     public Prop BuildProp(PropDescriptor descriptor)
     {
         var definition = gameCatalog.GetDefinition<BaseGameEntityDefinition>(descriptor.DefinitionID);
@@ -31,9 +31,15 @@ public sealed class GenericActorFactory(
         var prop = CreateEntityInstance<Prop>(entityType, descriptor.DefinitionID, definition);
 
         // Map properties from definition and descriptor to components
-        EngineAutoMapper.Map(definition, prop);
-        EngineAutoMapper.Map(definition, prop);
-        EngineAutoMapper.Map(descriptor, prop);
+        PropertyAutoMapper.Map(definition, prop);
+        PropertyAutoMapper.Map(definition, prop);
+        PropertyAutoMapper.Map(descriptor, prop);
+
+        // Direct position assignment (simple and explicit)
+        if (descriptor.Position != Position.Empty)
+        {
+            prop.PositionComponent.CurrentPosition = descriptor.Position;
+        }
 
         // Add extra components from descriptor
         foreach (var component in descriptor.ExtraComponents)
@@ -45,46 +51,58 @@ public sealed class GenericActorFactory(
     }
 
      public Agent BuildAgent(AgentDescriptor descriptor)
-    {
-        var definition = gameCatalog.GetDefinition<BaseGameEntityDefinition>(descriptor.DefinitionID);
-        
-        // Determine concrete type from attributes
-        var entityType = GetEntityType<Agent>(descriptor.GetType(), definition);
-        
-        // Create instance using reflection
-        var agent = CreateEntityInstance<Agent>(entityType, descriptor.DefinitionID, definition);
-
-        // Map properties from definition and descriptor to components
-        EngineAutoMapper.Map(definition, agent);
-        EngineAutoMapper.Map(definition, agent);
-        EngineAutoMapper.Map(descriptor, agent);
-
-        // Add extra components from descriptor
-        foreach (var component in descriptor.ExtraComponents)
-        {
-            agent.AddComponent(component);
-        }
-
-        return agent;
-    }
-
-    /// Determines the concrete entity type from EntityType attribute on descriptor or definition
-/// </summary>
-private Type GetEntityType<TDefault>(Type descriptorType, BaseGameEntityDefinition definition) 
-    where TDefault : GameEntity
 {
-    // Priority 1: Check descriptor type
-    var entityType = descriptorType.GetCustomAttribute<EntityTypeAttribute>()?.EntityType;
+    var definition = gameCatalog.GetDefinition<BaseGameEntityDefinition>(descriptor.DefinitionID);
     
-    // Priority 2: Check definition type
-    if (entityType == null)
+    // Determine concrete type from attributes
+    var entityType = GetEntityType<Agent>(descriptor.GetType(), definition);
+    
+    // Create instance using reflection
+    var agent = CreateEntityInstance<Agent>(entityType, descriptor.DefinitionID, definition);
+
+    // Map properties from definition and descriptor to components
+    PropertyAutoMapper.Map(definition, agent);
+    PropertyAutoMapper.Map(descriptor, agent);
+
+    // Direct position assignment (simple and explicit)
+    if (descriptor.Position != Position.Empty)
     {
-        entityType = definition.GetType().GetCustomAttribute<EntityTypeAttribute>()?.EntityType;
+        agent.PositionComponent.CurrentPosition = descriptor.Position;
     }
-    
-    // Priority 3: Use default type
-    return entityType ?? typeof(TDefault);
+
+    // Add extra components from descriptor
+    foreach (var component in descriptor.ExtraComponents)
+    {
+        agent.AddComponent(component);
+    }
+
+    return agent;
 }
+
+    /// <summary>
+    /// Determines the concrete entity type using EntityTypeRegistry.
+    /// </summary>
+    /// <remarks>
+    /// Lookup chain:
+    /// 1. Definition → EntityTypeRegistry → Entity type
+    /// 2. Definition's [EntityType] attribute (legacy)
+    /// 3. Default TDefault type
+    /// </remarks>
+    private Type GetEntityType<TDefault>(Type descriptorType, BaseGameEntityDefinition definition) 
+        where TDefault : GameEntity
+    {
+        // Priority 1: Use registry (Definition → Entity)
+        var entityType = EntityTypeRegistry.GetEntityType(definition.GetType());
+        
+        // Priority 2: Check definition's [EntityType] attribute (legacy support)
+        if (entityType == null)
+        {
+            entityType = definition.GetType().GetCustomAttribute<EntityTypeAttribute>()?.EntityType;
+        }
+        
+        // Priority 3: Use default type
+        return entityType ?? typeof(TDefault);
+    }
 
 /// <summary>
 /// Creates entity instance using reflection

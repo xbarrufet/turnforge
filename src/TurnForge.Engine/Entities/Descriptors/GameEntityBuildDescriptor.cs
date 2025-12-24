@@ -1,4 +1,5 @@
 using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Descriptors;
@@ -11,5 +12,12 @@ public class GameEntityBuildDescriptor(string definitionId) : IGameEntityBuildDe
 {
     public string DefinitionID { get; set; } = definitionId;
     public List<IGameEntityComponent> ExtraComponents { get; init; } = new();
-    public Position? Position { get; set; } = null;
+    
+    /// <summary>
+    /// Position where the entity will spawn.
+    /// Use Position.Empty if position should be determined by spawn strategy.
+    /// Maps to PositionComponent.CurrentPosition via PropertyAutoMapper.
+    /// </summary>
+    [MapToComponent(typeof(IPositionComponent), "CurrentPosition")]
+    public Position Position { get; set; } = Position.Empty;
 }

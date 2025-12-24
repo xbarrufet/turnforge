@@ -3,29 +3,45 @@ using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.ValueObjects;
+using BarelyAlive.Rules.Core.Domain.Descriptors;
 
 namespace BarelyAlive.Rules.Core.Domain.Entities;
 
+/// <summary>
+/// Survivor entity - playable characters in BarelyAlive.
+/// </summary>
+/// <remarks>
+/// This class declares its type relationships via attributes:
+/// - [DefinitionType] links to SurvivorDefinition
+/// - [DescriptorType] links to SurvivorDescriptor for type-safe spawn processing
+/// 
+/// These attributes enable:
+/// 1. Compile-time safety (missing types cause build errors)
+/// 2. Runtime type lookup via EntityTypeRegistry
+/// 3. Type-specific spawn strategy processing
+/// </remarks>
+[DefinitionType(typeof(SurvivorDefinition))]
+[DescriptorType(typeof(SurvivorDescriptor))]
 public class Survivor : Agent
 {
-    public Survivor(EntityId id, string definitionId, string name) : base(id, definitionId, name, "Survivor")
+    public Survivor(EntityId id, string definitionId, string name, string category) 
+        : base(id, definitionId, name, category)
     {
     }
-
 }
 
-[EntityType(typeof(Survivor))]
+/// <summary>
+/// Definition for Survivor entities.
+/// Contains default property values loaded from data files.
+/// </summary>
 public class SurvivorDefinition : BaseGameEntityDefinition
 {
-    [MapToComponent(typeof(IHealthComponent), TurnForgeComponents.Prop_HealthComponent_MaxHealth)]
-    public int MaxHealth { get; set; }
-    public SurvivorDefinition(string definitionId, string name) : base(definitionId, name, "Survivor")
+    public int MaxHealth { get; set; } = 12;
+    public string Faction { get; set; } = "Player";
+    public int ActionPoints { get; set; } = 3;
+    
+    public SurvivorDefinition(string definitionId, string name, string category) 
+        : base(definitionId, name, category)
     {
-        
     }
-}
-
-[EntityType(typeof(Survivor))]
-public class SurvivorDescription : AgentDescription {
-
 }

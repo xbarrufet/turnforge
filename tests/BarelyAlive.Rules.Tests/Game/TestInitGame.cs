@@ -1,11 +1,11 @@
 using NUnit.Framework;
 using BarelyAlive.Rules.Tests.Infrastructure;
-using BarelyAlive.Rules.Tests.Infrastructure.Strategies;
 using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.ValueObjects;
 using System.Linq;
 using TurnForge.Engine.Commands.ACK;
+using BarelyAlive.Rules.Core.Domain.Entities;
 
 namespace BarelyAlive.Rules.Tests.Game;
 
@@ -16,9 +16,8 @@ public class TestInitGame
     public void InitGame_ShouldUseSpawnStrategies_Correctly()
     {
         // 1. Create Game with Custom Strategies
-        var propStrategy = new TestPropSpawnStrategy();
-        var agentStrategy = new TestAgentSpawnStrategy();
-        var bootstrap = TestBootstrap.CreateNewGame(propStrategy: propStrategy, agentStrategy: agentStrategy);
+        // 1. Create Game with Default Strategies (Configurable*SpawnStrategy)
+        var bootstrap = TestBootstrap.CreateNewGame();
         
         // 2. Parse Mission
         var (spatial, zones, props, agents) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
@@ -33,67 +32,50 @@ public class TestInitGame
         var ack1 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
         
 
+
         // 3.2 Spawn Props (Triggers Prop Strategy)
         var res2 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
         Assert.That(res2.Result.Success, Is.True, $"SpawnProps failed: {res2.Result.Error}");
         
-
         var ack2 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
 
         // 3.3 Spawn Agents (Triggers Agent Strategy)
-        var res3 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnAgentsCommand(agents));
+        // Manually create agents to test Strategy logic (Mission01Json doesn't have agents)
+        // We give one of them a dummy position (0,0), hoping the Strategy moves them to Spawn.Player (1,1)
+        var dummyPos = new Position(new TileId(System.Guid.Parse("d7de841d-64a5-48b3-9662-0fe757a8950e"))); // (0,0)
+        var testAgents = new List<SpawnRequest>
+        {
+             new SpawnRequest(TestHelpers.MikeId,1, dummyPos),
+             new SpawnRequest(TestHelpers.DougId)
+        };
+        
+        var res3 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnAgentsCommand(testAgents));
         Assert.That(res3.Result.Success, Is.True, $"SpawnAgents failed: {res3.Result.Error}");
         
         // 4. Verification
         var state = bootstrap.GameRepository.LoadGameState();
         var propsInGame = state.GetProps();
+        
+        System.Console.WriteLine($"[TEST DEBUG] Props Count: {propsInGame.Count}");
+        foreach(var p in propsInGame)
+        {
+             System.Console.WriteLine($"   - Prop {p.Id}: DefId='{p.DefinitionId}' Pos={p.PositionComponent?.CurrentPosition}");
+        }
         var agentsInGame = state.GetAgents();
         
-        // 4.1. Verify Agent Strategy: Position = PlayerSpawn position
-        // Find Player Spawn Prop
-        // Note: The definition ID in state is "BarelyAlive.Spawn" (from JSON).
-        // It has a component that marks it as PartySpawn (if registered properly).
-        // Or we can find it by position {2,0} (Tile: dd05ee1d...) or by looking for the one with PartySpawn behavior.
-        // Let's assume the one at {2,0} is the Player Spawn as per JSON.
+        // check that the agents have been created
+        System.Console.WriteLine($"[TEST DEBUG] Agents Count: {agentsInGame.Count}");
+        Assert.That(agentsInGame.Count, Is.EqualTo(2));
         
-        // Wait, strategy logic: "The position of the entity is the position of the prod of type PlayerSpawn".
-        // The strategy finds the prop in the state.
-        // It uses TestHelpers.SpawnPlayerId ("Spawn.Player").
-        // BUT the JSON uses "BarelyAlive.Spawn". 
-        // THIS IS A MISMATCH unless "BarelyAlive.Spawn" maps to "Spawn.Player" internally or I fix the strategy/test helper.
-        // Since I cannot change TurnForge rules, maybe I should use the correct ID in strategy?
-        // Ah, I wrote the strategy. I should fix the strategy to look for "BarelyAlive.Spawn" if that's what's in the state.
-        
-        // Let's check if the strategy will find the PlayerSpawn.
-        // In the strategy I wrote: e.DefinitionId == TestHelpers.SpawnPlayerId ("Spawn.Player").
-        // But the prop loaded from JSON has DefinitionId "BarelyAlive.Spawn".
-        // SO THE STRATEGY WILL FAIL to find the spawner.
-        
-        // I need to update the strategy to look for "BarelyAlive.Spawn" AND maybe distinguish it from ZombieSpawn.
-        // ZombieSpawn also has "BarelyAlive.Spawn" definition.
-        
-        // Let's assume for this specific test case, we check for "BarelyAlive.Spawn" and maybe position?
-        // Or check behaviors if accessible. Behavior components are stored in `Components`.
-        // I can inspect components.
-        
-        // For Verification:
-        // We know Agents (Mike & Doug) are loaded.
-        // In JSON they have positions.
-        // The strategy OVERWRITES their position to matching PlayerSpawn.
-        // PlayerSpawn is at {2,0} ("dd05ee1d...").
-        // In this specific mission, the Agents are ALSO at {2,0} in the JSON.
-        // So they are already at the correct position.
-        // This makes it hard to prove the strategy worked unless I assert they ARE there.
-        // But if I want to be sure strategy ran, I could pick a mission where they differ?
-        // User said "verificar que el resultado es correcto".
-        // If they are at the PlayerSpawn position, it is correct.
-        
-        // Let's verify they are at {2,0}.
-        var tileAt2_0 = new Position(new TileId(System.Guid.Parse("dd05ee1d-7a6e-4996-b0bc-a9acb50fe3de")));
+        // Check that they are created in the Spawn.Player position (1,1)
+        // ID: 07ea7bbc-4f23-4bf0-a5c7-c527f36c3b53 (from Mission01Json)
+        var expectedSpawnPos = new Position(new TileId(System.Guid.Parse("07ea7bbc-4f23-4bf0-a5c7-c527f36c3b53")));
         
         foreach(var agent in agentsInGame)
         {
-            Assert.That(agent.PositionComponent.CurrentPosition, Is.EqualTo(tileAt2_0), $"Agent {agent.Id} should be at PlayerSpawn position {tileAt2_0}");
+            System.Console.WriteLine($"[TEST DEBUG] Agent {agent.Id} at {agent.PositionComponent.CurrentPosition}. Expected: {expectedSpawnPos}");
+            Assert.That(agent.PositionComponent.CurrentPosition, Is.EqualTo(expectedSpawnPos), $"Agent {agent.Id} should be at PlayerSpawn position {expectedSpawnPos}");
+            Assert.That(agent.PositionComponent.CurrentPosition, Is.Not.EqualTo(dummyPos), "Agent should have been moved from dummy position");
         }
         
         // Also verify Props count

@@ -7,6 +7,9 @@ using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Core.Domain.Entities;
 
+
+[DefinitionType(typeof(DoorDefinition))]
+[DescriptorType(typeof(DoorDescriptor))]
 public class Door : Prop
 {
     public Door(EntityId id, string definitionId, string name, string category) : base(id, definitionId, name, category)
@@ -27,13 +30,37 @@ public class ColorComponent : IGameEntityComponent
     public Color Color { get; set; }
 }
 
-[EntityType(typeof(Door))]
-public class DoorDescriptor(string definitionId, Color color) : PropDescriptor(definitionId)
+
+/// <summary>
+/// Descriptor for Door props with color customization.
+/// </summary>
+/// <remarks>
+/// Provides two constructors:
+/// - Single-parameter (definitionId): For DescriptorBuilder reflection-based instantiation
+/// - Two-parameter (definitionId, color): For explicit color specification in tests/code
+/// </remarks>
+public class DoorDescriptor : PropDescriptor
 {
-    [MapToComponent(typeof(ColorComponent), nameof(Color))]
-    public Color Color { get; set; } = color;
+    public Color Color { get; set; }
+    
+    /// <summary>
+    /// Default constructor for DescriptorBuilder (reflection-based instantiation).
+    /// Color will be set to default value or via PropertyOverrides.
+    /// </summary>
+    public DoorDescriptor(string definitionId) : base(definitionId)
+    {
+        Color = Color.Red; // Default color
+    }
+    
+    /// <summary>
+    /// Explicit constructor for tests and direct usage with color specification.
+    /// </summary>
+    public DoorDescriptor(string definitionId, Color color) : base(definitionId)
+    {
+        Color = color;
+    }
 }
 
-[EntityType(typeof(Door))]
+
 public class DoorDefinition(string definitionId, string name, string category) : PropDefinition(definitionId, name, category)
 {}

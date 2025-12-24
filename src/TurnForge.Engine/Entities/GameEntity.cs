@@ -3,9 +3,11 @@ using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
+using TurnForge.Engine.Entities.Interfaces;
+
 namespace TurnForge.Engine.Entities;
 
-public abstract class GameEntity : IGameEntity
+public abstract class GameEntity : IGameEntity, IComponentContainer
 {
     public EntityId Id { get; }
     public string DefinitionId { get; }
@@ -117,5 +119,10 @@ public abstract class GameEntity : IGameEntity
     public string GetComponents()
     {
         return string.Join(", ", _components.Values.Select(c => c.GetType().Name));
+    }
+
+    public IEnumerable<IGameEntityComponent> GetAllComponents()
+    {
+        return _components.Values;
     }
 }

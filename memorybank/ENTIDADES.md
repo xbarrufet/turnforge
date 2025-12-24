@@ -12,7 +12,7 @@
 3. [FSM (Finite State Machine)](#fsm-finite-state-machine)
 4. [Command & Decision Flow](#command--decision-flow)
 5. [Orchestrator](#orchestrator)
-6. [Spawn System](#spawn-system)
+6. [Commands](#commands)
 7. [Spatial & Board](#spatial--board)
 8. [Integration Patterns](#integration-patterns)
 
@@ -88,31 +88,40 @@ public interface IHealthComponent : IGameEntityComponent
 }
 ```
 
-### Definition-Descriptor Pattern
+### Definition-Descriptor Pattern (Auto-Mapping)
 
-**Definition** = Blueprint (stored in catalog)
+**Definition** = Blueprint (Data Source)
 ```csharp
 [EntityType(typeof(Survivor))]
 public class SurvivorDefinition : AgentDefinition
 {
-    [MapToComponent(typeof(IHealthComponent), "MaxHealth")]
+    // FT-004: Implicit Mapping
+    // Matches properties in IHealthComponent by name/type automatically.
     public int MaxHealth { get; set; } = 10;
     
-    [MapToComponent(typeof(IFactionComponent), "Faction")]
-    public string Faction { get; set; } = "Survivors";
+    // Explicit mapping for different names
+    [MapToComponent(typeof(IFactionComponent), "FactionName")]
+    public string Team { get; set; } = "Survivors";
 }
 ```
 
-**Descriptor** = Spawn request (includes position, overrides)
+**Descriptor** = Spawn Request (Overrides)
 ```csharp
 public class SurvivorDescriptor : AgentDescriptor
 {
     public SurvivorDescriptor(string definitionId) : base(definitionId) { }
     
-    [MapToComponent(typeof(IPositionComponent), "CurrentPosition")]
+    // Automatically maps to IPositionComponent.CurrentPosition if matched
+    // Or used by Strategy/Factory logic
     public Position Position { get; set; }
 }
 ```
+
+**Property Discovery (FT-004):**
+1. **Implicit (Default):** Properties on Definition/Descriptor map to Component properties with same name and type.
+2. **Explicit (`[MapToComponent]`):** Redirects mapping to specific specific component/property.
+3. **Opt-Out (`[DoNotMap]`):** Attributes on Component properties prevent external setting.
+
 
 **Factory Process:**
 1. Handler creates `Descriptor` from command
@@ -376,116 +385,678 @@ foreach (var decision in toExecute)
 ```
 
 ---
+## COMMANDS
 
-## Spawn System
+Commands are the primary way to interact with the TurnForge engine. They represent user or AI intentions and are validated, processed, and executed through the Command-Decision-Applier pipeline.
 
-### Architecture
-
-```
-SpawnCommand (SpawnRequest[])
-    ↓
-Strategy.Process(requests, state)
-    ↓
-SpawnDecision<TDescriptor>[]
-    ↓
-SpawnApplier.Apply(decision, state)
-    ↓
-EntitySpawnedEffect
-```
-
-### SpawnRequest
+### Command Structure
 
 ```csharp
-public record SpawnRequest(
-    string DefinitionId,                        // Required
-    int Count = 1,                              // Batch spawn
-    Position? Position = null,                  // Strategy decides if null
-    Dictionary<string, object>? PropertyOverrides = null
+public interface ICommand { Type CommandType { get; } }
+```
+
+All commands must:
+- Be immutable (use `record` types)
+- Contain all necessary data
+- Not perform business logic (that's in handlers)
+
+---
+
+### Spawn Command
+
+The Spawn Command system handles entity creation with a flexible, type-safe pipeline.
+
+**Pipeline Flow:**
+```
+SpawnRequest → DescriptorBuilder → Descriptor → Strategy → Decision → Applier → Entity
+```
+
+**Key Principle:** Entities are **ONLY** created via Spawn. Updates are done via Components.
+
+---
+
+#### SpawnRequest (User Input)
+
+The `SpawnRequest` is the user-facing API for requesting entity spawns.
+
+```csharp
+public sealed record SpawnRequest(
+    string DefinitionId,  // Required
+    int Count = 1,        // Optional: batch spawn
+    Position? Position = null,  // Optional: strategy decides if null
+    Dictionary<string, object>? PropertyOverrides = null,
+    IEnumerable<IGameEntityComponent>? ExtraComponents = null
 );
 ```
 
-### Spawn Strategy
+**Usage (Direct):**
+```csharp
+var request = new SpawnRequest(
+    "Survivors.Mike",
+    Position: spawnPoint,
+    PropertyOverrides: new() { ["Health"] = 12 }
+);
+```
 
-Each strategy is typed to a specific descriptor:
+**Usage (Fluent Builder - Recommended):**
+```csharp
+var request = SpawnRequestBuilder
+    .For("Survivors.Mike")
+    .At(spawnPoint)
+    .WithProperty("Health", 12)
+    .WithProperty("Faction", "Police")
+    .Build();
+```
+
+---
+
+#### SpawnRequestBuilder (Fluent API)
+
+ **Purpose:** Improve developer experience with IntelliSense-driven API.
+
+**Features:**
+- ✅ Fluent method chaining
+- ✅ Type-safe generic overloads  
+- ✅ Implicit conversion to `SpawnRequest`
+- ✅ Validation on build
+
+**Methods:**
+- `For(string definitionId)` - Entry point
+- `At(Position position)` - Set spawn position
+- `WithCount(int count)` - Set batch count
+- `WithProperty(string key, object value)` - Add property override
+- `WithProperty<T>(string key, T value)` - Type-safe override
+- `WithComponent<T>(T component)` - Add extra component
+- `WithComponents(params IGameEntityComponent[])` - Add multiple
+- `Build()` - Create final `SpawnRequest`
+
+**Example - Complex Boss:**
+```csharp
+// Before (verbose)
+var boss = new SpawnRequest(
+    "Enemies.DragonBoss",
+    Position: bossSpawn,
+    PropertyOverrides: new Dictionary<string, object> {
+        ["Health"] = 1000,
+        ["PhaseCount"] = 5
+    }
+);
+
+// After (fluent, discoverable)
+var boss = SpawnRequestBuilder
+    .For("Enemies.DragonBoss")
+    .At(bossSpawn)
+    .WithProperty("Health", 1000)
+    .WithProperty("PhaseCount", 5)
+    .Build();
+```
+
+**Example - Batch with LINQ:**
+```csharp
+var zombies = Enumerable.Range(0, 10)
+    .Select(i => SpawnRequestBuilder
+        .For("Enemies.Zombie")
+        .At(spawnPoints[i])
+        .WithProperty("Health", 10 + (i * 5))
+        .Build())
+    .ToList();
+```
+
+---
+
+#### DescriptorBuilder (Preprocessor)
+
+**Purpose:** Convert `SpawnRequest` to typed descriptors automatically.
+
+**Process:**
+1. Create descriptor instance (respects `[DescriptorType]` attribute)
+2. Apply property overrides via reflection
+3. Copy position and extra components
+
+```csharp
+// Automatic mapping: Dictionary → Typed Properties
+var descriptor = DescriptorBuilder.Build<AgentDescriptor>(request, definition);
+// PropertyOverrides["Health"] → descriptor.Health
+```
+
+---
+
+#### Descriptors (Internal Type Safety)
+
+Descriptors are **internal transformation artifacts**.
+
+```csharp
+public class GameEntityBuildDescriptor : IGameEntityBuildDescriptor
+{
+    public string DefinitionID { get; set; }
+    public List<IGameEntityComponent> ExtraComponents { get; init; } = new();
+    public Position? Position { get; set; }
+}
+
+public class AgentDescriptor : GameEntityBuildDescriptor { }
+public class PropDescriptor : GameEntityBuildDescriptor { }
+```
+
+**Key Point:** Users do **not** define custom descriptors. Used internally for type safety.
+
+---
+
+#### Spawn Strategy
+
+**Purpose:** Process descriptors and determine spawn conditions.
 
 ```csharp
 public interface ISpawnStrategy<TDescriptor> 
-    where TDescriptor : IGameEntityDescriptor
 {
-    IReadOnlyList<SpawnDecision<TDescriptor>> Process(
-        IReadOnlyList<SpawnRequest> requests,
-        GameState state
-    );
+    IReadOnlyList<TDescriptor> Process(
+        IReadOnlyList<TDescriptor> descriptors,
+        GameState state);
+        
+    IReadOnlyList<SpawnDecision<TDescriptor>> ToDecisions(
+        IReadOnlyList<TDescriptor> descriptors);
 }
 ```
 
 **Responsibilities:**
-- Expand `Count` (batch spawn)
-- Determine position (if not provided)
+- Assign spawn positions (if not provided)
 - Validate spawn conditions
-- Create typed descriptors
-- Apply property overrides
+- Filter invalid spawns
+- Modify descriptors based on game state
 
 **Example:**
 ```csharp
-public class SurvivorSpawnStrategy : ISpawnStrategy<SurvivorDescriptor>
+public class ConfigurableAgentSpawnStrategy : ISpawnStrategy<AgentDescriptor>
 {
-    public IReadOnlyList<SpawnDecision<SurvivorDescriptor>> Process(
-        IReadOnlyList<SpawnRequest> requests,
+    public IReadOnlyList<AgentDescriptor> Process(
+        IReadOnlyList<AgentDescriptor> descriptors,
         GameState state)
     {
-        var decisions = new List<SpawnDecision<SurvivorDescriptor>>();
-        
-        foreach (var request in requests)
+        foreach (var descriptor in descriptors)
         {
-            for (int i = 0; i < request.Count; i++)
-            {
-                var descriptor = new SurvivorDescriptor(request.DefinitionId)
-                {
-                    Position = request.Position ?? FindPartySpawnPoint(state),
-                    Faction = "Alliance"
-                };
-                
-                if (request.PropertyOverrides != null)
-                    ApplyOverrides(descriptor, request.PropertyOverrides);
-                
-                if (!IsValidPosition(descriptor.Position, state))
-                    continue; // Skip invalid spawn
-                
-                decisions.Add(new SpawnDecision<SurvivorDescriptor>(descriptor));
-            }
+            var spawnPoint = FindSpawnPoint(descriptor.DefinitionID, state);
+            descriptor.Position = spawnPoint;
         }
-        
-        return decisions;
-    }
-    
-    private Position FindPartySpawnPoint(GameState state)
-    {
-        var spawnProp = state.GetProps()
-            .FirstOrDefault(p => p.HasBehaviour<PartySpawnBehaviour>());
-        return spawnProp?.PositionComponent.CurrentPosition ?? Position.Empty;
+        return descriptors;
     }
 }
 ```
 
-### Spawn Applier
+---
+
+#### Spawn Commands
 
 ```csharp
-public class SpawnApplier<TDescriptor> : IApplier<SpawnDecision<TDescriptor>> 
-    where TDescriptor : IGameEntityDescriptor
+public sealed record SpawnAgentsCommand(
+    IReadOnlyList<SpawnRequest> Requests
+) : ICommand;
+
+public sealed record SpawnPropsCommand(
+    IReadOnlyList<SpawnRequest> Requests
+) : ICommand;
+```
+
+---
+
+#### Command Handler
+
+```csharp
+public class SpawnAgentsCommandHandler : ICommandHandler<SpawnAgentsCommand>
 {
-    public ApplierResponse Apply(SpawnDecision<TDescriptor> decision, GameState state)
+    public CommandResult Handle(SpawnAgentsCommand command)
     {
-        var definition = _catalog.GetDefinition(decision.Descriptor.DefinitionID);
-        var entity = _factory.Build(decision.Descriptor);
+        //  1. Preprocessor: Request → Descriptor
+        var descriptors = BuildDescriptors(command.Requests);
         
-        var newState = state.WithAgent((Agent)entity); // or WithProp
-        var effect = new EntitySpawnedEffect(entity.Id, decision.Descriptor.Position);
+        // 2. Strategy: Process/Filter
+        var processed = _strategy.Process(descriptors, gameState);
         
-        return new ApplierResponse(newState, [effect]);
+        // 3. ToDecisions: Wrap in decisions
+        var decisions = _strategy.ToDecisions(processed);
+        
+        // 4. Return to FSM (applier will create entities)
+        return CommandResult.Ok(decisions.Cast<IDecision>().ToArray());
     }
 }
 ```
+
+---
+
+#### Spawn Applier
+
+```csharp
+public class AgentSpawnApplier : ISpawnApplier<AgentDescriptor>
+{
+    public ApplierResponse Apply(SpawnDecision<AgentDescriptor> decision, GameState state)
+    {
+        var agent = _factory.BuildAgent(decision.Descriptor);
+        var newState = state.WithAgent(agent);
+        var effect = new EntitySpawnedEffect(agent.Id, agent.DefinitionId, descriptor.Position);
+        
+        return ApplierResponse.Ok(newState, effect);
+    }
+}
+```
+
+---
+
+#### Complete Spawn Flow Example
+
+```csharp
+// 1. Create request using fluent builder
+var request = SpawnRequestBuilder
+    .For("Enemies.DragonBoss")
+    .At(bossSpawn)
+    .WithProperty("Health", 1000)
+    .Build();
+
+// 2. Execute command
+var result = engine.ExecuteCommand(new SpawnAgentsCommand(new[] { request }));
+
+/*
+INTERNAL FLOW:
+3. CommandHandler → DescriptorBuilder.Build<AgentDescriptor>()
+4. Maps PropertyOverrides: descriptor.Health = 1000
+5. Strategy.Process() validates/modifies
+6. Strategy.ToDecisions() wraps in SpawnDecision
+7. Applier.Apply() creates entity via factory
+8. Entity added to GameState
+*/
+```
+
+---
+
+#### Design Principles
+
+**1. User Simplicity**
+- Users only interact with `SpawnRequest` (or fluent builder)
+- No custom descriptors needed
+- Dictionary provides flexibility
+
+**2. Engine Type Safety**
+- Descriptors provide typed processing
+- Custom descriptors via `[DescriptorType]`
+- Reflection-based mapping
+
+**3. Separation of Concerns**
+- Request = User input
+- Descriptor = Engine artifact
+- Strategy = Business logic
+- Applier = Entity creation
+
+---
+
+### Hierarchical Spawn Strategy (Advanced)
+
+For game-specific spawn logic, TurnForge provides a hierarchical strategy system with compile-time type safety.
+
+---
+
+#### Entity Type Registry
+
+**Purpose:** Runtime type lookup for Definition→Entity→Descriptor relationships.
+
+**Initialization:**
+```csharp
+// Automatic initialization when GenericActorFactory is created
+EntityTypeRegistry.Initialize();
+
+// Scans all loaded assemblies for entities with [DefinitionType] attribute
+```
+
+**Lookup Methods:**
+```csharp
+// Get entity type from definition type
+Type? entityType = EntityTypeRegistry.GetEntityType(typeof(SurvivorDefinition));
+// Returns: typeof(Survivor)
+
+// Get descriptor type from entity type
+Type? descriptorType = EntityTypeRegistry.GetDescriptorType(typeof(Survivor));
+// Returns: typeof(SurvivorDescriptor)
+
+// Get complete chain
+var (entityType, descriptorType) = EntityTypeRegistry.GetTypeChain(typeof(SurvivorDefinition));
+```
+
+---
+
+#### Entity Type Attributes
+
+**Single Source of Truth:** All type relationships are declared on the **Entity** class.
+
+##### DefinitionTypeAttribute
+
+Links Entity → Definition (compile-time verified).
+
+```csharp
+[DefinitionType(typeof(SurvivorDefinition))]  // ✅ Compile error if missing
+public class Survivor : Agent
+{
+    // ...
+}
+```
+
+**Benefits:**
+- Compile-time safety (missing Definition type = build error)
+- Automatic registry population
+- No redundant attributes on Definition classes
+
+##### DescriptorTypeAttribute
+
+Links Entity → Descriptor for type-specific spawn processing.
+
+```csharp
+[DescriptorType(typeof(SurvivorDescriptor))]  // ✅ Compile error if missing
+public class Survivor : Agent
+{
+    // ...
+}
+```
+
+**Complete Example:**
+```csharp
+// Entity - Owns ALL type relationships
+[DefinitionType(typeof(SurvivorDefinition))]
+[DescriptorType(typeof(SurvivorDescriptor))]
+public class Survivor : Agent
+{
+    public Survivor(EntityId id, string definitionId, string name, string category)
+        : base(id, definitionId, name, category)
+    {
+        AddComponent(new FactionComponent());
+    }
+}
+
+// Definition - Clean, no attributes needed
+public class SurvivorDefinition : BaseGameEntityDefinition
+{
+    public string Faction { get; set; } = "Player";
+    public int MaxHealth { get; set; } = 12;
+    
+    public SurvivorDefinition(string definitionId, string name, string category)
+        : base(definitionId, name, category) { }
+}
+
+// Descriptor - Custom properties for spawn-time processing
+public class SurvivorDescriptor : AgentDescriptor
+{
+    public string Faction { get; set; } = "Player";
+    public int ActionPoints { get; set; } = 3;
+    
+    // ⚠️ REQUIRED: Single-parameter constructor for DescriptorBuilder reflection
+    public SurvivorDescriptor(string definitionId) : base(definitionId) { }
+}
+```
+
+> [!IMPORTANT]
+> **Custom Descriptor Constructor Requirement**
+> 
+> All custom descriptors **MUST** provide a single-parameter constructor `(string definitionId)` for compatibility with `DescriptorBuilder`'s reflection-based instantiation.
+> 
+> **Why?** `DescriptorBuilder.CreateDescriptor()` uses `Activator.CreateInstance(descriptorType, definitionId)` to instantiate descriptors dynamically.
+> 
+> **Pattern:**
+> ```csharp
+> public class CustomDescriptor : PropDescriptor
+> {
+>     public Color Color { get; set; }
+>     
+>     // ✅ Required: Default constructor for DescriptorBuilder
+>     public CustomDescriptor(string definitionId) : base(definitionId)
+>     {
+>         Color = Color.Red; // Default value
+>     }
+>     
+>     // ✅ Optional: Additional constructors for explicit usage
+>     public CustomDescriptor(string definitionId, Color color) : base(definitionId)
+>     {
+>         Color = color;
+>     }
+> }
+> ```
+> 
+> **Error if missing:** `Constructor on type 'YourDescriptor' not found.`
+
+```
+
+---
+
+#### BaseSpawnStrategy (3-Level Hierarchy)
+
+**Purpose:** Type-specific spawn processing with hierarchical method resolution.
+
+**Processing Levels (first match wins):**
+
+1. **ProcessBatch<T>(List<T>, GameState)** - Batch processing for same type
+2. **ProcessSingle(T, GameState)** - Individual type-specific processing
+3. **ProcessSingle<T>(T, GameState)** - Default fallback (accepts as-is)
+
+**Method Resolution:**
+- Uses reflection to find matching methods
+- Results cached for performance
+- Excludes base class methods to avoid false positives
+
+##### Example Implementation
+
+```csharp
+public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
+{
+    // Level 1: Batch process zombie spawns (distribute across spawn points)
+    protected IReadOnlyList<ZombieSpawnDescriptor> ProcessBatch(
+        IReadOnlyList<ZombieSpawnDescriptor> descriptors,
+        GameState state)
+    {
+        // Find all zombie spawn props
+        var zombieSpawns = state.GetProps()
+            .OfType<ZombieSpawn>()
+            .Select(p => p.PositionComponent?.CurrentPosition)
+            .Where(pos => pos != null && pos != Position.Empty)
+            .ToList();
+
+        if (zombieSpawns.Count == 0) return descriptors;
+
+        // Distribute zombies across available spawn points (round-robin)
+        for (int i = 0; i < descriptors.Count; i++)
+        {
+            if (descriptors[i].Position == null || descriptors[i].Position == Position.Empty)
+            {
+                descriptors[i].Position = zombieSpawns[i % zombieSpawns.Count];
+            }
+        }
+
+        return descriptors;
+    }
+
+    // Level 2: Individual process survivors (assign to player spawn)
+    protected SurvivorDescriptor ProcessSingle(
+        SurvivorDescriptor descriptor,
+        GameState state)
+    {
+        // Find player spawn point
+        var playerSpawn = state.GetProps()
+            .FirstOrDefault(p => p.Category == "Spawn" && p.DefinitionId.Contains("Player"));
+
+        if (playerSpawn != null && playerSpawn.PositionComponent != null)
+        {
+            descriptor.Position = playerSpawn.PositionComponent.CurrentPosition;
+        }
+
+        // Ensure faction is set
+        if (string.IsNullOrEmpty(descriptor.Faction))
+        {
+            descriptor.Faction = "Player";
+        }
+
+        return descriptor;
+    }
+
+    // Level 3: Default fallback (inherited from BaseSpawnStrategy)
+    // Accepts all other descriptor types as-is
+}
+```
+
+##### Usage Example
+
+```csharp
+// 1. Create spawn requests using fluent builder
+var survivors = new[]
+{
+    SpawnRequestBuilder.For("Survivors.Mike").At(playerSpawn).Build(),
+    SpawnRequestBuilder.For("Survivors.Doug").At(playerSpawn).Build()
+};
+
+var zombies = Enumerable.Range(0, 5)
+    .Select(i => SpawnRequestBuilder
+        .For("Spawn.Zombie")
+        .WithProperty("Order", i + 1)
+        .Build())
+    .ToArray();
+
+// 2. Execute spawn command
+engine.ExecuteCommand(new SpawnAgentsCommand(survivors.Concat(zombies).ToList()));
+
+/*
+INTERNAL FLOW:
+3. CommandHandler → DescriptorBuilder looks up entity types via EntityTypeRegistry
+4. Creates SurvivorDescriptor for survivors, ZombieSpawnDescriptor for zombies
+5. Strategy.Process() groups by type:
+   - Survivors → ProcessSingle(SurvivorDescriptor) for each
+   - Zombies → ProcessBatch(List<ZombieSpawnDescriptor>) all at once
+6. Descriptors wrapped in SpawnDecisions
+7. Appliers create entities
+*/
+```
+
+---
+
+#### Creating Custom Entities with Type-Specific Spawn
+
+**Step 1: Create Custom Descriptor**
+
+```csharp
+// File: BarelyAlive.Rules/Core/Domain/Descriptors/BossDescriptor.cs
+public class BossDescriptor : AgentDescriptor
+{
+    public int PhaseCount { get; set; } = 3;
+    public int HealthPerPhase { get; set; } = 500;
+    public List<string> AbilityIds { get; set; } = new();
+    
+    public BossDescriptor(string definitionId) : base(definitionId) { }
+}
+```
+
+**Step 2: Create Entity with Attributes**
+
+```csharp
+// File: BarelyAlive.Rules/Core/Domain/Entities/Boss.cs
+[DefinitionType(typeof(BossDefinition))]
+[DescriptorType(typeof(BossDescriptor))]
+public class Boss : Agent
+{
+    public Boss(EntityId id, string definitionId, string name, string category)
+        : base(id, definitionId, name, category)
+    {
+        AddComponent(new PhaseComponent());
+        AddComponent(new BossAIComponent());
+    }
+}
+```
+
+**Step 3: Create Definition**
+
+```csharp
+public class BossDefinition : BaseGameEntityDefinition
+{
+    public int PhaseCount { get; set; } = 3;
+    public int BaseHealth { get; set; } = 1500;
+    
+    public BossDefinition(string definitionId, string name, string category)
+        : base(definitionId, name, category) { }
+}
+```
+
+**Step 4: Add Type-Specific Processing to Strategy**
+
+```csharp
+public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
+{
+    // Existing methods...
+
+    // NEW: Boss-specific processing
+    protected BossDescriptor ProcessSingle(
+        BossDescriptor descriptor,
+        GameState state)
+    {
+        // Find boss arena
+        var bossArena = state.GetProps()
+            .FirstOrDefault(p => p.Category == "BossArena");
+
+        if (bossArena != null)
+        {
+            descriptor.Position = bossArena.PositionComponent.CurrentPosition;
+        }
+
+        // Scale health based on player count
+        var playerCount = state.GetAgents().Count(a => a.Category == "Survivor");
+        descriptor.HealthPerPhase = 500 + (playerCount * 100);
+
+        return descriptor;
+    }
+}
+```
+
+**Step 5: Use It**
+
+```csharp
+// Spawn boss with fluent builder
+var boss = SpawnRequestBuilder
+    .For("Bosses.DragonKing")
+    .WithProperty("PhaseCount", 5)
+    .WithProperty("AbilityIds", new List<string> { "FireBreath", "TailSwipe", "Flight" })
+    .Build();
+
+engine.ExecuteCommand(new SpawnAgentsCommand(new[] { boss }));
+
+// Strategy automatically calls ProcessSingle(BossDescriptor) with type safety!
+```
+
+---
+
+#### Hierarchical Strategy Benefits
+
+**Compile-Time Safety:**
+- ✅ Missing types cause build errors
+- ✅ IntelliSense support in strategy methods
+- ✅ Refactoring-safe (rename detection)
+
+**Performance:**
+- ✅ Method resolution cached
+- ✅ Reflection only at startup
+- ✅ Zero runtime overhead after warmup
+
+**Flexibility:**
+- ✅ Batch processing for performance
+- ✅ Individual processing for custom logic
+- ✅ Fallback for generic types
+
+**Maintainability:**
+- ✅ Single source of truth (Entity class)
+- ✅ No redundant attributes
+- ✅ Clear type relationships
+
+---
+
+#### When to Use Hierarchical Strategy
+
+**Use hierarchical strategy when:**
+- ✅ You have game-specific spawn logic (specific positions, validation, etc.)
+- ✅ You need type-safe access to custom descriptor properties
+- ✅ You want batch processing for performance (distribute across spawn points)
+- ✅ You have multiple entity types with different spawn rules
+
+**Use default strategy when:**
+- ❌ Spawn positions come from SpawnRequest directly
+- ❌ No game-specific validation needed
+- ❌ All entities spawn the same way
 
 ---
 

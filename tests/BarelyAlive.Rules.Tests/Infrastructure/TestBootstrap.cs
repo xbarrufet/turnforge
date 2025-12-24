@@ -28,10 +28,12 @@ public class TestBootstrap
         var safeLogger = logger ?? new TurnForge.Engine.Infrastructure.ConsoleLogger();
         GameRepository = new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository();
         
+        // Use the new unified BarelyAliveSpawnStrategy for agents (hierarchical)
+        // Keep ConfigurablePropSpawnStrategy for props
         var context = new GameEngineContext(
             GameRepository,
-            propStrategy, 
-            agentStrategy,
+            propStrategy ?? new BarelyAlive.Rules.Core.Domain.Strategies.Spawn.ConfigurablePropSpawnStrategy(),
+            agentStrategy ?? new BarelyAlive.Rules.Core.Domain.Strategies.BarelyAliveSpawnStrategy(),
             safeLogger
         );
 

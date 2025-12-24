@@ -70,7 +70,7 @@ public sealed class MissionLoader
         var category = dto.Category;
         var agentName = dto.AgentName;
 
-        Position? position = null;
+        Position position = Position.Empty;
         if (dto.Position != null)
         {
             var posDto = (PositionDto)dto.Position;
@@ -81,7 +81,7 @@ public sealed class MissionLoader
             }
         }
         // Agents in mission must have a position
-        if (position == null) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
+        if (position == Position.Empty) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
 
         var behaviours = dto.Behaviours
             .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
@@ -148,7 +148,7 @@ public sealed class MissionLoader
     {
         var definitionId = dto.TypeId;
 
-        Position? position = null;
+        Position position = Position.Empty;
         if (dto.Position != null)
         {
             if (dto.Position is JsonElement elem)
