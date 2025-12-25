@@ -42,7 +42,7 @@ public sealed class TurnForgeOrchestrator : IOrchestrator
         CurrentState = CurrentState.WithScheduler(CurrentState.Scheduler.Add(decisions));
     }
 
-    public IGameEffect[] ExecuteScheduled(string? phase, string when)
+    public IGameEvent[] ExecuteScheduled(string? phase, string when)
     {
         // Enum parsing if 'when' is string?
         // Interface ExecuteScheduled(string, string).
@@ -59,20 +59,20 @@ public sealed class TurnForgeOrchestrator : IOrchestrator
             d.Timing.Phase == phase &&
             d.Timing.When == whenEnum).ToList();
 
-        List<IGameEffect> allEffects = [];
+        List<IGameEvent> allEvents = [];
         foreach (var decision in toExecute)
         {
-            var decisionEffects = Apply(decision);
+            var decisionEvents = Apply(decision);
             if (decision.Timing.Frequency == DecisionTimingFrequency.Single)
             {
                 CurrentState = CurrentState.WithScheduler(CurrentState.Scheduler.Remove(decision));
             }
-            allEffects.AddRange(decisionEffects);
+            allEvents.AddRange(decisionEvents);
         }
-        return allEffects.ToArray();
+        return allEvents.ToArray();
     }
 
-    public IGameEffect[] Apply(IDecision decision)
+    public IGameEvent[] Apply(IDecision decision)
     {
         var decisionType = decision.GetType();
         _logger?.Log($"[Orchestrator] Apply: {decisionType.Name}");
@@ -81,7 +81,7 @@ public sealed class TurnForgeOrchestrator : IOrchestrator
             // Dynamic dispatch to IApplier<T>.Apply(T, GameState)
             var response = (ApplierResponse)((dynamic)applier).Apply((dynamic)decision, CurrentState);
             CurrentState = response.GameState;
-            return response.GameEffects;
+            return response.GameEvents;
         }
         else
         {

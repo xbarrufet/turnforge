@@ -1,13 +1,12 @@
 using TurnForge.Engine.Appliers.Entity.Results;
-using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
-namespace TurnForge.Engine.Appliers.Effects;
+namespace TurnForge.Engine.Events;
 
 /// <summary>
-/// Effect generated when the game board is initialized.
+/// Event generated when the game board is initialized.
 /// Contains metadata about the board for UI/logging.
 /// </summary>
-public sealed record BoardInitializedEffect : GameEffect
+public sealed record BoardInitializedEvent : GameEvent
 {
     public int ZoneCount { get; init; }
     public string SpatialModelType { get; init; }
@@ -15,10 +14,10 @@ public sealed record BoardInitializedEffect : GameEffect
     public override string Description => 
         $"Board initialized with {ZoneCount} zones using {SpatialModelType}";
     
-    public BoardInitializedEffect(
+    public BoardInitializedEvent(
         int zoneCount,
         string spatialModelType,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
         ZoneCount = zoneCount;

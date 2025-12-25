@@ -20,7 +20,7 @@ namespace TurnForge.Engine.Appliers.Entity
         public ApplierResponse Apply(GameState state)
         {
             var newState = state.WithMetadata(_key, _value);
-            return new ApplierResponse(newState, Array.Empty<IGameEffect>());
+            return new ApplierResponse(newState, Array.Empty<IGameEvent>());
         }
     }
 }

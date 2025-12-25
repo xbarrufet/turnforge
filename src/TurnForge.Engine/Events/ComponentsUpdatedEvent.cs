@@ -1,13 +1,14 @@
+using System;
 using TurnForge.Engine.Appliers.Entity.Results;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Appliers.Effects;
+namespace TurnForge.Engine.Events;
 
 /// <summary>
-/// Effect indicating that components were updated on an entity.
+/// Event indicating that components were updated on an entity.
 /// Used by UI to trigger animations/updates.
 /// </summary>
-public sealed record ComponentsUpdatedEffect : GameEffect
+public sealed record ComponentsUpdatedEvent : GameEvent
 {
     public EntityId EntityId { get; init; }
     
@@ -19,10 +20,10 @@ public sealed record ComponentsUpdatedEffect : GameEffect
     public override string Description => 
         $"Updated {UpdatedComponentTypes.Length} component(s) on entity {EntityId}";
     
-    public ComponentsUpdatedEffect(
+    public ComponentsUpdatedEvent(
         EntityId entityId, 
         Type[] updatedComponentTypes,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
         EntityId = entityId;

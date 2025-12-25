@@ -1,6 +1,7 @@
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
+using TurnForge.Engine.Events;
 
 namespace BarelyAlive.Rules.Core.Domain.Projectors.Handlers;
 
@@ -10,16 +11,16 @@ namespace BarelyAlive.Rules.Core.Domain.Projectors.Handlers;
 /// may not fire until movement strategy generates specific effects.
 /// This is a placeholder for future movement effect handling.
 /// </summary>
-public class AgentMovedProjector : IEffectProjector
+public class AgentMovedProjector : IEventProjector
 {
-    public bool CanHandle(IGameEffect effect)
+    public bool CanHandle(IGameEvent gameEvent)
     {
         // For now, we don't have a specific movement effect
-        // This will be updated when movement generates proper effects
+        // This will be updated when movement generates proper events
         return false;
     }
 
-    public void Project(IGameEffect effect, 
+    public void Project(IGameEvent gameEvent, 
         ICollection<EntityBuildUpdate> created,
         ICollection<EntityStateUpdate> updated, 
         ICollection<DomainEvent> events)

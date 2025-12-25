@@ -21,6 +21,6 @@ public class ChangeStateApplier : IFsmApplier
     {
         if (state == null) throw new ArgumentNullException(nameof(state), "GameState cannot be null when applying ChangeStateApplier.");
         
-        return new ApplierResponse(state.WithCurrentStateId(_newStateId), Array.Empty<IGameEffect>());
+        return new ApplierResponse(state.WithCurrentStateId(_newStateId), Array.Empty<IGameEvent>());
     }
 }

@@ -2,18 +2,18 @@ using System.Collections.Generic;
 using BarelyAlive.Rules.Apis.Messaging;
 using BarelyAlive.Rules.Core.Domain.Projectors.Interfaces;
 using BarelyAlive.Rules.Core.Domain.ValueObjects;
-using TurnForge.Engine.Appliers.Entity.Results;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Projectors.Handlers;
 
-public class AgentSpawnedProjector : IEffectProjector
+public class AgentSpawnedProjector : IEventProjector
 {
-    public bool CanHandle(IGameEffect effect) => effect is AgentSpawnedResult;
+    public bool CanHandle(IGameEvent gameEvent) => gameEvent is AgentSpawnedEvent;
 
-    public void Project(IGameEffect effect, ICollection<EntityBuildUpdate> created, ICollection<EntityStateUpdate> updated, ICollection<DomainEvent> events)
+    public void Project(IGameEvent gameEvent, ICollection<EntityBuildUpdate> created, ICollection<EntityStateUpdate> updated, ICollection<DomainEvent> events)
     {
-        if (effect is not AgentSpawnedResult agent) return;
+        if (gameEvent is not AgentSpawnedEvent agent) return;
 
         // Assuming EntityBuildUpdate constructor: new EntityBuildUpdate(string Id, string Type, string DefinitionId, string TileId, Dictionary<string, object> InitialState)
         // Previous error said "There is no argument given that corresponds to the required parameter 'InitialState'".

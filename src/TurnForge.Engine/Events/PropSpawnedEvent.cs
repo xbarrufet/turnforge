@@ -1,11 +1,9 @@
-using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results;
-using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Appliers.Entity.Effects;
+namespace TurnForge.Engine.Events;
 
-public sealed record PropSpawnedEffect : GameEffect
+public sealed record PropSpawnedEvent : GameEvent
 {
     public EntityId PropId { get; init; }
     public string DefinitionId { get; init; }
@@ -13,11 +11,11 @@ public sealed record PropSpawnedEffect : GameEffect
 
     public override string Description => $"Prop '{DefinitionId}' spawned at {Position}";
 
-    public PropSpawnedEffect(
+    public PropSpawnedEvent(
         EntityId propId,
         string definitionId,
         Position position,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
         PropId = propId;

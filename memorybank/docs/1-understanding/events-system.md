@@ -1,29 +1,43 @@
-# Effects System
+# Events System
 
-Effects communicate state changes to the UI for animation and feedback.
+The Events System in **TurnForge** is responsible for broadcasting **what happened** as a result of a command or decision.
 
-## IGameEffect
+## Events vs Status Effects
+- **Events (Past Tense):** Immutable notifications of output. E.g., `EntitySpawnedEvent`, `ComponentsUpdatedEvent`. Used for UI updates, logs, and replays.
+- **Status Effects (Present/Future Tense):** Active gameplay modifiers. E.g., `Poisoned`, `Stunned`. Used in Rules logic.
 
-Base interface for all game effects.
+## Event Flow
+1. **Decision**: An Applier processes a Decision.
+2. **Event Generation**: The Applier returns an `ApplierResponse` containing `IGameEvent[]`.
+3. **Orchestrator**: Collects events and passes them to the Runtime.
+4. **Runtime**: Notifies consumers (e.g., Projectors, UI).
+
+## Consumers
+- **Projectors:** Convert Events into domain-specific updates (e.g., `BarelyAlive.Rules` Projectors).
+- **Loggers:** Record events for debugging or replay.
+
+## IGameEvent
+
+Base interface for all game events.
 
 ```csharp
-public interface IGameEffect
+public interface IGameEvent
 {
     /// <summary>
-    /// Origin/source of this effect (Command, PhaseTransition, etc.).
-    /// Enables UI to filter and display effects appropriately.
+    /// Origin/source of this event (Command, PhaseTransition, etc.).
+    /// Enables UI to filter and display events appropriately.
     /// </summary>
     EffectOrigin Origin { get; }
     
     /// <summary>
-    /// Timestamp when effect was generated (UTC).
+    /// Timestamp when event was generated (UTC).
     /// Enables replay, debugging, and audit logs.
     /// </summary>
     DateTime Timestamp { get; }
     
     /// <summary>
-    /// Human-readable description of the effect.
-    /// Used for logging and debugging without inspecting effect type.
+    /// Human-readable description of the event.
+    /// Used for logging and debugging without inspecting event type.
     /// </summary>
     string Description { get; }
 }

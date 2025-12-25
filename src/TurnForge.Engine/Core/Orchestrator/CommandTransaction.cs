@@ -10,7 +10,7 @@ public sealed class CommandTransaction(ICommand command)
     public Guid Id { get; init; } = Guid.NewGuid();
     public ICommand Command { get; init; } = command;
     public CommandResult Result { get; set; } = CommandResult.Fail("Unknown error");
-    public IGameEffect[] Effects { get; set; } = [];
+    public IGameEvent[] Events { get; set; } = [];
     public bool IsGameOver { get; set; }
 
 }

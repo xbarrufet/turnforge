@@ -1,11 +1,10 @@
-using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Appliers.Entity.Interfaces;
-using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
+using TurnForge.Engine.Appliers.Entity.Results;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Events;
 
-namespace TurnForge.Engine.Appliers.Entity.Results;
+namespace TurnForge.Engine.Events; // Moving to Events namespace
 
-public record AgentSpawnedResult : GameEffect
+public sealed record AgentSpawnedEvent : GameEvent
 {
     public EntityId AgentId { get; init; }
     public string DefinitionId { get; init; }
@@ -13,11 +12,11 @@ public record AgentSpawnedResult : GameEffect
 
     public override string Description => $"Agent '{DefinitionId}' spawned at {Position}";
 
-    public AgentSpawnedResult(
+    public AgentSpawnedEvent(
         EntityId agentId,
         string definitionId,
         Position position,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
         AgentId = agentId;

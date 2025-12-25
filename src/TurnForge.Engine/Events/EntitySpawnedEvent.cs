@@ -1,14 +1,13 @@
 using TurnForge.Engine.Appliers.Entity.Results;
-using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Appliers.Effects;
+namespace TurnForge.Engine.Events;
 
 /// <summary>
-/// Effect generated when an entity is spawned.
+/// Event generated when an entity is spawned.
 /// Contains metadata about the spawned entity.
 /// </summary>
-public sealed record EntitySpawnedEffect : GameEffect
+public sealed record EntitySpawnedEvent : GameEvent
 {
     public EntityId EntityId { get; init; }
     public string DefinitionId { get; init; }
@@ -19,13 +18,13 @@ public sealed record EntitySpawnedEffect : GameEffect
     public override string Description => 
         $"{EntityType} '{DefinitionId}' ({Category}) spawned at {Position}";
 
-    public EntitySpawnedEffect(
+    public EntitySpawnedEvent(
         EntityId entityId,
         string definitionId,
         string entityType,
         string category,
         Position position,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
        EntityId = entityId;

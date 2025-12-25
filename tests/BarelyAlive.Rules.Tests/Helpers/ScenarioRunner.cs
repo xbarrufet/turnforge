@@ -5,6 +5,7 @@ using TurnForge.Engine.Commands.ACK;
 using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.Spawn;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Board.Descriptors;
 
@@ -17,12 +18,12 @@ namespace BarelyAlive.Rules.Tests.Helpers;
 public class ScenarioRunner
 {
     private readonly TestBootstrap _bootstrap;
-    private readonly List<IGameEffect> _capturedEffects;
+    private readonly List<IGameEvent> _capturedEvents;
     
     private ScenarioRunner()
     {
         _bootstrap = TestBootstrap.CreateNewGame();
-        _capturedEffects = new List<IGameEffect>();
+        _capturedEvents = new List<IGameEvent>();
     }
 
     /// <summary>
@@ -51,7 +52,7 @@ public class ScenarioRunner
             throw new InvalidOperationException($"Failed to initialize board: {boardResult.Result.Error}");
         }
         
-        CaptureEffects(boardResult.Effects);
+        CaptureEvents(boardResult.Events);
         ExecuteAck();
 
         // Spawn props
@@ -61,7 +62,7 @@ public class ScenarioRunner
             throw new InvalidOperationException($"Failed to spawn props: {propsResult.Result.Error}");
         }
         
-        CaptureEffects(propsResult.Effects);
+        CaptureEvents(propsResult.Events);
         ExecuteAck();
 
         return this;
@@ -91,7 +92,7 @@ public class ScenarioRunner
             throw new InvalidOperationException($"Failed to spawn agents: {result.Result.Error}");
         }
         
-        CaptureEffects(result.Effects);
+        CaptureEvents(result.Events);
         ExecuteAck();
 
         return this;
@@ -115,7 +116,7 @@ public class ScenarioRunner
     /// <returns>This scenario runner for chaining</returns>
     public ScenarioRunner WhenCommand(IActionCommand command)
     {
-        _capturedEffects.Clear(); // Reset for new command
+        _capturedEvents.Clear(); // Reset for new command
         
         var result = _bootstrap.Engine.Runtime.ExecuteCommand(command);
         if (!result.Result.Success)
@@ -123,7 +124,7 @@ public class ScenarioRunner
             throw new InvalidOperationException($"Command failed: {result.Result.Error}");
         }
         
-        CaptureEffects(result.Effects);
+        CaptureEvents(result.Events);
         ExecuteAck();
 
         return this;
@@ -146,9 +147,9 @@ public class ScenarioRunner
     /// </summary>
     /// <param name="assertion">Action that validates the effects</param>
     /// <returns>This scenario runner for chaining</returns>
-    public ScenarioRunner ThenEffects(Action<IReadOnlyList<IGameEffect>> assertion)
+    public ScenarioRunner ThenEvents(Action<IReadOnlyList<IGameEvent>> assertion)
     {
-        assertion(_capturedEffects.AsReadOnly());
+        assertion(_capturedEvents.AsReadOnly());
         return this;
     }
 
@@ -165,9 +166,9 @@ public class ScenarioRunner
     /// Gets the effects captured from the last command execution.
     /// </summary>
     /// <returns>Read-only list of captured effects</returns>
-    public IReadOnlyList<IGameEffect> GetCapturedEffects()
+    public IReadOnlyList<IGameEvent> GetCapturedEvents()
     {
-        return _capturedEffects.AsReadOnly();
+        return _capturedEvents.AsReadOnly();
     }
 
     private void ExecuteAck()
@@ -175,11 +176,11 @@ public class ScenarioRunner
         _bootstrap.Engine.Runtime.ExecuteCommand(new ACKCommand());
     }
 
-    private void CaptureEffects(IReadOnlyList<IGameEffect> effects)
+    private void CaptureEvents(IReadOnlyList<IGameEvent> events)
     {
-        foreach (var effect in effects)
+        foreach (var gameEvent in events)
         {
-            _capturedEffects.Add(effect);
+            _capturedEvents.Add(gameEvent);
         }
     }
 }

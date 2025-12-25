@@ -55,7 +55,7 @@ namespace TurnForge.Engine.Core.Fsm
         public FsmStepResult ProcessFlow(GameState state)
         {
             var currentState = state;
-            var accumulatedEffects = new List<IGameEffect>();
+            var accumulatedEvents = new List<IGameEvent>();
             
             int loopGuard = 0;
             const int MaxLoopIterations = 100;
@@ -82,7 +82,7 @@ namespace TurnForge.Engine.Core.Fsm
                     {
                         var response = applier.Apply(currentState);
                         currentState = response.GameState;
-                        accumulatedEffects.AddRange(response.GameEffects);
+                        accumulatedEvents.AddRange(response.GameEvents);
                     }
                 }
 
@@ -90,7 +90,7 @@ namespace TurnForge.Engine.Core.Fsm
                 if (execResult.CommandToLaunch != null)
                 {
                     _orchestrator?.SetState(currentState);
-                    return new FsmStepResult(currentState, false, accumulatedEffects, execResult.CommandToLaunch, execResult.IsGameOver);
+                    return new FsmStepResult(currentState, false, accumulatedEvents, execResult.CommandToLaunch, execResult.IsGameOver);
                 }
                 
                 // 4 Check Game Over
@@ -98,7 +98,7 @@ namespace TurnForge.Engine.Core.Fsm
                 {
                      _logger?.Log($"[FsmController] Game Over detected at node {node.Name}");
                      _orchestrator?.SetState(currentState);
-                     return new FsmStepResult(currentState, false, accumulatedEffects, null, true);
+                     return new FsmStepResult(currentState, false, accumulatedEvents, null, true);
                 }
 
                 // 5. Check for Completion (Transition)
@@ -124,7 +124,7 @@ namespace TurnForge.Engine.Core.Fsm
                     // Transition Effect (ChangeStateApplier) - Important for persistence
                     var changeStateResponse = new ChangeStateApplier(_currentStateId).Apply(currentState);
                     currentState = changeStateResponse.GameState;
-                    accumulatedEffects.AddRange(changeStateResponse.GameEffects);
+                    accumulatedEvents.AddRange(changeStateResponse.GameEvents);
                     
                     // Continue Loop (Process next node immediately)
                     continue;
@@ -133,12 +133,12 @@ namespace TurnForge.Engine.Core.Fsm
                 {
                     // Node is NOT completed (e.g. Waiting for user input). Stop loop.
                     _orchestrator?.SetState(currentState);
-                    return new FsmStepResult(currentState, false, accumulatedEffects);
+                    return new FsmStepResult(currentState, false, accumulatedEvents);
                 }
             }
             
             _logger?.LogError($"[FsmController] Infinite loop detected in flat sequence after {MaxLoopIterations} nodes.");
-            return new FsmStepResult(currentState, false, accumulatedEffects);
+            return new FsmStepResult(currentState, false, accumulatedEvents);
         }
 
         // Logic wrapper for external calls (like GameLoop tick)
@@ -151,7 +151,7 @@ namespace TurnForge.Engine.Core.Fsm
         {
             // Sync Orchestrator
             _orchestrator?.SetState(state);
-            var effects = new List<IGameEffect>();
+            var events = new List<IGameEvent>();
             
             var node = CurrentNode;
             
@@ -165,25 +165,25 @@ namespace TurnForge.Engine.Core.Fsm
                    {
                         var response = applier.Apply(state);
                         state = response.GameState;
-                        effects.AddRange(response.GameEffects);
+                        events.AddRange(response.GameEvents);
                    }
                 }
                 
                 if (execResult.IsGameOver || node.IsGameOver(state))
                 {
                      // Return immediately with Game Over
-                     return new FsmStepResult(state, false, effects, null, true);
+                     return new FsmStepResult(state, false, events, null, true);
                 }
             
                 // Check flow again (State changed => Node might be completed now)
                 var flowResult = ProcessFlow(state);
             
-            var finalEffects = new List<IGameEffect>(effects);
-            finalEffects.AddRange(flowResult.Effects);
+            var finalEvents = new List<IGameEvent>(events);
+            finalEvents.AddRange(flowResult.GameEvents);
             
-            return flowResult with { Effects = finalEffects };
+            return flowResult with { GameEvents = finalEvents };
         }
     }
     
-    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEffect> Effects, ICommand? CommandToLaunch = null, bool IsGameOver = false);
+    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEvent> GameEvents, ICommand? CommandToLaunch = null, bool IsGameOver = false);
 }

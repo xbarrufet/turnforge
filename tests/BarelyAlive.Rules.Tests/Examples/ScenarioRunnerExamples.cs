@@ -74,10 +74,10 @@ public class ScenarioRunnerExamples
         ScenarioRunner.Create()
             .GivenMission(TestHelpers.Mission01Json)
             .GivenSurvivors(TestHelpers.MikeId)
-            .ThenEffects(effects =>
+            .ThenEvents(events =>
             {
-                Assert.That(effects, Is.Not.Empty, "Spawning survivors should generate effects");
-                Assert.That(effects.Count, Is.GreaterThan(0), "At least one effect should be generated");
+                Assert.That(events, Is.Not.Empty, "Spawning survivors should generate events");
+                Assert.That(events.Count, Is.GreaterThan(0), "At least one event should be generated");
             });
     }
 }

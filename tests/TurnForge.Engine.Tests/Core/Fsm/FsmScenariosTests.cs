@@ -19,6 +19,7 @@ using TurnForge.Engine.Commands.ACK;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Appliers.Entity.Results;
+using TurnForge.Engine.Events;
 
 namespace TurnForge.Engine.Tests.Core.Fsm
 {
@@ -230,9 +231,9 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         }
         // G) Effects Aggregation
         // Verify that effects from Appliers and Transitions are merged.
-        public record TestEffect(string Message) : IGameEffect
+        public record TestEvent(string Message) : IGameEvent
         {
-            public EffectOrigin Origin => EffectOrigin.System; // Assuming System exists
+            public EventOrigin Origin => EventOrigin.System; // Assuming System exists
             public DateTime Timestamp { get; } = DateTime.UtcNow;
             public string Description => Message;
         }
@@ -247,7 +248,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         {
             public ApplierResponse Apply(TestDecision decision, GameState state)
             {
-                 return new ApplierResponse(state, new[] { new TestEffect("Effect1") });
+                 return new ApplierResponse(state, new[] { new TestEvent("Effect1") });
             }
         }
         

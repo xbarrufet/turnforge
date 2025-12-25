@@ -1,4 +1,4 @@
-using TurnForge.Engine.Appliers.Entity.Effects;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results;
 using TurnForge.Engine.Core;
@@ -20,7 +20,7 @@ public sealed class AgentApplier : ISpawnApplier<AgentSpawnDecision, Agent>
         
         return new ApplierResponse(
             state.WithAgent(agent), 
-            [new AgentSpawnedResult(
+            [new AgentSpawnedEvent(
                 agent.Id,
                 agent.DefinitionId,
                 agent.PositionComponent.CurrentPosition)]);

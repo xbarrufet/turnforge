@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Appliers.Effects;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Decisions.Spawn;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
@@ -35,8 +35,8 @@ public sealed class PropSpawnApplier : IApplier<SpawnDecision<PropDescriptor>>
         // 2. Add prop to state (immutable update)
         var newState = state.WithProp(prop);
         
-        // 3. Create effect with metadata
-        var effect = new EntitySpawnedEffect(
+        // 3. Create event with metadata
+        var gameEvent = new EntitySpawnedEvent(
             entityId: prop.Id,
             definitionId: prop.DefinitionId,
             entityType: "Prop",
@@ -44,6 +44,6 @@ public sealed class PropSpawnApplier : IApplier<SpawnDecision<PropDescriptor>>
             position: prop.PositionComponent.CurrentPosition
         );
         
-        return new ApplierResponse(newState, [effect]);
+        return new ApplierResponse(newState, [gameEvent]);
     }
 }

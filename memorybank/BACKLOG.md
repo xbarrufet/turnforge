@@ -1,8 +1,8 @@
 # TurnForge Backlog
 
 **Last Updated:** 2025-12-25  
-**Active Items:** 0 | **Completed:** 7 | **Pending:** 15
- | **Total:** 20
+**Active Items:** 9 | **Ready:** 9 | **Pending Analysis:** 4
+ | **See [BACKLOG_COMPLETED.md](BACKLOG_COMPLETED.md) for archived work.**
 
 ---
 
@@ -40,107 +40,17 @@ TASK → Complete → DONE
 
 ---
 
-## 🟢 Completed
+## 🟡 In Progress / Epics
 
-### IDEA-002: State Confirmation using ACK ✅
-
-**Status:** 🟢 DONE  
-**Completed:** 2024-12 (Phase 2 implementation)
-
-**Description:**  
-ACK system to ensure UI has processed effects before accepting next command.
-
-**Implementation:**
-- CommandAck command implemented
-- WaitingForACK flag in engine
-- Effect batching before ACK
-
-**Results:**  
-✅ Engine waits for UI acknowledgment  
-✅ Effects batched per command  
-✅ Prevents race conditions
-
----
-
-### EPIC-001: Services System (Partial) ✅
-
-**Status:** 🟡 IN PROGRESS (1/5 services + 1/1 feature in progress)  
-**Priority:** High  
-**Effort:** 4-6 weeks
-
-**Vision:**  
-TurnForge provides query services callable from Strategies/Appliers for common operations without state mutation.
-
-**Services:**
-- ✅ **GameStateQueryService** - Agent/prop queries (DONE)
-- 🟡 **Action Queries** - Valid moves/actions for agents (IN PROGRESS - FEATURE-011)
-- ⏳ **VisibilityService** - Line of sight calculations
-- ⏳ **PathfindingService** - Pathfinding algorithms
-- ⏳ **FSMService** - FSM state queries
-
-**Success Criteria:**
-- [x] GameStateQueryService implemented with full API
-- [/] Action query methods for UI preview (GetValidMoveDestinations)
-- [ ] All services registered and accessible via IServiceProvider
-- [ ] Services documented in /docs/2-using/services.md
-- [ ] Example usage in strategies
-
-**Related Features:**
-- FEATURE-011: Action Query Service 🟡
-- FEATURE-005: BoardQueryService (extends board queries)
-
----
+### EPIC-001: Services System (Partial)
+**Status:** 🟡 IN PROGRESS  
+(See BACKLOG_COMPLETED.md for completed parts)
+- Pending: Action Queries (FEATURE-011), Visibility, Pathfinding, FSM Services.
 
 ### EPIC-002: BarelyAlive E2E Validation System
-
-**Status:** 🟡 IN PROGRESS (3/4 features done)  
-**Priority:** High  
-**Effort:** 3-4 weeks
-
-**Vision:**  
-Enable rapid E2E validation of BarelyAlive functionality without requiring Godot UI. Provide both programmatic test infrastructure and interactive console simulator for testing game flows, command sequences, and state transitions.
-
-**Success Criteria:**
-- [x] Fluent API for scenario creation in tests
-- [x] JSON-based scenario serialization
-- [x] Command builder for common operations
-- [x] Movement API exposed through BarelyAlive
-- [x] State query API exposed through BarelyAlive
-- [ ] Console simulator for interactive testing
-- [ ] Documentation with examples
-
-**Related Features:**
-- FEATURE-007: Test Scenario Infrastructure ✅
-- FEATURE-009: Movement API ✅
-- FEATURE-010: Game State Query API ✅
-- FEATURE-008: Console Simulator Project
-
-**Dependencies:**
-- None (builds on existing BarelyAlive.Rules.Tests infrastructure)
-
----
-
-## 🟡 In Progress
-
-
-### ✅ TASK-001: Modular Documentation Migration
-
-**Completed:** 2025-12-25
-**Effort:** 12 hours
-
-**Summary:**
-Migrated monolithic `ENTIDADES.md` into 24 modular guide/reference files in `docs/` folder.
-- **Understanding:** Architecture, Entities, FSM, Command Pipeline, etc.
-- **Using:** Getting Started, Entities, Components, Commands, etc.
-- **Reference:** Interfaces, Command/Decision/Effect Types, Attributes.
-- **Examples:** Scenarios, Testing.
-
-**Artifacts:**
-- `memorybank/docs/` hierarchy
-- `memorybank/ENTIDADES.md` (Deprecated)
-- `memorybank/README.md` (Updated navigation)
-
----
+**Status:** 🟡 IN PROGRESS  
+(See BACKLOG_COMPLETED.md for completed parts)
+- Pending: Simulator (FEATURE-008).
 
 ---
 
@@ -777,110 +687,144 @@ No standardized approach for:
 
 ---
 
-### IDEA-006: Items as GameEntity with Inventory System
+### FEATURE-013: Items & Inventory System
+
+**Status:** ⚪ BACKLOG  
+**Priority:** High  
+**Effort:** 5-8 days  
+**Epic:** EPIC-003 (New System)
+
+**Description:**  
+Items are a new type of GameEntity. Unlike Actors, they do not have a Position component. They represent game elements such as weapons, keys, and miscellaneous objects that agents can use or carry in their inventory.
+
+**Architecture Decisions:**
+1.  **Item as GameEntity:** Items inherit from `GameEntity` to use the component system and have unique Identity (`EntityId`). They do NOT have a `PositionComponent`.
+2.  **Loot / On Board:** Items never exist directly on the board with a position. They must always be contained within a `Prop` (e.g., "Chest", "Loot Bag", "Weapon Rack") that has a `ContainerComponent`.
+    - **Drop Action:** Dropping an item implies placing it into an existing container or spawning a new "Loot Container" prop at the target location.
+3.  **Inventory:** Agents hold references (`EntityId`) to items in their inventory, not the item data itself. This allows items to maintain their own state (durability, enchantments) independently.
+
+**Proposed Components:**
+
+**1. Item Definition & Component**
+```csharp
+// Definition
+public class ItemDefinition : GameEntityDefinition
+{
+    public string ItemType { get; init; } // "Weapon", "Consumable"
+    public int Weight { get; init; }
+    public int MaxStack { get; init; }
+}
+
+// Runtime Component
+public class ItemComponent : GameEntityComponent
+{
+    public EntityId? OwnerId { get; set; } // Agent or Prop holding this
+    public int Quantity { get; set; } = 1;
+}
+```
+
+**2. Inventory Component (Agent)**
+```csharp
+public class InventoryComponent : GameEntityComponent
+{
+    private readonly List<EntityId> _itemIds = new();
+    public IReadOnlyList<EntityId> Items => _itemIds;
+    public int CurrentWeight { get; private set; }
+    public int MaxCapacity { get; init; }
+}
+```
+
+**3. Container Component (Prop)**
+```csharp
+public class ContainerComponent : GameEntityComponent
+{
+    private readonly List<EntityId> _itemIds = new();
+    public IReadOnlyList<EntityId> Items => _itemIds;
+    public bool IsLocked { get; set; }
+}
+```
+
+**Required Commands:**
+- `PickupItemCommand(AgentId agent, EntityId item, EntityId fromContainer)`
+- `DropItemCommand(AgentId agent, EntityId item, EntityId toContainer)` (or create new container)
+- `TransferItemCommand(AgentId fromAgent, AgentId toAgent, EntityId item)`
+- `UseItemCommand(AgentId agent, EntityId item)`
+
+**Remaining Questions:**
+- [ ] How to handle item specific effects (weapon damage, consumable healing)?
+- [ ] Equipment slots: fixed engine slots or game-configurable?
+- [ ] UI representation: separate item panel or integrated into agent view?
+
+**Next Steps:**
+- [ ] Create `Item` entity type and `ItemComponent`
+- [ ] Implement `InventoryComponent` and `ContainerComponent`
+- [ ] Implement Commands (Pickup, Drop, Use)
+- [ ] Create "LootBag" prop definition for dropped items
+- [ ] Implement Commands (Pickup, Drop, Use)
+- [ ] Create "LootBag" prop definition for dropped items
+
+---
+
+### IDEA-007: Strongly Typed Entity Category
 
 **Status:** 💡 NEEDS ANALYSIS  
 **Proposed By:** Xavier Barrufet, 2025-12-25
 
 **Problem / Opportunity:**  
-Many tactical games require item management: weapons, equipment, consumables, quest items. Currently TurnForge only supports Agents and Props. Adding Items as a first-class GameEntity would enable inventory, equipment, and loot systems.
+Currently, `Category` is a simple string. This is fragile and error-prone, especially as more features rely on it:
+- `QueryByCategory` (finding entities)
+- Skill systems checking `Same Category -> Same Skills`
+- UI filtering and display logic
 
-**Current Gap:**
-- No concept of pickup/drop items
-- No inventory management for agents
-- No container props (chests, corpses)
-- No item trading/transfer between agents
-- No equipment slots (weapon, armor, accessories)
+**Proposal:**  
+Refactor `Category` from `string` to a strongly-typed class/record `EntityCategory`.
 
-**Use Cases:**
-- **Weapons & Armor:** Equippable items affecting combat stats
-- **Consumables:** Med-kits, ammo, grenades (use once, depletion)
-- **Quest Items:** Keys, documents, objectives
-- **Loot Containers:** Searchable chests, supply crates, corpses
-- **Trading:** Share items between friendly agents
-- **Encumbrance:** Item weight affecting movement AP
-
-**Potential Architecture:**
-
-**1. Item as GameEntity**
-```csharp
-public abstract class Item : GameEntity
-{
-    // Inherits: Id, Components
-}
-
-public interface IItemComponent : IGameEntityComponent
-{
-    string ItemType { get; }        // "Weapon", "Consumable", "QuestItem"
-    int Weight { get; }
-    bool IsStackable { get; }
-    int StackSize { get; }
-}
-```
-
-**2. Inventory Component (on Agents)**
-```csharp
-public interface IInventoryComponent : IGameEntityComponent
-{
-    IReadOnlyList<string> ItemIds { get; }  // References to Item entities
-    int MaxCapacity { get; }
-    int CurrentWeight { get; }
-}
-```
-
-**3. Container Component (on Props)**
-```csharp
-public interface IContainerComponent : IGameEntityComponent
-{
-    IReadOnlyList<string> ContainedItemIds { get; }
-    bool IsLocked { get; }
-    int Capacity { get; }
-}
-```
-
-**4. Equipment Component (on Agents)**
-```csharp
-public interface IEquipmentComponent : IGameEntityComponent
-{
-    Dictionary<string, string?> Slots { get; }  // "MainHand" -> weaponId
-    // Slots: "MainHand", "OffHand", "Armor", "Accessory1", "Accessory2"
-}
-```
-
-**Actions Needed:**
-- `PickupItemCommand(agentId, itemId)` - Add item to inventory
-- `DropItemCommand(agentId, itemId, position)` - Drop item on board
-- `EquipItemCommand(agentId, itemId, slotName)` - Equip to slot
-- `UnequipItemCommand(agentId, slotName)` - Move to inventory
-- `UseItemCommand(agentId, itemId)` - Consume item (heal, etc.)
-- `TransferItemCommand(fromAgentId, toAgentId, itemId)` - Trade
-- `SearchContainerCommand(agentId, containerId)` - Loot container
+**Benefits:**
+- Type safety and compile-time checks
+- Centralized definition of known categories
+- Ability to attach metadata to categories (e.g., "IsOrganic", "CanMove")
+- Inheritance/Hierarchy support (e.g., `Undead` -> `Zombie`)
 
 **Questions to Answer:**
-- [ ] Should Items exist on the GameBoard at positions like Props?
-- [ ] Item state management: separate collection or part of GameState.Entities?
-- [ ] How to handle item effects (weapon damage, consumable healing)?
-- [ ] Equipment slots: fixed engine slots or game-configurable?
-- [ ] Item stacking: how to represent quantity?
-- [ ] Equipped items: reference by ID or duplicate stats to agent?
-- [ ] Containers: new entity type or prop with container component?
-- [ ] Serialization: items as descriptors or inline data?
-- [ ] UI representation: separate item panel or integrated into agent view?
-
-**Related Concepts:**
-- IDEA-005: Combat System (weapons as items)
-- FEATURE-002: Specialized Engine Props (containers as special props)
-- FEATURE-006: Dynamic Stats Component (item stat bonuses)
-- EPIC-001: Services (inventory query service)
+- [ ] Should it be an `enum`, a `class`, or a `ValueObject`?
+- [ ] How to handle extensibility (user defined categories in mods)?
+- [ ] Impact on serialization (JSON)?
+- [ ] Migration path for existing data?
 
 **Next Steps:**
-- [ ] Analyze BarelyAlive item requirements (weapons, med-kits)
-- [ ] Define item lifecycle (spawn → pickup → equip → use → drop)
-- [ ] Decide: Item as Entity vs Item as Component
-- [ ] Prototype simple pickup/drop with current system
-- [ ] Design equipment slot system
-- [ ] Create design document with full architecture
-- [ ] Get user approval before promoting to EPIC
+- [ ] Audit all usages of `.Category` string
+- [ ] Prototype `EntityCategory` class
+- [ ] Assess impact on PropertyAutoMapper and Factories
+ 
+---
+
+### IDEA-008: Async Command Execution & Event Bus
+
+**Status:** 💡 NEEDS ANALYSIS  
+**Proposed By:** Xavier Barrufet, 2025-12-25
+
+**Problem / Opportunity:**  
+Currently, `ExecuteCommand` is synchronous and blocking. This freezes the UI during complex command processing or AI calculations. Additionally, there is no standardized way for disconnected systems (UI, Managers, Network) to listen to `GameEvents` generated by the Orchestrator.
+
+**Proposal:**  
+Refactor the Engine execution model to be asynchronous and event-driven.
+
+1.  **Async Execution:** Change `ExecuteCommand` to `ExecuteCommandAsync` returning `Task<CommandResult>`. Implies an internal command queue to ensure strict sequential processing on a single logic thread (avoiding complex locking on GameState).
+2.  **Event Subscription:** Expose an `IEventSubscriber` interface (Pub/Sub pattern) allowing any system to subscribe to `IGameEvent` streams without coupling to the Orchestrator.
+
+**Benefits:**
+- Non-blocking UI (async/await).
+- Better support for long-running AI thinking.
+- Decoupled UI updates via Event Bus.
+
+**Questions to Answer:**
+- [ ] Concurrency model: Task-based with locks vs Single-threaded Command Queue (Actor model)?
+- [ ] Event Bus technology: C# Events, `IObservable` (Rx.NET), or custom interface?
+- [ ] How to handle ACK in an async flow?
+
+**Next Steps:**
+- [ ] Prototype Async wrapper around current Orchestrator.
+- [ ] Evaluate thread safety of GameState access.
 
 ---
 

@@ -74,7 +74,7 @@ public sealed class GameEngineRuntime : IGameEngine
             if (result.Success && _fsmController != null)
             {
                 var state = _repository.LoadGameState();
-                var effects = new List<IGameEffect>();
+                var events = new List<IGameEvent>();
                 // Sync Orchestrator
                 _orchestrator.SetState(state);
                 // Enqueue new decisions (persists them to scheduler)
@@ -85,13 +85,13 @@ public sealed class GameEngineRuntime : IGameEngine
                 }
 
                 // Execute Immediate Decisions (OnCommandExecutionEnd)
-                var immediateEffects = _orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd");
-                effects.AddRange(immediateEffects);
+                var immediateEvents = _orchestrator.ExecuteScheduled(null, "OnCommandExecutionEnd");
+                events.AddRange(immediateEvents);
                 state = _orchestrator.CurrentState; // Update state after application
                 
                 // Standard reaction (and auto-navigation)
                 var stepResult = _fsmController.HandleCommand(command, state, result);
-                effects.AddRange(stepResult.Effects);
+                events.AddRange(stepResult.GameEvents); // Assuming StepResult updated to GameEvents
                 
                 _repository.SaveGameState(stepResult.State);
 
@@ -100,7 +100,7 @@ public sealed class GameEngineRuntime : IGameEngine
                     _logger.Log("[Engine] Game Over detected. Stopping flow.");
                     transaction.IsGameOver = true;
                     transaction.Result = result;
-                    transaction.Effects = effects.ToArray();
+                    transaction.Events = events.ToArray();
                     return transaction;
                 }
                 
@@ -108,32 +108,20 @@ public sealed class GameEngineRuntime : IGameEngine
                 if (stepResult.CommandToLaunch != null)
                 {
                     _logger.Log($"[Engine] Auto-Launching Command: {stepResult.CommandToLaunch.GetType().Name}");
-                    // Execute the auto-launched command immediately
-                    // Note: We return the result of the chain. 
-                    // Effects from previous steps are lost? No, we should merge them?
-                    // Typically, if a command triggers another, the UI receives the FINAL sequence.
-                    // But effectively, this is a distinct transaction.
-                    // For simplicity, we return the transaction of the launched command, 
-                    // BUT UI might miss effects of the trigger?
-                    // Ideally, we chain transactions or effects.
-                    // IMPORTANT: TurnForge returns single Transaction.
-                    // If we recurse, we get a NEW transaction.
-                    // We must merge effects?
-                    
                     var subTransaction = ExecuteCommand(stepResult.CommandToLaunch);
                     
-                    // Merge effects from valid execution
-                    var mergedEffects = new List<IGameEffect>(effects);
-                    if (subTransaction.Effects != null) mergedEffects.AddRange(subTransaction.Effects);
+                    // Merge events from valid execution
+                    var mergedEvents = new List<IGameEvent>(events);
+                    if (subTransaction.Events != null) mergedEvents.AddRange(subTransaction.Events);
                     
-                    subTransaction.Effects = mergedEffects.ToArray();
+                    subTransaction.Events = mergedEvents.ToArray();
                     return subTransaction;
                 }
 
                 // activate ACK state in FSM 
                 _fsmController.WaittingForACK = true;
                 transaction.Result = CommandResult.ACKResult;
-                transaction.Effects = [.. effects];
+                transaction.Events = [.. events];
                 return transaction;
             }
             transaction.Result = result;
@@ -176,7 +164,7 @@ public sealed class GameEngineRuntime : IGameEngine
     }
 
 
-    public void Subscribe(Action<IGameEffect> handler)
+    public void Subscribe(Action<IGameEvent> handler)
     {
         // Removed EffectSink subscription
     }

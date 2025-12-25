@@ -1,4 +1,4 @@
-using TurnForge.Engine.Appliers.Entity.Effects;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities;
@@ -19,7 +19,7 @@ public sealed class PropApplier : ISpawnApplier<PropSpawnDecision, Prop>
         
         return new ApplierResponse(
             state.WithProp(prop), 
-            [new PropSpawnedEffect(
+            [new PropSpawnedEvent(
                 prop.Id, 
                 prop.DefinitionId, 
                 prop.PositionComponent.CurrentPosition)]);

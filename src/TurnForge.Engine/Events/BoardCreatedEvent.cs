@@ -1,20 +1,22 @@
+using System.Collections.Generic;
 using TurnForge.Engine.Appliers.Entity.Results;
-using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
+using TurnForge.Engine.Entities.Board.Interfaces; // Assuming ZoneDefinition needs this or similar
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Events;
 
-namespace TurnForge.Engine.Appliers.Entity.Effects;
+namespace TurnForge.Engine.Events;
 
-public sealed record BoardApplierResult : GameEffect
+public sealed record BoardCreatedEvent : GameEvent
 {
     public EntityId BoardId { get; init; }
     public IReadOnlyList<ZoneDefinition> Zones { get; init; }
 
     public override string Description => $"Board created with {Zones.Count} zones";
 
-    public BoardApplierResult(
+    public BoardCreatedEvent(
         EntityId boardId,
         IReadOnlyList<ZoneDefinition> zones,
-        EffectOrigin origin = EffectOrigin.Command)
+        EventOrigin origin = EventOrigin.Command)
         : base(origin)
     {
         BoardId = boardId;

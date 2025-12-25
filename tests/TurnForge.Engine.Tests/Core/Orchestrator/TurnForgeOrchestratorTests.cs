@@ -2,6 +2,7 @@ using System.Linq;
 using Moq;
 using NUnit.Framework;
 using TurnForge.Engine.Appliers.Entity;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Entities.Board;
@@ -42,7 +43,7 @@ public class TurnForgeOrchestratorTests
             .Setup(a => a.Apply(It.IsAny<TestDecision>(), It.IsAny<TFGameState>()))
             .Returns((TestDecision d, TFGameState s) =>
             {
-                return new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEffect>());
+                return new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEvent>());
             });
 
         _orchestrator.RegisterApplier(mockApplier.Object);
@@ -73,7 +74,7 @@ public class TurnForgeOrchestratorTests
         mockApplier
             .Setup(a => a.Apply(It.IsAny<TestDecision>(), It.IsAny<TFGameState>()))
             .Returns((TestDecision d, TFGameState s) =>
-                new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEffect>()));
+                new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEvent>()));
 
         _orchestrator.RegisterApplier(mockApplier.Object);
         _orchestrator.Enqueue(new[] { decision });
@@ -105,7 +106,7 @@ public class TurnForgeOrchestratorTests
         mockApplier
             .Setup(a => a.Apply(It.IsAny<TestDecision>(), It.IsAny<TFGameState>()))
             .Returns((TestDecision d, TFGameState s) =>
-                new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEffect>()));
+                new ApplierResponse(s.WithBoard(new GameBoard(Mock.Of<ISpatialModel>())), Array.Empty<IGameEvent>()));
 
         _orchestrator.RegisterApplier(mockApplier.Object);
         _orchestrator.Enqueue(new[] { decision });
@@ -147,7 +148,7 @@ public class TurnForgeOrchestratorTests
         public ApplierResponse Apply(TestDecision decision, TFGameState state)
         {
             var newState = state.WithBoard(new GameBoard(Mock.Of<ISpatialModel>()));
-            return new ApplierResponse(newState, Array.Empty<IGameEffect>());
+            return new ApplierResponse(newState, Array.Empty<IGameEvent>());
         }
     }
 
@@ -160,13 +161,13 @@ public class TurnForgeOrchestratorTests
             "EffectsCheck"
         );
 
-        var expectedEffect = Mock.Of<IGameEffect>();
+        var expectedEvent = Mock.Of<IGameEvent>();
         var mockApplier = new Mock<IApplier<TestDecision>>();
         mockApplier
             .Setup(a => a.Apply(It.IsAny<TestDecision>(), It.IsAny<TFGameState>()))
             .Returns((TestDecision d, TFGameState s) =>
             {
-                return new ApplierResponse(s, new[] { expectedEffect });
+                return new ApplierResponse(s, new[] { expectedEvent });
             });
 
         _orchestrator.RegisterApplier(mockApplier.Object);
@@ -178,6 +179,6 @@ public class TurnForgeOrchestratorTests
         // Assert
         Assert.That(effects, Is.Not.Null);
         Assert.That(effects, Has.Length.EqualTo(1));
-        Assert.That(effects[0], Is.EqualTo(expectedEffect));
+        Assert.That(effects[0], Is.EqualTo(expectedEvent));
     }
 }

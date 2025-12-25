@@ -1,4 +1,4 @@
-using TurnForge.Engine.Appliers.Effects;
+using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
@@ -19,7 +19,7 @@ namespace TurnForge.Engine.Appliers.Actions;
 /// 1. Get entity (Agent or Prop) from state
 /// 2. Apply each component update via entity.AddComponent()
 /// 3. Update state with modified entity (WithAgent/WithProp)
-/// 4. Generate ComponentsUpdatedEffect for UI
+/// 4. Generate ComponentsUpdatedEvent for UI
 /// 
 /// Design: Uses mutable pattern for entity components + immutable GameState.
 /// </remarks>
@@ -49,7 +49,7 @@ public sealed class ActionDecisionApplier : IApplier<ActionDecision>
         }
         
         // Entity not found - return unchanged state (graceful degradation)
-        return new ApplierResponse(state, Array.Empty<IGameEffect>());
+        return new ApplierResponse(state, Array.Empty<IGameEvent>());
     }
     
     /// <summary>
@@ -65,18 +65,18 @@ public sealed class ActionDecisionApplier : IApplier<ActionDecision>
     }
     
     /// <summary>
-    /// Create applier response with updated state and effect.
+    /// Create applier response with updated state and event.
     /// </summary>
     private ApplierResponse CreateResponse(
         GameState newState, 
         EntityId entityId, 
         ActionDecision decision)
     {
-        var effect = new ComponentsUpdatedEffect(
+        var gameEvent = new ComponentsUpdatedEvent(
             entityId,
             decision.ComponentUpdates.Keys.ToArray()
         );
         
-        return new ApplierResponse(newState, new[] { effect });
+        return new ApplierResponse(newState, new[] { gameEvent });
     }
 }

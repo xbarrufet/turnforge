@@ -16,8 +16,8 @@ public interface IOrchestrator
     void RegisterFactory<TDescriptor, TEntity>(IGameEntityFactory<TEntity> factory)
         where TDescriptor : IGameEntityDescriptor<TEntity>
         where TEntity : GameEntity;
+    IGameEvent[] ExecuteScheduled(string? phase, string when);
+    IGameEvent[] Apply(IDecision decision);
     void Enqueue(IEnumerable<IDecision> decisions);
-    IGameEffect[] ExecuteScheduled(string? phase, string when);
-    IGameEffect[] Apply(IDecision decision);
     void SetLogger(IGameLogger logger);
 }

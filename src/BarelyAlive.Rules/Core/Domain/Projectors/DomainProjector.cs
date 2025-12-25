@@ -9,12 +9,12 @@ namespace BarelyAlive.Rules.Core.Domain.Projectors;
 
 public class DomainProjector
 {
-    private readonly IEnumerable<IEffectProjector> _projectors;
+    private readonly IEnumerable<IEventProjector> _projectors;
 
     public DomainProjector()
     {
         // In a real DI scenario, these would be injected.
-        _projectors = new IEffectProjector[]
+        _projectors = new IEventProjector[]
         {
             new AgentSpawnedProjector(),
             new PropSpawnedProjector(),
@@ -28,13 +28,13 @@ public class DomainProjector
         var updated = new List<EntityStateUpdate>();
         var events = new List<DomainEvent>();
 
-        foreach (var effect in transaction.Effects)
+        foreach (var gameEvent in transaction.Events)
         {
             foreach (var projector in _projectors)
             {
-                if (projector.CanHandle(effect))
+                if (projector.CanHandle(gameEvent))
                 {
-                    projector.Project(effect, created, updated, events);
+                    projector.Project(gameEvent, created, updated, events);
                 }
             }
         }
