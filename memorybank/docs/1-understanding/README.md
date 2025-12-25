@@ -21,25 +21,20 @@ This section explains TurnForge's internal architecture. Read these docs to unde
 ## Core Architecture
 
 ### Foundation
-- **[Architecture & Patterns](architecture.md)** - Core principles, Command-Decision-Applier pattern, immutable state
-- **[Command Flow](command-flow.md)** - Command lifecycle, validation, decision scheduling, ACK system
+- **[Concepts](concepts.md)** - Engine overview and core philosophy
+- **[Architecture](architecture.md)** - Command-Decision-Applier pattern, immutable state
+- **[Entity System](entity-system.md)** - ECS, definitions, and descriptors
+- **[Command Pipeline](command-pipeline.md)** - Command lifecycle, validation, decision scheduling
 
 ### State Management
-- **[FSM System](fsm-system.md)** - Node types, recursive navigation, auto-navigation, transitions
-- **[Orchestrator](orchestrator.md)** - Single mutation point, applier registration, scheduler *[TODO]*
+- **[FSM System](fsm-system.md)** - Node types, recursive navigation, auto-navigation
+- **[Orchestrator](orchestrator.md)** - Single mutation point, applier registration, scheduler
 
----
-
-## System Pipelines
-
-### Actions & Commands
-- **[Action Pipeline](action-pipeline.md)** - ActionCommandHandler → Strategy → Decision → Applier flow
-- **[Spawn Pipeline](spawn-pipeline.md)** - SpawnRequest → Descriptor → Strategy → Decision → Factory flow
-
-### Supporting Systems
-- **[Board & Spatial](board-spatial.md)** - ISpatialModel, GameBoard, Zones, position validation
--** [Effects System](effects-system.md)** - IGameEffect, effect types, UI propagation
-- **[Factory System](factory-system.md)** - GenericActorFactory, PropertyAutoMapper, entity creation
+### Sub-Systems
+- **[Spawn System](spawn-system.md)** - SpawnRequest → Descriptor → Strategy → Decision → Factory
+- **[Effects System](effects-system.md)** - IGameEffect, effect types, UI propagation
+- **[Action System](action-system.md)** - Action pipeline *[Pending]*
+- **[Board System](board-system.md)** - Spatial model and board *[Pending]*
 
 ---
 

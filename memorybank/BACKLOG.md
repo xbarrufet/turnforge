@@ -1,7 +1,8 @@
 # TurnForge Backlog
 
 **Last Updated:** 2025-12-25  
-**Active Items:** 10 | **Completed:** 2 | **Ideas:** 5 | **Total:** 20
+**Active Items:** 0 | **Completed:** 7 | **Pending:** 15
+ | **Total:** 20
 
 ---
 
@@ -121,36 +122,25 @@ Enable rapid E2E validation of BarelyAlive functionality without requiring Godot
 
 ## 🟡 In Progress
 
-### TASK-001: Complete Modular Documentation Migration
 
-**Status:** 🟡 IN PROGRESS  
-**Priority:** Medium  
-**Effort:** 8-12 hours  
-**Owner:** Unassigned
+### ✅ TASK-001: Modular Documentation Migration
 
-**Context:**  
-Documentation restructured into modular format. Content extraction from ENTIDADES.md pending.
+**Completed:** 2025-12-25
+**Effort:** 12 hours
 
-**Tasks:** 21 modular files to create
-- Phase 2.1: Understanding (8 files)
-- Phase 2.2: Using (8 files)
-- Phase 2.3: Reference (5 files)
-- Phase 2.4: Examples (3 files)
+**Summary:**
+Migrated monolithic `ENTIDADES.md` into 24 modular guide/reference files in `docs/` folder.
+- **Understanding:** Architecture, Entities, FSM, Command Pipeline, etc.
+- **Using:** Getting Started, Entities, Components, Commands, etc.
+- **Reference:** Interfaces, Command/Decision/Effect Types, Attributes.
+- **Examples:** Scenarios, Testing.
 
-**Current Progress:**
-- ✅ Folder structure created
-- ✅ Navigation READMEs
-- ✅ Root README integrated
-- ⏳ Content extraction pending
+**Artifacts:**
+- `memorybank/docs/` hierarchy
+- `memorybank/ENTIDADES.md` (Deprecated)
+- `memorybank/README.md` (Updated navigation)
 
-**Success Criteria:**
-- [ ] All 21 files created with content
-- [ ] ENTIDADES.md deprecated with notice
-- [ ] Cross-references working
-- [ ] Examples complete
-
-**How to Resume:**  
-See BACKLOG entry for detailed subtasks and /brain/task.md for checklist.
+---
 
 ---
 
@@ -183,6 +173,34 @@ Service for board queries with game state integration (occupied positions, neigh
 **Dependencies:**
 - ISpatialModel implementation
 - GameStateQueryService (for agent queries)
+
+---
+
+#### FEATURE-006: Dynamic Stats Component
+
+**Status:** 🟢 DONE
+**Completed:** 2025-12-25
+**Priority:** High
+**Effort:** 3 days
+**User Ref:** Feature 005 (Dynamic Attribute System)
+
+**Description:**
+Flexible attribute system that allows entities to possess arbitrary stats (e.g., "Strength", "Agility", "AttackDamage") without hardcoding properties. Attributes can represent fixed integers or random dice formulas.
+
+**Deliverables:**
+- ✅ `AttributeComponent` (Immutable)
+- ✅ `AttributeValue` struct (Base, Current, Dice)
+- ✅ `DiceThrowType` value object and parser
+- ✅ `BaseGameEntityDefinition` updated with `Attributes` dictionary
+- ✅ `GenericActorFactory` updated to parse and attach attributes
+- ✅ Unit tests validating parsing and factory integration
+
+**Files Created/Modified:**
+- `src/TurnForge.Engine/Values/AttributeValue.cs`
+- `src/TurnForge.Engine/Values/DiceThrowType.cs`
+- `src/TurnForge.Engine/Components/AttributeComponent.cs`
+- `src/TurnForge.Engine/Entities/Definitions/GameEntityDefinition.cs`
+- `src/TurnForge.Engine/Entities/Actors/GenericActorFactory.cs`
 
 ---
 
@@ -554,55 +572,6 @@ Convenience descriptors for common patterns.
 
 ---
 
-#### FEATURE-006: Dynamic Stats Component
-
-**Status:** ⚪ BACKLOG  
-**Priority:** Medium  
-**Effort:** 1-2 weeks
-
-**Description:**  
-Flexible attribute system for game-specific stats (Movement, Combat, etc.) defined via JSON.
-
-**Vision:**  
-Allow game designers to define custom stat categories without code changes.
-
-**Proposed Architecture:**
-
-```csharp
-public record AttributeValue {
-    public string Id { get; init; }         // "MOV", "DMG"
-    public string Category { get; init; }   // "Combat", "Meta" (user-defined)
-    public int Base { get; init; }
-    public string Dice { get; init; }       // "1D6+2"
-}
-
-public interface IAttributeComponent : IGameEntityComponent {
-    Dictionary<string, AttributeValue> Attributes { get; }
-}
-```
-
-**Acceptance Criteria:**
-- [ ] AttributeValue type created
-- [ ] IAttributeComponent interface
-- [ ] JSON deserialization support
-- [ ] Dice expression evaluator
-- [ ] Category-based filtering in strategies
-- [ ] UI adapter emits typed payloads by category
-
-**Technical Notes:**
-- Engine remains agnostic (just stores strings/numbers)
-- Game rules filter by Category
-- UI can auto-generate tabs per category
-
-**Advantages:**
-- ✅ Decoupling - Engine doesn't know "Magic" vs "Tech"
-- ✅ Reusability - Same dice system for all rolls
-- ✅ Scalability - UI auto-adapts to categories
-
-**Dependencies:**
-- None (net new feature)
-
----
 
 ## 💡 Ideas / Analysis Needed
 

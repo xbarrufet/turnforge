@@ -13,6 +13,7 @@ using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Core.Registries;
 using System.Reflection;
+using TurnForge.Engine.Values;
 
 namespace TurnForge.Engine.Entities.Actors;
 
@@ -47,6 +48,30 @@ public sealed class GenericActorFactory(
             prop.AddComponent((dynamic)component);
         }
 
+        // Process dynamic attributes from definition
+        if (definition.Attributes.Count > 0)
+        {
+            var attributeValues = new Dictionary<string, AttributeValue>();
+            foreach (var kvp in definition.Attributes)
+            {
+                if (kvp.Value is int intVal)
+                {
+                    attributeValues[kvp.Key] = new AttributeValue(intVal);
+                }
+                else if (kvp.Value is string strVal)
+                {
+                    var dice = DiceThrowType.Parse(strVal);
+                    attributeValues[kvp.Key] = new AttributeValue(dice);
+                }
+                // Ignore other types or log warning
+            }
+            
+            if (attributeValues.Count > 0)
+            {
+                 prop.AddComponent(new AttributeComponent(attributeValues));
+            }
+        }
+
         return prop;
     }
 
@@ -77,6 +102,30 @@ public sealed class GenericActorFactory(
         // This ensures the component is registered under its concrete type (or specific interface if casted)
         // rather than IGameEntityComponent, allowing GetComponent lookups to work via IsAssignableFrom.
         agent.AddComponent((dynamic)component);
+    }
+    
+    // Process dynamic attributes from definition
+    if (definition.Attributes.Count > 0)
+    {
+        var attributeValues = new Dictionary<string, AttributeValue>();
+        foreach (var kvp in definition.Attributes)
+        {
+            if (kvp.Value is int intVal)
+            {
+                attributeValues[kvp.Key] = new AttributeValue(intVal);
+            }
+            else if (kvp.Value is string strVal)
+            {
+                var dice = DiceThrowType.Parse(strVal);
+                attributeValues[kvp.Key] = new AttributeValue(dice);
+            }
+            // Ignore other types or log warning
+        }
+        
+        if (attributeValues.Count > 0)
+        {
+             agent.AddComponent(new AttributeComponent(attributeValues));
+        }
     }
 
     return agent;

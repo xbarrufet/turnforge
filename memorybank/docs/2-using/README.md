@@ -24,18 +24,18 @@ This section provides hands-on guides for using TurnForge's public API. Read the
 
 ---
 
-## Core APIs
-
 ### Entity Management
-- **[Entity System API](entities.md)** - Spawn API, entity queries, component access *[TODO]*
+- **[Getting Started](getting-started.md)** - Setting up the engine and game loop.
+- **[Entities & Spawning](entities.md)** - Defining and creating entities.
+- **[Components](components.md)** - Working with entity data.
+- **[Extensions](extensions.md)** - Common patterns and builders.
 
-### Actions & Commands
-- **[Command System API](commands.md)** - Available commands, creating custom commands, registration *[TODO]*
-- **[Strategy System API](strategies.md)** - IActionStrategy, ISpawnStrategy, custom strategies *[TODO]*
-
-### Data & State
-- **[Component API](components.md)** - Built-in components, creating custom components, mapping *[TODO]*
-- **[Services API](services.md)** - GameStateQueryService, Board queries, agent/prop queries *[TODO]*
+### Game Logic
+- **[Sending Commands](commands.md)** - Implementing the Command-Handler-Applier pattern.
+- **[Phases & FSM](phases.md)** - Configuring the game loop states.
+- **[Strategies](strategies.md)** - Implementing business rules.
+- **[Services](services.md)** - Querying state and utilities.
+- **[Dynamic Attributes](attributes.md)** - Data-driven stat system.
 
 ---
 

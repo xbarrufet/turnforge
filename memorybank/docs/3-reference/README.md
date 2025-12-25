@@ -21,15 +21,13 @@ This section provides quick reference tables for TurnForge's public API. Use the
 ## Reference Catalogs
 
 ### Core Types
-- **[Core Interfaces](interfaces.md)** - ICommand, IDecision, IApplier, IGameEffect, etc. *[TODO]*
+- **[Core Interfaces](interfaces.md)** - ICommand, IDecision, IApplier, IGameEffect.
+- **[Functions & Attributes](attributes.md)** - `[EntityType]`, `[MapToComponent]` configuration.
 
-### Commands & Strategies
-- **[Command Types](commands-ref.md)** - All command signatures (MoveCommand, SpawnCommand, etc.) *[TODO]*
-- **[Strategy Interfaces](strategies-ref.md)** - IActionStrategy, ISpawnStrategy method signatures *[TODO]*
-
-### Components & Effects
-- **[Component Interfaces](components-ref.md)** - All component interfaces and properties *[TODO]*
-- **[Effect Types](effects-ref.md)** - All effect type signatures *[TODO]*
+### Data Types
+- **[Command Types](command-types.md)** - Built-in commands (Move, Spawn, etc).
+- **[Decision Types](decision-types.md)** - Built-in decisions (Action, Spawn).
+- **[Effect Types](effect-types.md)** - Built-in effects (Update, Spawn, Transition).
 
 ---
 

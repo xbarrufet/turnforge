@@ -13,7 +13,7 @@
 - 🆕 **New to TurnForge?** → Start with [Understanding TurnForge](docs/1-understanding/README.md)
 - 🛠️ **Building a game?** → Go to [Using TurnForge](docs/2-using/README.md)  
 - ⚡ **Need a quick reference?** → Check [API Reference](docs/3-reference/README.md)
-- 💡 **Want examples?** → Browse [Examples](examples/)
+- 💡 **Want examples?** → Browse [Examples](docs/4-examples/README.md)
 
 ---
 
@@ -24,14 +24,14 @@ This documentation is organized into **3 focused sections**:
 ### Part I: [Understanding TurnForge](docs/1-understanding/README.md)
 *Learn how the engine works internally*
 
-- [Architecture & Patterns](docs/1-understanding/architecture.md)
-- [Command Flow](docs/1-understanding/command-flow.md)
+- [Concepts](docs/1-understanding/concepts.md)
+- [Architecture](docs/1-understanding/architecture.md)
+- [Entity System](docs/1-understanding/entity-system.md)
+- [Command Pipeline](docs/1-understanding/command-pipeline.md)
 - [FSM System](docs/1-understanding/fsm-system.md)
-- [Action Pipeline](docs/1-understanding/action-pipeline.md)
-- [Spawn Pipeline](docs/1-understanding/spawn-pipeline.md)
-- [Board & Spatial](docs/1-understanding/board-spatial.md)
+- [Spawn System](docs/1-understanding/spawn-system.md)
+- [Orchestrator](docs/1-understanding/orchestrator.md)
 - [Effects System](docs/1-understanding/effects-system.md)
-- [Factory System](docs/1-understanding/factory-system.md)
 
 **Read this to:** Understand design patterns, execution model, internal systems.
 
@@ -41,13 +41,14 @@ This documentation is organized into **3 focused sections**:
 *Practical API guide for building your game*
 
 - [Getting Started](docs/2-using/getting-started.md)
-- [Entity System API](docs/2-using/entities.md)
-- [Command System API](docs/2-using/commands.md)
-- [Strategy System API](docs/2-using/strategies.md)
-- [Component API](docs/2-using/components.md)
-- [Services API](docs/2-using/services.md)
-- [FSM Configuration](docs/2-using/fsm-config.md)
-- [Extension Points](docs/2-using/extension-points.md)
+- [Entities & Spawning](docs/2-using/entities.md)
+- [Components](docs/2-using/components.md)
+- [Sending Commands](docs/2-using/commands.md)
+- [Strategies](docs/2-using/strategies.md)
+- [Phases & FSM](docs/2-using/phases.md)
+- [Services](docs/2-using/services.md)
+- [Extensions](docs/2-using/extensions.md)
+- [Dynamic Attributes](docs/2-using/attributes.md)
 
 **Read this to:** Learn how to use APIs, create commands, implement strategies, extend the engine.
 
@@ -57,22 +58,20 @@ This documentation is organized into **3 focused sections**:
 *Quick lookup for interfaces and signatures*
 
 - [Core Interfaces](docs/3-reference/interfaces.md)
-- [Command Types](docs/3-reference/commands-ref.md)
-- [Strategy Interfaces](docs/3-reference/strategies-ref.md)
-- [Component Interfaces](docs/3-reference/components-ref.md)
-- [Effect Types](docs/3-reference/effects-ref.md)
+- [Command Types](docs/3-reference/command-types.md)
+- [Decision Types](docs/3-reference/decision-types.md)
+- [Effect Types](docs/3-reference/effect-types.md)
+- [Configuration Attributes](docs/3-reference/attributes.md)
 
 **Read this to:** Find method signatures, interface definitions, type references.
 
 ---
 
-## 💡 Examples
+### Part IV: [Examples](docs/4-examples/README.md)
+*Code samples and walkthroughs*
 
-Learn by example:
-
-- [Basic Move Command](examples/basic-move.md) - Complete movement implementation
-- [Custom Strategy](examples/custom-strategy.md) - Zombicide-style zombie blocking
-- [Custom Component](examples/custom-component.md) - Creating game-specific components
+- [Scenarios](docs/4-examples/example-scenarios.md) - Common gameplay flows.
+- [Testing Patterns](docs/4-examples/testing.md) - Unit and Integration testing patterns.
 
 ---
 
