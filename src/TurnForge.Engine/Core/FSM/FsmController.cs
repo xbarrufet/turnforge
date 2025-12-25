@@ -107,14 +107,14 @@ namespace TurnForge.Engine.Core.Fsm
                     // Move Next
                     if (_currentIndex + 1 >= _sequence.Count)
                     {
-                        // End of Sequence. Stop? Or Loop? 
-                        // For now: Stop. 
-                        _logger?.Log("[FsmController] End of FSM Sequence reached.");
-                        _orchestrator?.SetState(currentState);
-                        return new FsmStepResult(currentState, false, accumulatedEffects);
+                        // Loop back to start
+                        _currentIndex = 0;
                     }
-
-                    _currentIndex++;
+                    else
+                    {
+                        _currentIndex++;
+                    }
+                    
                     var nextNode = _sequence[_currentIndex];
                     var prevNodeId = _currentStateId;
                     

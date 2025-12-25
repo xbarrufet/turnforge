@@ -2,12 +2,15 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Registration;
+using TurnForge.Engine.Repositories.Interfaces;
 
 namespace BarelyAlive.Rules.Game;
 
 public static class GameBootstrap
 {
-    public static TurnForge.Engine.Core.TurnForge GameEngineBootstrap(TurnForge.Engine.Core.Interfaces.IGameLogger? logger = null)
+    public static TurnForge.Engine.Core.TurnForge GameEngineBootstrap(
+        TurnForge.Engine.Core.Interfaces.IGameLogger? logger = null,
+        IGameRepository? gameRepository = null)
     {
         // Simple bootstrap for now. 
         // In a real scenario, this would configure DI, Strategies, etc.
@@ -16,8 +19,10 @@ public static class GameBootstrap
         // The factory is created and injected by GameEngineFactory from the catalog.
         // For now, pass null - GameEngineFactory will resolve dependencies
         
+        var repository = gameRepository ?? new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository();
+        
         var context = new GameEngineContext(
-            new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository(),
+            repository,
             null, // PropStrategy - will be set by GameEngineFactory
             null, // AgentStrategy - will be set by GameEngineFactory
             logger

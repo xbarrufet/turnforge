@@ -44,7 +44,7 @@ public sealed class GenericActorFactory(
         // Add extra components from descriptor
         foreach (var component in descriptor.ExtraComponents)
         {
-            prop.AddComponent(component);
+            prop.AddComponent((dynamic)component);
         }
 
         return prop;
@@ -73,7 +73,10 @@ public sealed class GenericActorFactory(
     // Add extra components from descriptor
     foreach (var component in descriptor.ExtraComponents)
     {
-        agent.AddComponent(component);
+        // Use dynamic to dispatch to AddComponent<T> with the runtime type of the component
+        // This ensures the component is registered under its concrete type (or specific interface if casted)
+        // rather than IGameEntityComponent, allowing GetComponent lookups to work via IsAssignableFrom.
+        agent.AddComponent((dynamic)component);
     }
 
     return agent;

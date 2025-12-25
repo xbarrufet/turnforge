@@ -11,6 +11,7 @@ using TurnForge.Engine.Registration;
 using BarelyAlive.Rules.Core.Domain.Definitions;
 using TurnForge.Engine.Entities;
 using BarelyAlive.Rules.Core.Domain.Entities;
+using TurnForge.Engine.Repositories.Interfaces;
 using SurvivorDefinition = BarelyAlive.Rules.Core.Domain.Entities.SurvivorDefinition;
 
 
@@ -38,19 +39,21 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
     private readonly TurnForge.Engine.Core.Interfaces.IGameLogger _logger;
 
     public IGameCatalogApi GameCatalog => _turnForge.GameCatalog;
+    public IGameRepository GameRepository { get; }
 
     public IBarelyAliveApis BarelyAliveApis { get; }
 
     private BarelyAliveGame(TurnForge.Engine.Core.Interfaces.IGameLogger? logger)
     {
         _logger = logger ?? new TurnForge.Engine.Infrastructure.ConsoleLogger();
-        _turnForge = GameBootstrap.GameEngineBootstrap(logger);
+        GameRepository = new BarelyAlive.Rules.Adapter.Repositories.InMemoryGameRepository();
+        _turnForge = GameBootstrap.GameEngineBootstrap(logger, GameRepository);
         
         // Initialize FSM
         var fsmController = BarelyAliveGameFlow.CreateController();
         _turnForge.Runtime.SetFsmController(fsmController);
 
-        BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime, _turnForge.GameCatalog);
+        BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime, _turnForge.GameCatalog, GameRepository);
 
     }
 

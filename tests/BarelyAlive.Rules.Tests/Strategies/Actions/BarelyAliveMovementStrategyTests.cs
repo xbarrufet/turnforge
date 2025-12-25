@@ -5,7 +5,7 @@ using TurnForge.Engine.Commands.Move;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Services.Queries;
 using TurnForge.Engine.Strategies.Actions;
-using TurnForge.Engine.Tests.Helpers;
+using BarelyAlive.Rules.Tests.Helpers;
 using TurnForge.Engine.ValueObjects;
 using BarelyAlive.Rules.Core.Domain.Strategies.Actions;
 
@@ -17,12 +17,12 @@ public class BarelyAliveMovementStrategyTests
     {
         // Arrange
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 3, position: startPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
        var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -41,14 +41,14 @@ public class BarelyAliveMovementStrategyTests
     {
         // Arrange - IMPORTANT: Use same Position instance for all agents
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 5, position: sharedPosition)
             .WithAgent("zombie1", out var _, category: "Zombie", position: sharedPosition)
             .WithAgent("zombie2", out var _, category: "Zombie", position: sharedPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -67,13 +67,13 @@ public class BarelyAliveMovementStrategyTests
     {
         // Arrange
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
             .WithAgent("zombie", out var zombieId, category: "Zombie", ap: 3, position: startPosition)
             .WithAgent("survivor", out var _, category: "Survivor", position: startPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -92,14 +92,14 @@ public class BarelyAliveMovementStrategyTests
     {
         // Arrange - IMPORTANT: Use same Position instance
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 2, position: sharedPosition) // Only 2 AP
             .WithAgent("zombie1", out var _, category: "Zombie", position: sharedPosition)
             .WithAgent("zombie2", out var _, category: "Zombie", position: sharedPosition)
             .Build(); // Would need 3 AP (1 + 2 zombies)
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -118,13 +118,13 @@ public class BarelyAliveMovementStrategyTests
     {
         // Arrange
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 1, position: startPosition)
             .WithAgent("zombie", out var _, category: "Zombie", position: startPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));

@@ -15,12 +15,12 @@ public class GameStateQueryServiceTests
     public void GetAgent_ExistingAgent_ReturnsAgent()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, name: "TestSurvivor", category: "Player")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var agent = query.GetAgent(agentId);
@@ -35,11 +35,11 @@ public class GameStateQueryServiceTests
     public void GetAgent_NonExistingAgent_ReturnsNull()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var agent = query.GetAgent("non-existing-id");
@@ -52,12 +52,12 @@ public class GameStateQueryServiceTests
     public void GetProp_ExistingProp_ReturnsProp()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithProp("crate", out var propId, name: "WoodenCrate")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var prop = query.GetProp(propId);
@@ -71,11 +71,11 @@ public class GameStateQueryServiceTests
     public void GetProp_NonExistingProp_ReturnsNull()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var prop = query.GetProp("non-existing-id");
@@ -89,14 +89,14 @@ public class GameStateQueryServiceTests
     {
         // Arrange
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor1", out var _, position: sharedPosition)
             .WithAgent("survivor2", out var _, position: sharedPosition)
             .WithAgent("zombie", out var _, position: sharedPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var agents = query.GetAgentsAt(sharedPosition);
@@ -112,12 +112,12 @@ public class GameStateQueryServiceTests
         var position1 = Position.FromTile(new TileId(Guid.NewGuid()));
         var position2 = Position.FromTile(new TileId(Guid.NewGuid()));
         
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var _, position: position1)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var agents = query.GetAgentsAt(position2); // Different position
@@ -130,12 +130,12 @@ public class GameStateQueryServiceTests
     public void GetAgentsAt_EmptyPosition_ReturnsEmpty()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var _)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var agents = query.GetAgentsAt(Position.Empty);
@@ -148,14 +148,14 @@ public class GameStateQueryServiceTests
     public void GetAgentsByCategory_SurvivorCategory_ReturnsOnlySurvivors()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor1", out var _, category: "Survivor")
             .WithAgent("survivor2", out var _, category: "Survivor")
             .WithAgent("zombie", out var _, category: "Zombie")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var survivors = query.GetAgentsByCategory("Survivor");
@@ -169,12 +169,12 @@ public class GameStateQueryServiceTests
     public void GetAgentsByCategory_CaseInsensitive_Works()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var _, category: "Survivor")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var survivors = query.GetAgentsByCategory("survivor"); // lowercase
@@ -187,12 +187,12 @@ public class GameStateQueryServiceTests
     public void GetAgentsByCategory_NonExistingCategory_ReturnsEmpty()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var _, category: "Survivor")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var enemies = query.GetAgentsByCategory("Enemy");
@@ -205,12 +205,12 @@ public class GameStateQueryServiceTests
     public void GetAgentsByCategory_NullOrEmpty_ReturnsEmpty()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var _, category: "Survivor")
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var emptyResult = query.GetAgentsByCategory("");
@@ -226,13 +226,13 @@ public class GameStateQueryServiceTests
     {
         // Arrange
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithProp("crate1", out var _, position: sharedPosition)
             .WithProp("crate2", out var _, position: sharedPosition)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var props = query.GetPropsAt(sharedPosition);
@@ -248,12 +248,12 @@ public class GameStateQueryServiceTests
         var position1 = Position.FromTile(new TileId(Guid.NewGuid()));
         var position2 = Position.FromTile(new TileId(Guid.NewGuid()));
         
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithProp("crate", out var _, position: position1)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         
         // Act
         var props = query.GetPropsAt(position2); // Different position

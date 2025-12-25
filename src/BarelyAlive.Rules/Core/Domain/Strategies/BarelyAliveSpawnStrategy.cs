@@ -71,6 +71,12 @@ public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
         {
             descriptor.Faction = "Player";
         }
+        
+        // Add Action Points component
+        descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(descriptor.ActionPoints)
+        {
+             CurrentActionPoints = descriptor.ActionPoints
+        });
 
         return descriptor;
     }
@@ -82,6 +88,23 @@ public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
         AgentDescriptor descriptor,
         GameState state)
     {
+        // Heuristic: If definition starts with "Zombie.", give 1 AP
+        if (descriptor.DefinitionID.StartsWith("Zombie."))
+        {
+            descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(1)
+            {
+                 CurrentActionPoints = 1
+            });
+        }
+        else if (descriptor.DefinitionID.StartsWith("Survivor."))
+        {
+            // Fallback for generic AgentDescriptor for Survivor
+            descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(3)
+            {
+                 CurrentActionPoints = 3
+            });
+        }
+        
         // Accept as-is - no modifications needed
         return descriptor;
     }

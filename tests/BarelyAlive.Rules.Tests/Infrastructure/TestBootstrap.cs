@@ -46,7 +46,7 @@ public class TestBootstrap
             _turnForge.Runtime.SetFsmController(fsmController);
         }
 
-        BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime, _turnForge.GameCatalog);
+        BarelyAliveApis = new BarelyAliveApis(_turnForge.Runtime, _turnForge.GameCatalog, GameRepository);
     }
 
     public static TestBootstrap CreateNewGame(

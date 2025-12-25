@@ -15,12 +15,12 @@ public class BasicMoveStrategyTests
     public void Execute_ValidMovement_ReturnsSuccess()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, ap: 3)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BasicMoveStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -38,12 +38,12 @@ public class BasicMoveStrategyTests
     public void Execute_ValidMovement_CostIs1AP()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, ap: 3)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BasicMoveStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -60,13 +60,13 @@ public class BasicMoveStrategyTests
     public void Execute_MoveToSamePosition_ReturnsFailed()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, ap: 3)
             .Build();
         
         // Get agent's actual current position from state
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var agent = query.GetAgent(agentId);
         var currentPosition = agent!.PositionComponent.CurrentPosition;
         
@@ -86,12 +86,12 @@ public class BasicMoveStrategyTests
     public void Execute_InsufficientAP_ReturnsFailed()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, ap: 0) // 0 AP
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BasicMoveStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
@@ -109,12 +109,12 @@ public class BasicMoveStrategyTests
     public void Execute_FreeMovement_DoesNotCostAP()
     {
         // Arrange
-        var (state, _) = new TestGameBuilder()
+        var (state, board) = new TestGameBuilder()
             .WithBoard()
             .WithAgent("survivor", out var agentId, ap: 3)
             .Build();
         
-        var query = new GameStateQueryService(state);
+        var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BasicMoveStrategy(query);
         var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));

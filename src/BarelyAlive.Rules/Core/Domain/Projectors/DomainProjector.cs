@@ -17,7 +17,8 @@ public class DomainProjector
         _projectors = new IEffectProjector[]
         {
             new AgentSpawnedProjector(),
-            new PropSpawnedProjector()
+            new PropSpawnedProjector(),
+            new AgentMovedProjector()
         };
     }
 

@@ -5,6 +5,7 @@ using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Commands.Spawn;
+using TurnForge.Engine.Repositories.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,17 +16,21 @@ public class BarelyAliveApis : IBarelyAliveApis
     private readonly InitializeGameHandler _initializeGameHandler;
     private readonly StartGameHandler _startGameHandler;
     private readonly GetSurvivorsHandler _getSurvivorsHandler;
+    private readonly MoveCharacterHandler _moveCharacterHandler;
+    private readonly QueryGameStateHandler _queryGameStateHandler;
     private readonly IGameEngine _gameEngine;
 
     private List<SpawnRequest> _pendingAgents = new();
 
-    public BarelyAliveApis(IGameEngine gameEngine, IGameCatalogApi catalog)
+    public BarelyAliveApis(IGameEngine gameEngine, IGameCatalogApi catalog, IGameRepository gameRepository)
     {
         _gameEngine = gameEngine;
         var projector = new DomainProjector();
         _initializeGameHandler = new InitializeGameHandler(gameEngine, projector);
         _startGameHandler = new StartGameHandler(gameEngine, projector);
         _getSurvivorsHandler = new GetSurvivorsHandler(catalog);
+        _moveCharacterHandler = new MoveCharacterHandler(gameEngine, projector);
+        _queryGameStateHandler = new QueryGameStateHandler(gameRepository);
     }
 
     public GameResponse InitializeGame(string missionJson)
@@ -58,5 +63,15 @@ public class BarelyAliveApis : IBarelyAliveApis
     public void Ack()
     {
         _gameEngine.ExecuteCommand(new TurnForge.Engine.Commands.ACK.ACKCommand());
+    }
+
+    public GameResponse MoveCharacter(string characterId, TileReference targetTile)
+    {
+        return _moveCharacterHandler.Handle(characterId, targetTile);
+    }
+
+    public GameStateSnapshot GetGameState()
+    {
+        return _queryGameStateHandler.Handle();
     }
 }
