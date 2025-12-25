@@ -1,7 +1,7 @@
 # TurnForge Backlog
 
 **Last Updated:** 2025-12-25  
-**Active Items:** 6 | **Completed:** 2 | **Ideas:** 2 | **Total:** 12
+**Active Items:** 8 | **Completed:** 2 | **Ideas:** 2 | **Total:** 15
 
 ---
 
@@ -87,6 +87,31 @@ TurnForge provides query services callable from Strategies/Appliers for common o
 
 ---
 
+### EPIC-002: BarelyAlive E2E Validation System
+
+**Status:** 🟡 IN PROGRESS (0/2 features done)  
+**Priority:** High  
+**Effort:** 2-3 weeks
+
+**Vision:**  
+Enable rapid E2E validation of BarelyAlive functionality without requiring Godot UI. Provide both programmatic test infrastructure and interactive console simulator for testing game flows, command sequences, and state transitions.
+
+**Success Criteria:**
+- [ ] Fluent API for scenario creation in tests
+- [ ] JSON-based scenario serialization
+- [ ] Command builder for common operations
+- [ ] Console simulator for interactive testing
+- [ ] Documentation with examples
+
+**Related Features:**
+- FEATURE-007: Test Scenario Infrastructure
+- FEATURE-008: Console Simulator Project
+
+**Dependencies:**
+- None (builds on existing BarelyAlive.Rules.Tests infrastructure)
+
+---
+
 ## 🟡 In Progress
 
 ### TASK-001: Complete Modular Documentation Migration
@@ -151,6 +176,89 @@ Service for board queries with game state integration (occupied positions, neigh
 **Dependencies:**
 - ISpatialModel implementation
 - GameStateQueryService (for agent queries)
+
+---
+
+#### FEATURE-007: Test Scenario Infrastructure
+
+**Status:** ⚪ BACKLOG  
+**Priority:** High  
+**Effort:** 5-7 days  
+**Epic:** EPIC-002 (E2E Validation)
+
+**Description:**  
+Fluent test infrastructure for creating E2E scenarios programmatically. Enables scenario serialization to JSON for reusable test cases.
+
+**Acceptance Criteria:**
+- [ ] `ScenarioRunner` with fluent API (Given/When/Then)
+- [ ] `CommandBuilder` for creating commands fluently
+- [ ] `ScenarioSerializer` for JSON scenario loading/saving
+- [ ] Example scenarios in `tests/BarelyAlive.Rules.Tests/Scenarios/`
+- [ ] Unit tests for infrastructure components
+- [ ] Documentation with usage examples
+
+**Technical Notes:**
+- Location: `tests/BarelyAlive.Rules.Tests/Helpers/`
+- Uses existing `TestBootstrap` and `TestHelpers`
+- Enables parallel test execution (batch validation)
+- Supports both happy path and edge case testing
+
+**Example API:**
+```csharp
+var scenario = ScenarioRunner.Create()
+    .GivenMission(TestHelpers.Mission01Json)
+    .GivenSurvivors("Mike", "Doug")
+    .When(cmd => cmd.Move("Mike").To(targetPos))
+    .Then(state => Assert.That(
+        state.GetAgent("Mike").Position, 
+        Is.EqualTo(expectedPos)));
+```
+
+**Dependencies:**
+- None (extends existing test infrastructure)
+
+---
+
+#### FEATURE-008: Console Simulator Project
+
+**Status:** ⚪ BACKLOG  
+**Priority:** High  
+**Effort:** 3-5 days  
+**Epic:** EPIC-002 (E2E Validation)
+
+**Description:**  
+Interactive console application for manual E2E testing and debugging. Provides REPL interface and script execution mode.
+
+**Acceptance Criteria:**
+- [ ] New project: `src/BarelyAlive.Simulator/`
+- [ ] Interactive REPL mode (type commands)
+- [ ] Script execution mode (run JSON scenarios)
+- [ ] ASCII board visualization (optional)
+- [ ] Detailed effect/event logging
+- [ ] Command history and replay
+- [ ] README with usage examples
+
+**Technical Notes:**
+- Console application (.NET 8)
+- References `BarelyAlive.Rules`
+- Uses `BarelyAliveGame` API (same as Godot adapter)
+- Reuses FEATURE-007 infrastructure internally
+
+**Example Usage:**
+```bash
+# Interactive mode
+$ simulator interactive
+> load mission01.json
+> spawn Mike Doug
+> move Mike B2
+> attack Mike Zombie1
+
+# Script mode
+$ simulator run scenarios/test_combat.json
+```
+
+**Dependencies:**
+- FEATURE-007 (reuses ScenarioRunner/CommandBuilder)
 
 ---
 
