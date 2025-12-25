@@ -450,6 +450,32 @@ TurnForge addresses these problems by making **rules, flow, and state explicit a
 
 ---
 
+## 📚 Documentation
+
+TurnForge documentation is modular and organized by purpose:
+
+### 🎯 Quick Start
+
+- 🆕 **New to TurnForge?** → [Understanding TurnForge](memorybank/docs/1-understanding/README.md)
+- 🛠️ **Building a game?** → [Using TurnForge API](memorybank/docs/2-using/README.md)  
+- ⚡ **Quick Reference?** → [API Reference](memorybank/docs/3-reference/README.md)
+- 💡 **Examples?** → [Code Examples](memorybank/examples/)
+
+### 📖 Documentation Index
+
+**Part I: Understanding TurnForge** - [Index](memorybank/docs/1-understanding/README.md)  
+Architecture • Command Flow • FSM • Action Pipeline • Spawn Pipeline • Board & Spatial • Effects • Factory
+
+**Part II: Using TurnForge** - [Index](memorybank/docs/2-using/README.md)  
+Getting Started • Entities • Commands • Strategies • Components • Services • FSM Config • Extensions
+
+**Part III: API Reference** - [Index](memorybank/docs/3-reference/README.md)  
+Interfaces • Command Types • Strategy Interfaces • Component Interfaces • Effect Types
+
+📝 [Complete Navigation Guide](memorybank/README.md)
+
+---
+
 ## License
 
 [Add license information here]

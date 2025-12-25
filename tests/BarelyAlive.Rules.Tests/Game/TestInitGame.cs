@@ -29,7 +29,7 @@ public class TestInitGame
         var res1 = bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
         Assert.That(res1.Result.Success, Is.True, $"InitBoard failed: {res1.Result.Error}");
         
-        var ack1 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
+        var ack1 = bootstrap.Engine.Runtime.ExecuteCommand(new ACKCommand());
         
 
 
@@ -37,7 +37,7 @@ public class TestInitGame
         var res2 = bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
         Assert.That(res2.Result.Success, Is.True, $"SpawnProps failed: {res2.Result.Error}");
         
-        var ack2 = bootstrap.Engine.Runtime.ExecuteCommand(new CommandAck());
+        var ack2 = bootstrap.Engine.Runtime.ExecuteCommand(new ACKCommand());
 
         // 3.3 Spawn Agents (Triggers Agent Strategy)
         // Manually create agents to test Strategy logic (Mission01Json doesn't have agents)

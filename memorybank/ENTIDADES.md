@@ -1,35 +1,101 @@
 # TurnForge.Engine Reference
 
-**Technical documentation for the TurnForge game engine. Target audience: developers and AI agents.**
+**Technical documentation for the TurnForge game engine.**
+**Target audience:** Developers and AI agents building turn-based tactical games.
 
-*It is a work in progress and is not yet ready for production use.*
+*Work in progress - evolving with the engine.*
+
+---
+
+## How to Use This Document
+
+This reference is organized into **3 parts**:
+
+- **Part I: Understanding TurnForge** - Learn how the engine works internally (architecture, patterns, flows)
+- **Part II: Using TurnForge** - Practical API guide for building your game (commands, strategies, components)
+- **Part III: API Reference** - Quick lookup for interfaces, types, and signatures
+
+💡 **New to TurnForge?** Start with Part I to understand concepts, then Part II for implementation.
+🔍 **Building a feature?** Jump to Part II for the relevant API section.
+⚡ **Need a signature?** Part III has quick reference tables.
+
 ---
 
 ## Table of Contents
-0. [Context](#overview)
-1. [Architecture Overview](#architecture-overview)
-2. [Entity System](#entity-system)
-3. [FSM (Finite State Machine)](#fsm-finite-state-machine)
-4. [Command & Decision Flow](#command--decision-flow)
-5. [Orchestrator](#orchestrator)
-6. [Commands](#commands)
-7. [Spatial & Board](#spatial--board)
-8. [Integration Patterns](#integration-patterns)
+
+### Part I: Understanding TurnForge (How It Works)
+
+1. [Overview & Core Principles](#part-i-overview--core-principles)
+2. [Architecture Deep Dive](#architecture-deep-dive)
+   - [Command-Decision-Applier Pattern](#command-decision-applier-pattern)
+   - [FSM State Machine](#fsm-finite-state-machine)
+   - [Orchestrator Role](#orchestrator)
+   - [Immutable State Philosophy](#immutable-state)
+3. [Execution Flow](#execution-flow)
+   - [Command Lifecycle](#command-lifecycle)
+   - [Decision Scheduling](#decision-scheduling)
+   - [FSM Transitions](#fsm-transitions)
+   - [ACK System](#ack-system)
+4. [Internal Systems](#internal-systems)
+   - [Action System Pipeline](#action-system-pipeline)
+   - [Spawn System Pipeline](#spawn-command)
+   - [Board & Spatial Internals](#board--spatial-system)
+   - [Effects Propagation](#effects-system)
+   - [Factory System](#factory-system)
+
+### Part II: Using TurnForge (Public API)
+
+1. [Getting Started](#getting-started)
+2. [Entity System API](#entity-system-api)
+3. [Command System API](#command-system-api)
+4. [Strategy System API](#strategy-system-api)
+5. [Component API](#component-api)
+6. [FSM Configuration](#fsm-configuration)
+7. [Services API](#services-api)
+8. [Extension Points](#extension-points)
+
+### Part III: API Reference (Quick Lookup)
+
+1. [Core Interfaces](#core-interfaces-reference)
+2. [Command Types](#command-types-reference)
+3. [Strategy Interfaces](#strategy-interfaces-reference)
+4. [Component Interfaces](#component-interfaces-reference)
+5. [Effect Types](#effect-types-reference)
 
 ---
 
-## Context
+# Part I: Understanding TurnForge
 
-This document is a reference for the TurnForge game engine. It is intended to be used by developers and AI agents to understand the architecture of the engine and how to use it.
-Turnforge is a turn-based tactical game engine. Its based in a set of componentns to manage the flow and entitenes of a turn based game implementation.
-- FSM: Finite State Machine to manage the turn flow
-- Entities: Expandable entities with components to manage the game state. Each component is focus in a especifc data domain (Health, Position, etc). 
-- Commands: Actions that can be executed by the player or AI agents
-- Strategies: Configurable strategies to customize the behaviour of the commands 
+*This section explains how TurnForge works internally. Read this to understand the architecture, design patterns, and execution model.*
 
-## Architecture Overview
+---
 
-TurnForge.Engine implements a **Command-Decision-Applier** pattern with FSM-controlled state transitions.
+## Part I: Overview & Core Principles
+
+TurnForge is a turn-based tactical game engine built on immutable state and clear separation of concerns.
+
+**What is TurnForge?**
+
+A C# engine for creating tactical turn-based games (skirmish wargames, tactical RPGs, etc.). It provides:
+- **FSM-driven game flow** - Manage phases, turns, and state transitions declaratively
+- **Component-based entities** - Flexible agent/prop system with reusable components
+- **Command pattern** - Separate user intent from execution logic
+- **Strategy extensibility** - Customize game rules without modifying the engine
+
+**Core Components:**
+- **FSM** - Finite State Machine managing turn flow and valid actions per phase
+- **Entities** - Agents (active) and Props (static) with component-based data
+- **Commands** - User/AI intentions (Move, Attack, Spawn, etc.)
+- **Strategies** - Configurable business logic for processing commands
+- **Decisions** - Intent-to-execution bridge (what should happen)
+- **Appliers** - State mutators (make it happen)
+- **Effects** - UI notifications (show what happened)
+
+---
+
+## Architecture Deep Dive
+
+TurnForge implements a **Command-Decision-Applier** pattern with FSM-controlled state transitions.
 
 ### Core Principles
 
@@ -1058,6 +1124,309 @@ engine.ExecuteCommand(new SpawnAgentsCommand(new[] { boss }));
 - ❌ No game-specific validation needed
 - ❌ All entities spawn the same way
 
+
+---
+
+## Board & Spatial System
+
+The Board system provides spatial management and position validation for the game.
+
+### ISpatialModel
+
+Interface defining how positions relate to each other and movement rules.
+
+```csharp
+public interface ISpatialModel
+{
+    /// <summary>
+    /// Check if a position exists and is valid on the board.
+    /// </summary>
+    bool IsValidPosition(Position position);
+    
+    /// <summary>
+    /// Get neighboring positions (e.g., adjacent tiles).
+    /// </summary>
+    IEnumerable<Position> GetNeighbors(Position position);
+    
+    /// <summary>
+    /// Check if an actor can move to target position (pathfinding, obstacles, etc.).
+    /// </summary>
+    bool CanMove(Actor actor, Position target);
+    
+    /// <summary>
+    /// Calculate distance between two positions.
+    /// </summary>
+    int Distance(Position from, Position to);
+    
+    /// <summary>
+    /// Enable/disable connections for dynamic board changes.
+    /// </summary>
+    void EnableConnection(Position from, Position to);
+    void DisableConnection(Position from, Position to);
+}
+```
+
+**Implementation Examples:**
+- **GridSpatialModel** - Square/hex grid with cardinal/diagonal movement
+- **GraphSpatialModel** - Node-based with custom connections
+- **HybridSpatialModel** - Mixed grid + custom connections
+
+---
+
+### GameBoard
+
+Central board entity managing zones and delegating spatial queries.
+
+```csharp
+public sealed class GameBoard : GameEntity
+{
+    public GameBoard(ISpatialModel spatialModel);
+    
+    // Zone Management
+    public void AddZone(Zone zone);
+    public IReadOnlyList<Zone> Zones { get; }
+    public IEnumerable<Zone> GetZonesAt(Position position);
+    
+    // Spatial Queries (delegates to ISpatialModel)
+    public bool IsValid(Position position);
+    public IEnumerable<Position> GetNeighbors(Position position);
+    public int Distance(Position from, Position to);
+    public bool CanMoveActor(Actor actor, Position target);
+}
+```
+
+**Usage:**
+```csharp
+// In ActionCommandHandler, context provides board
+public ActionStrategyResult Execute(MoveCommand command, IActionContext context)
+{
+    // Validate position
+    if (!context.Board.IsValid(command.TargetPosition))
+        return ActionStrategyResult.Failed("Invalid position");
+    
+    // Check movement rules
+    var agent = _query.GetAgent(command.AgentId);
+    if (!context.Board.CanMoveActor(agent, command.TargetPosition))
+        return ActionStrategyResult.Failed("Cannot move to position");
+    
+    // Calculate distance for cost
+    var distance = context.Board.Distance(agent.Position, command.TargetPosition);
+}
+```
+
+---
+
+### Zone
+
+Logical area grouping positions (spawn zones, objectives, etc.).
+
+```csharp
+public sealed class Zone : GameEntity
+{
+    public string ZoneType { get; set; }  // "SpawnZone", "ObjectiveZone", etc.
+    public IReadOnlyList<Position> Positions { get; }
+    
+    public Zone(EntityId id, string definitionId, string name, string category);
+    
+    public bool Contains(Position position);
+    public void AddPosition(Position position);
+}
+```
+
+**Example:**
+```csharp
+// Create spawn zone
+var spawnZone = new Zone(EntityId.New(), "spawn_survivor_1", "Survivor Start", "SpawnZone");
+spawnZone.AddPosition(Position.FromTile(tileId1));
+spawnZone.AddPosition(Position.FromTile(tileId2));
+
+gameBoard.AddZone(spawnZone);
+
+// Query zones at position
+var zones = gameBoard.GetZonesAt(position);
+var isSpawnPoint = zones.Any(z => z.ZoneType == "SpawnZone");
+```
+
+---
+
+## Effects System
+
+Effects communicate state changes to the UI for animation and feedback.
+
+### IGameEffect
+
+Base interface for all game effects.
+
+```csharp
+public interface IGameEffect
+{
+    /// <summary>
+    /// Origin/source of this effect (Command, PhaseTransition, etc.).
+    /// Enables UI to filter and display effects appropriately.
+    /// </summary>
+    EffectOrigin Origin { get; }
+    
+    /// <summary>
+    /// Timestamp when effect was generated (UTC).
+    /// Enables replay, debugging, and audit logs.
+    /// </summary>
+    DateTime Timestamp { get; }
+    
+    /// <summary>
+    /// Human-readable description of the effect.
+    /// Used for logging and debugging without inspecting effect type.
+    /// </summary>
+    string Description { get; }
+}
+```
+
+---
+
+### Common Effect Types
+
+All effects inherit from `GameEffect : IGameEffect` base record.
+
+#### ComponentsUpdatedEffect
+Entity components changed (position, health, AP, etc.).
+
+```csharp
+public record ComponentsUpdatedEffect(
+    EntityId EntityId,
+    Type[] UpdatedComponentTypes
+) : GameEffect(EffectOrigin.Command, "Components updated");
+```
+
+**Generated by:** `ActionDecisionApplier`
+
+#### EntitySpawnedEffect
+New entity created and added to state.
+
+```csharp
+public record EntitySpawnedEffect(
+    EntityId EntityId,
+    string DefinitionId,
+    Position? SpawnPosition
+) : GameEffect(EffectOrigin.Command, "Entity spawned");
+```
+
+**Generated by:** `AgentSpawnApplier`, `PropSpawnApplier`
+
+#### FSMTransitionEffect
+Game phase changed.
+
+```csharp
+public record FSMTransitionEffect(
+    string FromStateId,
+    string ToStateId,
+    string TransitionTag
+) : GameEffect(EffectOrigin.PhaseTransition, "State transition");
+```
+
+**Generated by:** `FsmController`
+
+---
+
+### Effect Usage Pattern
+
+```csharp
+// In Applier
+public ApplierResponse Apply(SomeDecision decision, GameState state)
+{
+    // 1. Mutate state
+    var newState = state.WithAgent(updatedAgent);
+    
+    // 2. Create effect(s)
+    var effect = new ComponentsUpdatedEffect(
+        agent.Id,
+        new[] { typeof(BasePositionComponent), typeof(BaseActionPointsComponent) }
+    );
+    
+    // 3. Return both
+    return new ApplierResponse(newState, new[] { effect });
+}
+
+// In UI Layer
+engine.OnEffectGenerated += (effect) =>
+{
+    switch (effect)
+    {
+        case ComponentsUpdatedEffect componentEffect:
+            AnimateComponentChange(componentEffect.EntityId, componentEffect.UpdatedComponentTypes);
+            break;
+        case EntitySpawnedEffect spawnEffect:
+            ShowSpawnAnimation(spawnEffect.EntityId, spawnEffect.SpawnPosition);
+            break;
+    }
+};
+```
+
+---
+
+## Factory System
+
+Factories create entities from definitions and descriptors.
+
+### GenericActorFactory
+
+Creates entities with automatic component mapping.
+
+```csharp
+public sealed class GenericActorFactory : IActorFactory
+{
+    public GenericActorFactory(IGameCatalog gameCatalog);
+    
+    public Agent BuildAgent(AgentDescriptor descriptor);
+    public Prop BuildProp(PropDescriptor descriptor);
+}
+```
+
+**Entity Creation Process:**
+1. **Load Definition** - Fetch from catalog by `descriptor.DefinitionID`
+2. **Determine Type** - Use `EntityTypeRegistry` or `[EntityType]` attribute
+3. **Create Instance** - Reflection with constructor(EntityId, definitionId, name, category)
+4. **Map Properties** - `PropertyAutoMapper.Map(definition, entity)` then `Map(descriptor, entity)`
+5. **Set Position** - Direct assignment `entity.PositionComponent.CurrentPosition = descriptor.Position`
+6. **Add Extra Components** - Append `descriptor.ExtraComponents`
+
+**Example:**
+```csharp
+// Create factory
+var factory = new GenericActorFactory(gameCatalog);
+
+// Build agent
+var descriptor = new AgentDescriptor("Survivors.Mike")
+{
+    Position = spawnPosition,
+    ExtraComponents = new[] { new BerserkComponent() }
+};
+
+var agent = factory.BuildAgent(descriptor);
+// → Agent created with components from definition + descriptor + extras
+```
+
+---
+
+### PropertyAutoMapper
+
+Automatically maps properties from Definition/Descriptor to Entity components.
+
+**Mapping Rules:**
+1. **Implicit** - Property name/type matches component property → auto-map
+2. **Explicit** - `[MapToComponent(typeof(IComponent), "PropertyName")]` → forced mapping
+3. **Opt-Out** - `[DoNotMap]` on component property → skip
+
+**Process:**
+```csharp
+// Step 1: Map from definition
+PropertyAutoMapper.Map(definition, agent);
+// MaxHealth → IHealthComponent.MaxHealth
+// Faction → IFactionComponent.FactionName (via [MapToComponent])
+
+// Step 2: Map from descriptor (overrides)
+PropertyAutoMapper.Map(descriptor, agent);
+// Position → IPositionComponent.CurrentPosition
+```
+
 ---
 
 ## Spatial & Board
@@ -1335,6 +1704,540 @@ agent.WithPosition(position);     // Update position
 agent.WithHealth(health);         // Update health
 agent.WithComponent<T>(component); // Update component
 ```
+
+---
+
+## Action Commands
+
+Action commands represent user/AI intentions to perform game actions (move, attack, etc.). They follow the Command-Strategy-Decision-Applier pattern.
+
+### MoveCommand
+
+Command to move an agent from current position to a target position.
+
+```csharp
+public sealed record MoveCommand(
+    string AgentId,          // Entity to move
+    bool HasCost,            // Whether movement costs AP
+    Position TargetPosition  // Destination
+) : IActionCommand
+{
+    public Type CommandType => typeof(MoveCommand);
+}
+```
+
+**Usage:**
+```csharp
+var moveCmd = new MoveCommand(
+    agentId: "agent-123",
+    hasCost: true,  // Will consume AP
+    targetPosition: Position.FromTile(targetTile)
+);
+
+var result = engine.ExecuteCommand(moveCmd);
+```
+
+**Flow:**
+1. `ActionCommandHandler` validates and routes to strategy
+2. `IActionStrategy<MoveCommand>` (e.g., `BasicMoveStrategy`) validates and calculates cost
+3. Returns `ActionDecision` with position + AP updates
+4. `ActionDecisionApplier` applies component changes to state
+
+---
+
+## Action System Pipeline
+
+The Action System implements the Command-Strategy-Decision-Applier pattern for processing player/AI actions.
+
+### Pipeline Overview
+
+```
+ActionCommand → ActionCommandHandler → IActionStrategy → ActionStrategyResult
+     ↓                   ↓                    ↓                   ↓
+ (MoveCommand)    (validates AP)      (calculates cost)    (ActionDecision[])
+                                              ↓
+                                      ActionDecisionApplier
+                                              ↓
+                                    GameState + IGameEffect[]
+```
+
+**Key Principle:** Strategies generate decisions (what to do), Appliers execute them (state mutation).
+
+---
+
+### ActionCommandHandler
+
+Generic command handler that routes action commands to their strategies.
+
+```csharp
+public sealed class ActionCommandHandler<TCommand> : ICommandHandler<TCommand>
+    where TCommand : IActionCommand
+{
+    public ActionCommandHandler(
+        IActionStrategy<TCommand> strategy,
+        IGameStateQuery queryService,
+        IGameRepository repository);
+    
+    public CommandResult Handle(TCommand command);
+}
+```
+
+**Responsibilities:**
+1. Load current game state
+2. Validate entity has ActionPoints (if `HasCost = true`)
+3. Create `ActionContext` with state + board
+4. Execute strategy
+5. Return decisions to FSM or error
+
+**Pre-Validation:**
+```csharp
+// Handler checks BEFORE strategy execution:
+if (command.HasCost)
+{
+    var agent = queryService.GetAgent(command.AgentId);
+    var apComponent = agent.GetComponent<IActionPointsComponent>();
+    
+    if (apComponent.CurrentActionPoints <= 0)
+        return CommandResult.Fail("Agent has no ActionPoints");
+}
+```
+
+**Registration:**
+```csharp
+// In game setup
+var moveHandler = new ActionCommandHandler<MoveCommand>(
+    new BasicMoveStrategy(queryService),
+    queryService,
+    repository
+);
+
+commandBus.RegisterHandler(moveHandler);
+```
+
+---
+
+### IActionContext
+
+Provides immutable context to strategies during execution.
+
+```csharp
+public interface IActionContext
+{
+    /// <summary>
+    /// Current game state (immutable snapshot).
+    /// </summary>
+    GameState State { get; }
+    
+    /// <summary>
+    /// Game board with spatial model for position validation.
+    /// </summary>
+    GameBoard Board { get; }
+}
+```
+
+**Usage in Strategy:**
+```csharp
+public ActionStrategyResult Execute(MoveCommand command, IActionContext context)
+{
+    // Access board for validation
+    if (!context.Board.IsValid(command.TargetPosition))
+        return ActionStrategyResult.Failed("Invalid position");
+    
+    // Access state for queries (via QueryService preferred)
+    var agents = context.State.GetAgents();
+}
+```
+
+---
+
+### ActionDecision
+
+Represents a set of component updates to apply to an entity.
+
+```csharp
+public sealed record ActionDecision : IDecision
+{
+    /// <summary>
+    /// ID of entity to update (Agent or Prop).
+    /// </summary>
+    public string EntityId { get; init; }
+    
+    /// <summary>
+    /// Components to add/update on the entity.
+    /// Key = component type, Value = component instance.
+    /// </summary>
+    public IReadOnlyDictionary<Type, IGameEntityComponent> ComponentUpdates { get; init; }
+    
+    /// <summary>
+    /// When this decision should be executed.
+    /// </summary>
+    public DecisionTiming Timing { get; init; }
+    
+    /// <summary>
+    /// ID of command/source that originated this decision.
+    /// </summary>
+    public string OriginId { get; init; }
+}
+```
+
+**Direct Construction** (not recommended):
+```csharp
+var decision = new ActionDecision(
+    entityId: "agent-123",
+    componentUpdates: new Dictionary<Type, IGameEntityComponent>
+    {
+        [typeof(BasePositionComponent)] = new BasePositionComponent(newPos),
+        [typeof(BaseActionPointsComponent)] = new BaseActionPointsComponent(2)
+    },
+    timing: DecisionTiming.Immediate,
+    originId: "move-command"
+);
+```
+
+---
+
+### ActionDecisionBuilder
+
+Fluent API for building action decisions (recommended approach).
+
+```csharp
+public sealed class ActionDecisionBuilder
+{
+    public ActionDecisionBuilder ForEntity(string entityId);
+    public ActionDecisionBuilder UpdateComponent<T>(T component) where T : IGameEntityComponent;
+    public ActionDecisionBuilder WithTiming(
+        DecisionTimingWhen when,
+        string? phase = null,
+        DecisionTimingFrequency frequency = DecisionTimingFrequency.Single);
+    public ActionDecisionBuilder WithOrigin(string originId);
+    public ActionDecision Build();
+}
+```
+
+**Usage Example:**
+```csharp
+// In strategy
+var decision = new ActionDecisionBuilder()
+    .ForEntity(command.AgentId)
+    .UpdateComponent(new BasePositionComponent(command.TargetPosition))
+    .UpdateComponent(new BaseActionPointsComponent(maxAP)
+    {
+        CurrentActionPoints = currentAP - cost
+    })
+    .WithOrigin(command.AgentId)
+    .Build();
+
+return ActionStrategyResult.Success(decision)
+    .WithMetadata(new ActionMetadata { ActionPointsCost = cost });
+```
+
+**Component Immutability Pattern:**
+> [!IMPORTANT]
+> Always create NEW component instances with updated values. Never mutate existing components.
+>
+> ```csharp
+> // ✅ CORRECT: Create new instance
+> var updatedAP = new BaseActionPointsComponent(apComponent.MaxActionPoints)
+> {
+>     CurrentActionPoints = apComponent.CurrentActionPoints - cost
+> };
+>
+> // ❌ WRONG: Mutate existing
+> apComponent.CurrentActionPoints -= cost;  // Breaks immutability!
+> ```
+
+---
+
+### ActionDecisionApplier
+
+Applies ActionDecisions to GameState by updating entity components.
+
+```csharp
+public sealed class ActionDecisionApplier : IApplier<ActionDecision>
+{
+    public ApplierResponse Apply(ActionDecision decision, GameState state);
+}
+```
+
+**Process:**
+1. Find entity (Agent or Prop) by `decision.EntityId`
+2. Apply each component update via `entity.AddComponent()`
+3. Update state with modified entity (`state.WithAgent()` / `state.WithProp()`)
+4. Generate `ComponentsUpdatedEffect` for UI
+
+**Implementation Notes:**
+- Uses **mutable pattern** for entity components (AddComponent overwrites)
+- Uses **immutable pattern** for GameState (WithAgent returns new state)
+- Gracefully ignores decisions for missing entities
+
+**Effect Generation:**
+```csharp
+// Applier creates effect for UI
+var effect = new ComponentsUpdatedEffect(
+    entityId,
+    decision.ComponentUpdates.Keys.ToArray()  // Which components changed
+);
+```
+
+**Registration:**
+```csharp
+// In game setup
+orchestrator.RegisterApplier(new ActionDecisionApplier());
+```
+
+---
+
+### Complete Action Flow Example
+
+```csharp
+// 1. User/AI creates command
+var moveCmd = new MoveCommand(
+    agentId: "agent-123",
+    hasCost: true,
+    targetPosition: targetTile
+);
+
+// 2. Engine routes to handler
+var handler = commandBus.GetHandler<MoveCommand>();
+var result = handler.Handle(moveCmd);
+
+/* INSIDE HANDLER:
+ * 3. Handler validates AP
+ * 4. Creates context
+ * 5. Calls strategy.Execute()
+ */
+
+/* INSIDE STRATEGY (BasicMoveStrategy):
+ * 6. Validates target position
+ * 7. Calculates cost (1 AP)
+ * 8. Builds decision with ActionDecisionBuilder
+ * 9. Returns ActionStrategyResult.Success(decision)
+ */
+
+/* BACK IN ENGINE:
+ * 10. FSM receives decisions from CommandResult
+ * 11. Scheduler queues decisions
+ * 12. Orchestrator calls ActionDecisionApplier.Apply()
+ */
+
+/* INSIDE APPLIER:
+ * 13. Updates entity components (position, AP)
+ * 14. Creates new GameState with updated entity
+ * 15. Generates ComponentsUpdatedEffect
+ */
+
+// 16. UI receives effect and animates
+```
+
+---
+
+## Strategies
+
+Strategies contain game-specific business logic for processing commands. They validate, calculate costs, and generate decisions WITHOUT mutating state.
+
+### IActionStrategy<TCommand>
+
+Base interface for all action strategies.
+
+```csharp
+public interface IActionStrategy<TCommand> where TCommand : IActionCommand
+{
+    /// <summary>
+    /// Execute strategy logic for the command.
+    /// Returns success with decisions, or failure with validation errors.
+    /// </summary>
+    ActionStrategyResult Execute(TCommand command, IActionContext context);
+}
+```
+
+### BasicMoveStrategy
+
+Default movement strategy with fixed 1 AP cost.
+
+```csharp
+public sealed class BasicMoveStrategy : IActionStrategy<MoveCommand>
+{
+    public BasicMoveStrategy(IGameStateQuery query);
+    
+    public ActionStrategyResult Execute(MoveCommand command, IActionContext context);
+}
+```
+
+**Validation Rules:**
+- Agent must exist
+- Target position must be valid on board
+- Agent must not already be at target position
+- Agent must have sufficient AP (if `HasCost = true`)
+
+**Cost Calculation:**
+- Fixed 1 AP per move (override in custom strategies for game-specific rules)
+
+**Example Custom Strategy (Zombicide):**
+```csharp
+public class BarelyAliveMovementStrategy : IActionStrategy<MoveCommand>
+{
+    public ActionStrategyResult Execute(MoveCommand command, IActionContext context)
+    {
+        // Custom logic: Survivors pay 1 + zombies at starting position
+        var agent = _query.GetAgent(command.AgentId);
+        var zombiesAtStart = _query.GetAgentsAt(agent.Position)
+            .Count(a => a.Category == "Zombie");
+        
+        var cost = 1 + zombiesAtStart;
+        
+        // Build decision with custom cost
+        var decision = new ActionDecisionBuilder()
+            .ForEntity(command.AgentId)
+            .UpdateComponent(new BasePositionComponent(command.TargetPosition))
+            .UpdateComponent(UpdatedAPComponent(agent, cost))
+            .Build();
+        
+        return ActionStrategyResult.Success(decision)
+            .WithMetadata(new ActionMetadata { ActionPointsCost = cost });
+    }
+}
+```
+
+---
+
+## Services
+
+Services provide query and utility functionality without mutating state.
+
+### GameStateQueryService
+
+Provides read-only queries over game state for use in strategies, handlers, and decision logic.
+
+```csharp
+public sealed class GameStateQueryService : IGameStateQuery
+{
+    public GameStateQueryService(GameState state);
+    
+    // Agent Queries
+    Agent? GetAgent(string agentId);
+    IReadOnlyList<Agent> GetAllAgents();
+    IReadOnlyList<Agent> GetAgentsAt(Position position);
+    IReadOnlyList<Agent> GetAgentsByCategory(string category);  // Case-insensitive
+    
+    // Prop Queries
+    Prop? GetProp(string propId);
+    IReadOnlyList<Prop> GetPropsAt(Position position);
+    
+    // Position Queries
+    bool IsPositionOccupied(Position position);
+    int CountAgentsAt(Position position, string? category = null);
+}
+```
+
+**Usage Examples:**
+```csharp
+var query = new GameStateQueryService(gameState);
+
+// Find specific agent
+var agent = query.GetAgent("agent-123");
+
+// Get all agents at a position
+var agentsAtTile = query.GetAgentsAt(Position.FromTile(tileId));
+
+// Filter by category (case-insensitive)
+var zombies = query.GetAgentsByCategory("Zombie");
+var survivors = query.GetAgentsByCategory("survivor");  // Works!
+
+// Check if position is occupied
+if (query.IsPositionOccupied(targetPos))
+{
+    // Position blocked
+}
+
+// Count specific category at position
+var zombieCount = query.CountAgentsAt(position, "Zombie");
+```
+
+**Design Notes:**
+- **Immutable**: QueryService doesn't mutate state
+- **Stateless**: Can be created per operation or cached
+- **Filtering**: Category queries use case-insensitive string comparison
+- **Performance**: Returns `IReadOnlyList` to prevent accidental mutations
+
+---
+
+## Components
+
+Components are the atomic data units attached to entities. All entity state is stored in components.
+
+### IActionPointsComponent
+
+Manages an entity's action points for turn-based actions.
+
+```csharp
+public interface IActionPointsComponent : IGameEntityComponent
+{
+    /// <summary>
+    /// Maximum action points for this entity.
+    /// </summary>
+    int MaxActionPoints { get; set; }
+    
+    /// <summary>
+    /// Current available action points.
+    /// </summary>
+    int CurrentActionPoints { get; set; }
+    
+    /// <summary>
+    /// Check if entity can afford a specific AP cost.
+    /// </summary>
+    bool CanAfford(int cost);
+    
+    /// <summary>
+    /// Restore action points to maximum.
+    /// </summary>
+    void Restore();
+}
+```
+
+**Base Implementation:**
+```csharp
+public sealed class BaseActionPointsComponent : IActionPointsComponent
+{
+    public int MaxActionPoints { get; set; }
+    public int CurrentActionPoints { get; set; }
+    
+    public BaseActionPointsComponent(int maxActionPoints)
+    {
+        MaxActionPoints = maxActionPoints;
+        CurrentActionPoints = maxActionPoints;
+    }
+    
+    public bool CanAfford(int cost) => CurrentActionPoints >= cost;
+    
+    public void Restore() => CurrentActionPoints = MaxActionPoints;
+}
+```
+
+**Usage in Strategies:**
+```csharp
+// Check if agent can afford movement
+var apComponent = agent.GetComponent<IActionPointsComponent>();
+if (apComponent != null && !apComponent.CanAfford(movementCost))
+{
+    return ActionStrategyResult.Failed("Insufficient Action Points");
+}
+
+// Update AP after move (create new component - immutability)
+var updatedAP = new BaseActionPointsComponent(apComponent.MaxActionPoints)
+{
+    CurrentActionPoints = apComponent.CurrentActionPoints - movementCost
+};
+
+var decision = new ActionDecisionBuilder()
+    .UpdateComponent(updatedAP)
+    .Build();
+```
+
+**Component Mutation Pattern:**
+> [!IMPORTANT]
+> Components should be treated as immutable in strategies. Always create NEW instances with updated values rather than modifying existing components.
+> 
+> **Why?** Ensures state immutability and allows proper undo/replay functionality.
 
 ---
 

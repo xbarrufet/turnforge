@@ -162,7 +162,7 @@ public sealed class GameEngineRuntime : IGameEngine
     {
         if (weAreaInWaitinfForAck)
         {
-            if (command.CommandType != typeof(CommandAck))
+            if (command.CommandType != typeof(ACKCommand))
             {
                 throw new Exception("Command is not an ACK command");
             }
@@ -172,7 +172,7 @@ public sealed class GameEngineRuntime : IGameEngine
                 return true;
             }
         }
-        return command is CommandAck;
+        return command is ACKCommand;
     }
 
 

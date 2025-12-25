@@ -30,7 +30,7 @@ public class FluentSpawnExamples
         var boardDesc = new TurnForge.Engine.Entities.Board.Descriptors.BoardDescriptor(spatial, zones);
         
         _bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
-        _bootstrap.Engine.Runtime.ExecuteCommand(new TurnForge.Engine.Commands.ACK.CommandAck());
+        _bootstrap.Engine.Runtime.ExecuteCommand(new TurnForge.Engine.Commands.ACK.ACKCommand());
         
         // Setup spawn positions
         _playerSpawn = new Position(new TileId(System.Guid.Parse("07ea7bbc-4f23-4bf0-a5c7-c527f36c3b53"))); // (1,1)
@@ -222,7 +222,7 @@ public class FluentSpawnExamples
             .ParseMissionString(TestHelpers.Mission01Json);
         
         _bootstrap.Engine.Runtime.ExecuteCommand(new SpawnPropsCommand(props));
-        _bootstrap.Engine.Runtime.ExecuteCommand(new TurnForge.Engine.Commands.ACK.CommandAck());
+        _bootstrap.Engine.Runtime.ExecuteCommand(new TurnForge.Engine.Commands.ACK.ACKCommand());
 
         // ===== Use fluent API for agent spawn =====
         var agentRequests = new[]

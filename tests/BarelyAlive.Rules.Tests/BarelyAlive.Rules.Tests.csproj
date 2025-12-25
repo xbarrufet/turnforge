@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\BarelyAlive.Rules\BarelyAlive.Rules.csproj" />
     <ProjectReference Include="..\..\src\TurnForge.Engine\TurnForge.Engine.csproj" />
+    <ProjectReference Include="..\TurnForge.Engine.Tests\TurnForge.Engine.Tests.csproj" />
   </ItemGroup>
 
   <!-- Include test assets so they are copied to the test output directory -->

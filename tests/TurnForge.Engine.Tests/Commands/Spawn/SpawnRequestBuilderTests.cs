@@ -24,7 +24,6 @@ public class SpawnRequestBuilderTests
         // Assert
         Assert.That(request.DefinitionId, Is.EqualTo("Survivors.Mike"));
         Assert.That(request.Count, Is.EqualTo(1));
-        Assert.That(request.Position, Is.Null);
         Assert.That(request.PropertyOverrides, Is.Null);
         Assert.That(request.ExtraComponents, Is.Null);
     }

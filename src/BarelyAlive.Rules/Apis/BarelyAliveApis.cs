@@ -57,6 +57,6 @@ public class BarelyAliveApis : IBarelyAliveApis
 
     public void Ack()
     {
-        _gameEngine.ExecuteCommand(new TurnForge.Engine.Commands.ACK.CommandAck());
+        _gameEngine.ExecuteCommand(new TurnForge.Engine.Commands.ACK.ACKCommand());
     }
 }
