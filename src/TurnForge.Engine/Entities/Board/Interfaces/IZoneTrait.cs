@@ -1,3 +1,5 @@
+using TurnForge.Engine.Behaviours.Interfaces;
+
 namespace TurnForge.Engine.Entities.Board.Interfaces;
 
-public interface IZoneBehaviour { }
+public interface IZoneTrait : IBaseTrait { }

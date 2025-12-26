@@ -83,8 +83,8 @@ public sealed class MissionLoader
         // Agents in mission must have a position
         if (position == Position.Empty) throw new ArgumentException($"Agent {agentName} must have a valid position in the mission.");
 
-        var behaviours = dto.Behaviours
-            .Select(BarelyAliveBehaviourFactory.CreateActorBehaviour)
+        var behaviours = dto.Traits
+            .Select(BarelyAliveTraitFactory.CreateActorTrait)
             .Cast<IGameEntityComponent>() 
             .ToList();
 
@@ -199,34 +199,34 @@ public sealed class MissionLoader
         }
 
         var actorComponents = new List<IGameEntityComponent>();
-        var zoneBehaviours = new List<IZoneBehaviour>();
+        var zoneTraits = new List<IZoneTrait>();
 
-        foreach (var bDto in dto.Behaviours)
+        foreach (var bDto in dto.Traits)
         {
-            // Special handling for Zombies/Spawns handled in BarelyAliveBehaviourFactory
-            // Usually BarelyAliveBehaviourFactory.CreateActorBehaviour handles "ZombieSpawn"
+            // Special handling for Zombies/Spawns handled in BarelyAliveTraitFactory
+            // Usually BarelyAliveTraitFactory.CreateActorTrait handles "ZombieSpawn"
             // We can check if it's that OR registered in ActorFactory.
             if (bDto.Type == "ZombieSpawn" || 
-                BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ActorBehaviourFactory.IsRegistered(bDto.Type))
+                BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ActorTraitFactory.IsRegistered(bDto.Type))
             {
-                var component = BarelyAliveBehaviourFactory.CreateActorBehaviour(bDto);
+                var component = BarelyAliveTraitFactory.CreateActorTrait(bDto);
                 if (component is IGameEntityComponent c) actorComponents.Add(c);
             }
-            else if (BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ZoneBehaviourFactory.IsRegistered(bDto.Type))
+            else if (BarelyAlive.Rules.Core.Domain.Behaviours.Factories.ZoneTraitFactory.IsRegistered(bDto.Type))
             {
-                // It's a zone behavior (Indoor, Dark)
-                var zb = BarelyAliveBehaviourFactory.CreateZoneBehaviour(bDto);
-                zoneBehaviours.Add(zb);
+                // It's a zone trait (Indoor, Dark)
+                var zb = BarelyAliveTraitFactory.CreateZoneTrait(bDto);
+                zoneTraits.Add(zb);
             }
             else
             {
-                throw new NotSupportedException($"Behaviour '{bDto.Type}' is not registered as Actor or Zone behaviour.");
+                throw new NotSupportedException($"Trait '{bDto.Type}' is not registered as Actor or Zone trait.");
             }
         }
         
-        if (zoneBehaviours.Any())
+        if (zoneTraits.Any())
         {
-            actorComponents.Add(new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(zoneBehaviours));
+            actorComponents.Add(new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(zoneTraits));
         }
 
         return new SpawnRequest(

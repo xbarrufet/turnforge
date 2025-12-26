@@ -10,13 +10,19 @@ namespace TurnForge.Engine.Strategies.Actions;
 /// Strategies contain the validation and business logic for actions.
 /// They receive a command and context, and return a result with decisions.
 /// 
+/// Supports two execution modes:
+/// - Fast Track: Return Completed/Failed immediately (simple logic)
+/// - Interactive: Return Suspended with InteractionRequest (user input needed)
+/// 
 /// Responsibilities:
 /// - Validate the action can be performed
 /// - Calculate costs (AP, resources, etc.)
 /// - Build decisions for component updates
 /// - Return metadata for UI feedback
+/// - Optionally suspend for user input (dice rolls, decisions)
 /// 
 /// Strategies are STATELESS and injected via DI.
+/// Use ActionContext.Variables for transient pipeline state.
 /// </remarks>
 public interface IActionStrategy<in TCommand> where TCommand : IActionCommand
 {
@@ -24,7 +30,7 @@ public interface IActionStrategy<in TCommand> where TCommand : IActionCommand
     /// Execute the strategy for the given command.
     /// </summary>
     /// <param name="command">Action command to execute</param>
-    /// <param name="context">Game context (state, board)</param>
-    /// <returns>Strategy result (success/failure with decisions and metadata)</returns>
-    ActionStrategyResult Execute(TCommand command, IActionContext context);
+    /// <param name="context">Game context (state, board, session data)</param>
+    /// <returns>Strategy result (Completed/Suspended/Failed)</returns>
+    StrategyResult Execute(TCommand command, ActionContext context);
 }

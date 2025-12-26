@@ -27,20 +27,20 @@ public sealed class BasicMoveStrategy : IActionStrategy<MoveCommand>
         _query = query ?? throw new ArgumentNullException(nameof(query));
     }
     
-    public ActionStrategyResult Execute(MoveCommand command, IActionContext context)
+    public StrategyResult Execute(MoveCommand command, ActionContext context)
     {
         // 1. Get agent
         var agent = _query.GetAgent(command.AgentId);
         if (agent == null)
-            return ActionStrategyResult.Failed($"Agent '{command.AgentId}' not found");
+            return StrategyResult.Failed($"Agent '{command.AgentId}' not found");
         
         // 2. Validate target position
         if (!context.Board.IsValid(command.TargetPosition))
-            return ActionStrategyResult.Failed("Invalid target position");
+            return StrategyResult.Failed("Invalid target position");
         
         // 3. Check if already at target (no-op)
         if (agent.PositionComponent.CurrentPosition == command.TargetPosition)
-            return ActionStrategyResult.Failed("Already at target position");
+            return StrategyResult.Failed("Already at target position");
         
         // 4. Get ActionPoints component (may be null if agent doesn't have AP system)
         var apComponent = agent.GetComponent<BaseActionPointsComponent>();
@@ -60,7 +60,7 @@ public sealed class BasicMoveStrategy : IActionStrategy<MoveCommand>
         // 6. Check if can afford
         if (command.HasCost && !apComponent.CanAfford(finalCost))
         {
-            return ActionStrategyResult.Failed(
+            return StrategyResult.Failed(
                 $"Insufficient Action Points (need {finalCost}, have {apComponent.CurrentActionPoints})"
             );
         }
@@ -76,7 +76,7 @@ public sealed class BasicMoveStrategy : IActionStrategy<MoveCommand>
             .Build();
         
         // 8. Return success with metadata
-        return ActionStrategyResult.Success(decision)
+        return StrategyResult.Completed(decision)
             .WithMetadata(new ActionMetadata { ActionPointsCost = finalCost });
     }
 }

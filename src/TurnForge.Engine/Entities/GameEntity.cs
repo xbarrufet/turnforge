@@ -13,6 +13,18 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
     public string DefinitionId { get; }
     public string Name { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Team/Faction this entity belongs to (e.g., "Survivors", "Zombies", "Orcs").
+    /// Used to determine allies vs enemies in combat.
+    /// </summary>
+    public string Team { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// ID of the controller (player or AI) that controls this entity.
+    /// Null or empty means no specific controller (e.g., neutral).
+    /// </summary>
+    public string? ControllerId { get; set; }
 
     protected GameEntity(EntityId id, string name, string category, string definitionId)
     {
@@ -24,7 +36,7 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
 
     private readonly Dictionary<Type, IGameEntityComponent> _components = new()
     {
-        { typeof(IBehaviourComponent), new BaseBehaviourComponent() }
+        { typeof(ITraitContainerComponent), new TraitContainerComponent() }
     };
 
     public IReadOnlyCollection<IGameEntityComponent> Components => _components.Values;
@@ -34,9 +46,9 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
     {
         var type = typeof(T);
         
-        if (component is BaseBehaviourComponent behaviourComponent)
+        if (component is TraitContainerComponent traitComponent)
         {
-            behaviourComponent.SetOwner(this);
+            traitComponent.SetOwner(this);
         }
         else
         {
@@ -57,9 +69,9 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
         return GetComponent(typeof(T)) as T;
     }
 
-    public IBehaviourComponent GetBehaviourComponent()
+    public ITraitContainerComponent GetTraitComponent()
     {
-        return GetRequiredComponent<IBehaviourComponent>();
+        return GetRequiredComponent<ITraitContainerComponent>();
     }
 
     public T GetRequiredComponent<T>() where T : class, IGameEntityComponent
@@ -108,12 +120,12 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
 
     public virtual bool HasRequiredComponents()
     {
-        return _components.ContainsKey(typeof(IBehaviourComponent));
+        return _components.ContainsKey(typeof(ITraitContainerComponent));
     }
 
-    public bool HasBehavior<T>() where T : IBaseBehaviour
+    public bool HasTrait<T>() where T : IBaseTrait
     {
-        return GetBehaviourComponent().HasBehaviour<T>();
+        return GetTraitComponent().HasTrait<T>();
     }
 
     public string GetComponents()

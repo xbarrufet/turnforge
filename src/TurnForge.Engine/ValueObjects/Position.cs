@@ -80,9 +80,26 @@ public readonly struct Position
         return "Empty";
     }
 
-    public bool Equals(Position other) => _vector.Equals(other._vector) && _tileId.Equals(other._tileId);
+    public bool Equals(Position other) => 
+        _vector.Equals(other._vector) && 
+        _tileId.Equals(other._tileId) && 
+        _connectionId.Equals(other._connectionId) &&
+        (_area == other._area || (_area != null && other._area != null && _area.SequenceEqual(other._area)));
+
     public override bool Equals(object? obj) => obj is Position other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(_vector, _tileId);
+    
+    public override int GetHashCode()
+    {
+        var hash = HashCode.Combine(_vector, _tileId, _connectionId);
+        if (_area != null)
+        {
+            foreach (var tile in _area)
+            {
+                hash = HashCode.Combine(hash, tile);
+            }
+        }
+        return hash;
+    }
     public static bool operator ==(Position left, Position right) => left.Equals(right);
     public static bool operator !=(Position left, Position right) => !left.Equals(right);
 }

@@ -4,8 +4,8 @@ using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 
-[ActorBehaviour("PartySpawn")]
-public sealed class PartySpawn : ActorBehaviour, TurnForge.Engine.Components.Interfaces.IGameEntityComponent
+[ActorTrait("PartySpawn")]
+public sealed class PartySpawn : ActorTrait, TurnForge.Engine.Components.Interfaces.IGameEntityComponent
 {
     // No parameters needed for PartySpawn
 }

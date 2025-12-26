@@ -7,8 +7,8 @@ namespace BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
 /// <summary>
 /// Behaviour que marca una zona como interior.
 /// </summary>
-[ZoneBehaviour("Indoor")]
-public sealed class IndoorZoneBehaviour : ZoneBehaviour
+[ZoneTrait("Indoor")]
+public sealed class IndoorZoneTrait : ZoneTrait
 {
     public string Name => "Indoor";
 }

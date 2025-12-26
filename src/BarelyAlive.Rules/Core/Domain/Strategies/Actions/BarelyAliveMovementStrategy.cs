@@ -30,21 +30,21 @@ public sealed class BarelyAliveMovementStrategy : IActionStrategy<MoveCommand>
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     }
     
-    public ActionStrategyResult Execute(MoveCommand command, IActionContext context)
+    public StrategyResult Execute(MoveCommand command, ActionContext context)
     {
         // 1. Validate agent exists
         var agent = _queryService.GetAgent(command.AgentId);
         if (agent == null)
-            return ActionStrategyResult.Failed("Agent not found");
+            return StrategyResult.Failed("Agent not found");
         
         // 2. Validate target position
         if (!context.Board.IsValid(command.TargetPosition))
-            return ActionStrategyResult.Failed("Invalid target position");
+            return StrategyResult.Failed("Invalid target position");
         
         // 3. Check if already at target position
         var currentPosition = agent.PositionComponent.CurrentPosition;
         if (currentPosition == command.TargetPosition)
-            return ActionStrategyResult.Failed("Already at target position");
+            return StrategyResult.Failed("Already at target position");
         
         // 4. Calculate BarelyAlive-specific cost
         var cost = CalculateMovementCost(agent, currentPosition);
@@ -54,7 +54,7 @@ public sealed class BarelyAliveMovementStrategy : IActionStrategy<MoveCommand>
         {
             var apComponent = agent.GetComponent<IActionPointsComponent>();
             if (apComponent != null && !apComponent.CanAfford(cost))
-                return ActionStrategyResult.Failed("Insufficient Action Points");
+                return StrategyResult.Failed("Insufficient Action Points");
         }
         
         // 6. Get AP component for update
@@ -81,7 +81,7 @@ public sealed class BarelyAliveMovementStrategy : IActionStrategy<MoveCommand>
             .Build();
         
         // 8. Return success with metadata
-        return ActionStrategyResult.Success(decision)
+        return StrategyResult.Completed(decision)
             .WithMetadata(new ActionMetadata { ActionPointsCost = finalCost });
     }
     
@@ -95,13 +95,13 @@ public sealed class BarelyAliveMovementStrategy : IActionStrategy<MoveCommand>
         // Base cost is always 1
         int baseCost = 1;
         
-        // Check if agent is a Survivor (by category)
-        if (agent.Category.Equals("Survivor", StringComparison.OrdinalIgnoreCase))
+        // Check if agent is a Survivor (by Team)
+        if (agent.Team.Equals("Survivors", StringComparison.OrdinalIgnoreCase))
         {
             // Count OTHER zombies at starting position (exclude the moving agent)
             var agentsAtPosition = _queryService.GetAgentsAt(startPosition);
             var zombiesAtPosition = agentsAtPosition
-                .Where(a => a.Id != agent.Id && a.Category.Equals("Zombie", StringComparison.OrdinalIgnoreCase))
+                .Where(a => a.Id != agent.Id && a.Team.Equals("Zombies", StringComparison.OrdinalIgnoreCase))
                 .Count();
             
             return baseCost + zombiesAtPosition;

@@ -7,8 +7,8 @@ namespace BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
 /// <summary>
 /// Behaviour que marca una zona como oscura.
 /// </summary>
-[ZoneBehaviour("Dark")]
-public sealed class DarkZoneBehaviour : ZoneBehaviour
+[ZoneTrait("Dark")]
+public sealed class DarkZoneTrait : ZoneTrait
 {
     public string Name => "Dark";
 }

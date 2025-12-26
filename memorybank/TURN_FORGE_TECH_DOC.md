@@ -6,22 +6,22 @@
 
 ## 1. High-Level Architecture
 
-TurnForge follows a **CBS (Component-Behaviour-Strategy)** architecture wrapped in a strict **Command-Query Separation (CQS)** flow.
+TurnForge follows a **CTS (Component-Trait-Strategy)** architecture wrapped in a strict **Command-Query Separation (CQS)** flow.
 
 ### Core Philosophy
 1.  **Deterministic**: The same inputs (Commands + Seed) always produce the same outputs.
 2.  **Decoupled**: The Engine knows nothing about the UI. It speaks through specific Output Interfaces (`IEffectSink`, `GameUpdatePayload`).
 3.  **Atomic**: State mutations happen only via strictly controlled **Appliers** orchestrated by a central pipeline.
-◊
+
 ### Integration Pattern (Recommended)
 While the Engine is UI-agnostic, we recommend the following integration pattern:
 *   **Adapter Layer**: A dedicated project (e.g., `GodotAdapter`) that translates UI inputs to Engine Commands.
 *   **UI Model**: The UI should maintain a lightweight, visual-only model that subscribes to `GameUpdatePayload` signals.
 *   **Unidirectional**: Never modify the UI Model directly; always go through the Engine.
 
-### The CBS Pattern
+### The CTS Pattern
 *   **Components (Data)**: Pure data containers (e.g., `HealthComponent`, `PositionComponent`). They hold the *State*.
-*   **Behaviours (Metadata)**: Tags or logic modifiers attached to entities (e.g., `Fly`, `Aggressive`). They influence *Strategies*.
+*   **Traits (Metadata)**: Tags or logic modifiers attached to entities (e.g., `Fly`, `Aggressive`). They influence *Strategies*.
 *   **Strategies (Logic)**: The "Brain". They accept Context + Inputs and produce **Decisions**. They do *not* mutate state directly.
 
 ### How TurnForge is expected to be used
@@ -79,15 +79,15 @@ Controls the macro-flow of the game (e.g., `DeploymentPhase` -> `PlayerTurn` -> 
 
 ### Entities (`GameEntity`)
 The base unit of the simulation.
-*   **`Agent`**: Active units (Players, Enemies). Defined by `AgentDefinition` + Dynamic Behaviours.
+*   **`Agent`**: Active units (Players, Enemies). Defined by `AgentDefinition` + Dynamic Traits.
 *   **`Prop`**: Passive/Interactive objects (Crates, Doors). Defined by `PropDefinition`.
 *   **`Board/Zone`**: The spatial graph or grid defining movement rules and connectivity.
 
-### Behaviours
+### Traits
 Modular logic pieces attached to entities.
-*   **Implementation**: `IActorBehaviour`.
-*   **Usage**: injected via `IActorFactory`.
-*   **Example**: An Agent might have a base `WalkBehaviour`, but picking up a "Jetpack" item adds a `FlyBehaviour` that overrides movement logic.
+*   **Implementation**: `IActorTrait`.
+*   **Usage**: injected via `IActorTraitFactory`.
+*   **Example**: An Agent might have a base `WalkTrait`, but picking up a "Jetpack" item adds a `FlyTrait` that overrides movement logic.
 
 ### Message & DTO System (`BarelyAlive.Rules`)
 The bridge between the Engine and the UI.
@@ -131,10 +131,10 @@ IGameEngine engine = GameEngineFactory.Build(context);
     *   Process the `GameUpdatePayload` (from `CommandTransaction`) to update the UI.
 
 ### Step 4: Custom Rules
-Extend the logic by implementing custom **Strategies** and **Behaviours**.
+Extend the logic by implementing custom **Strategies** and **Traits**.
 *   *Example*: Creating a "Sniper" class.
-    *   Create `SniperBehaviour`.
-    *   Create `SniperAttackStrategy` that checks for `SniperBehaviour` implies infinite range but high AP cost.
+    *   Create `SniperTrait`.
+    *   Create `SniperAttackStrategy` that checks for `SniperTrait` implies infinite range but high AP cost.
     *   Register Strategy in the DI container.
 
 ---

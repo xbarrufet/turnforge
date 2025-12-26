@@ -1,6 +1,8 @@
+using TurnForge.Engine.Behaviours.Interfaces;
+
 namespace TurnForge.Engine.Entities.Board.Interfaces;
 
-public interface IConnectionBehaviour
+public interface IConnectionTrait : IBaseTrait
 {
     
 }

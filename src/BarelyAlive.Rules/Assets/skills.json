@@ -1,0 +1,236 @@
+[
+  {
+    "id": "plus_1_action",
+    "nombre": "+1 Acción",
+    "tipo": "Generosa",
+    "descripcion": "El Superviviente dispone de 1 Acción adicional en cada uno de sus turnos."
+  },
+  {
+    "id": "plus_1_damage_melee",
+    "nombre": "+1 Daño: Cuerpo a Cuerpo",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente suma +1 al Daño infligido con armas Cuerpo a Cuerpo."
+  },
+  {
+    "id": "plus_1_damage_ranged",
+    "nombre": "+1 Daño: A Distancia",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente suma +1 al Daño infligido con armas A Distancia."
+  },
+  {
+    "id": "plus_1_die_combat",
+    "nombre": "+1 Dado: Combate",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente tira 1 dado extra en todas las Acciones de Combate (Cuerpo a Cuerpo o A Distancia)."
+  },
+  {
+    "id": "plus_1_free_move",
+    "nombre": "+1 Acción de Movimiento Gratuita",
+    "tipo": "Movimiento",
+    "descripcion": "El Superviviente tiene una Acción de Movimiento extra gratis en cada turno."
+  },
+  {
+    "id": "plus_1_free_search",
+    "nombre": "+1 Acción de Búsqueda Gratuita",
+    "tipo": "Búsqueda",
+    "descripcion": "El Superviviente tiene una Acción de Búsqueda extra gratis en cada turno. (Recuerda: Solo se puede buscar una vez por turno, salvo que tengas la habilidad 'Buscar +1 vez por turno')."
+  },
+  {
+    "id": "plus_1_max_range",
+    "nombre": "+1 Alcance Máximo",
+    "tipo": "Combate",
+    "descripcion": "El alcance máximo de las armas A Distancia del Superviviente aumenta en 1."
+  },
+  {
+    "id": "ambidextrous",
+    "nombre": "Ambidextro",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente trata todas las armas (Cuerpo a cuerpo y A Distancia) como si tuvieran el símbolo Dual."
+  },
+  {
+    "id": "blitz",
+    "nombre": "Blitz (Bombardeo)",
+    "tipo": "Combate/Movimiento",
+    "descripcion": "Cada vez que el Superviviente mata al último Zombi de una Zona, obtiene inmediatamente 1 Acción de Movimiento gratuita."
+  },
+  {
+    "id": "bloodlust_melee",
+    "nombre": "Sed de Sangre: Cuerpo a Cuerpo",
+    "tipo": "Combate",
+    "descripcion": "Gasta 1 Acción: El Superviviente mueve hasta 2 Zonas hacia una Zona con Zombis y realiza inmediatamente una Acción de Cuerpo a Cuerpo gratuita."
+  },
+  {
+    "id": "born_leader",
+    "nombre": "Líder Nato",
+    "tipo": "Apoyo",
+    "descripcion": "Durante su turno, el Superviviente puede dar 1 Acción extra a otro Superviviente para que la use inmediatamente."
+  },
+  {
+    "id": "break_in",
+    "nombre": "Allanamiento",
+    "tipo": "Utilidad",
+    "descripcion": "El Superviviente no necesita equipo para abrir puertas y no hace ruido al abrirlas."
+  },
+  {
+    "id": "destiny",
+    "nombre": "Destino",
+    "tipo": "Utilidad",
+    "descripcion": "Una vez por turno, cuando roba una carta de Equipo, puede descartarla y robar una nueva."
+  },
+  {
+    "id": "dreadnought_walker",
+    "nombre": "Acorazado: Caminante",
+    "tipo": "Defensa",
+    "descripcion": "El Superviviente ignora todas las heridas infligidas por Caminantes (Walkers)."
+  },
+  {
+    "id": "frenzy_combat",
+    "nombre": "Frenesí: Combate",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente tira +1 dado de Combate por cada Herida que haya sufrido."
+  },
+  {
+    "id": "gunslinger",
+    "nombre": "Pistolero",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente trata todas las armas A Distancia como si tuvieran el símbolo Dual."
+  },
+  {
+    "id": "hit_and_run",
+    "nombre": "Golpear y Correr",
+    "tipo": "Combate",
+    "descripcion": "Después de realizar una Acción de Combate (Cuerpo a Cuerpo o A Distancia), el Superviviente puede realizar 1 Acción de Movimiento gratuita."
+  },
+  {
+    "id": "hoard",
+    "nombre": "Acaparador",
+    "tipo": "Inventario",
+    "descripcion": "El Superviviente puede llevar 1 carta de Equipo adicional en su inventario (no en las manos)."
+  },
+  {
+    "id": "immitation",
+    "nombre": "Imitación",
+    "tipo": "Especial",
+    "descripcion": "El Superviviente puede usar una Habilidad (del mismo nivel o inferior) que posea otro Superviviente en el juego. Se elige al principio de la partida."
+  },
+  {
+    "id": "jump",
+    "nombre": "Salto",
+    "tipo": "Movimiento",
+    "descripcion": "El Superviviente puede gastar 1 Acción para mover 2 Zonas, ignorando actores en la zona intermedia y en la de destino (como volar)."
+  },
+  {
+    "id": "lifesaver",
+    "nombre": "Salvador",
+    "tipo": "Apoyo",
+    "descripcion": "Una vez por turno, el Superviviente puede usar una Acción para atraer a un Superviviente de una zona adyacente a su propia zona (sin provocar ataques de oportunidad)."
+  },
+  {
+    "id": "lucky",
+    "nombre": "Afortunado",
+    "tipo": "Utilidad",
+    "descripcion": "El Superviviente puede volver a tirar todos los dados de cualquier tirada (Combate, Puertas, etc.) una vez por acción. Debe aceptar el nuevo resultado."
+  },
+  {
+    "id": "medic",
+    "nombre": "Médico",
+    "tipo": "Apoyo",
+    "descripcion": "Una vez por turno, el Superviviente puede curar 1 Herida a un Superviviente en su misma zona (incluso a sí mismo)."
+  },
+  {
+    "id": "point_blank",
+    "nombre": "A Quemarropa",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente puede usar armas A Distancia para atacar a enemigos en su propia zona (Rango 0), eligiendo libremente los objetivos (ignora la prioridad de blancos)."
+  },
+  {
+    "id": "reaper_combat",
+    "nombre": "Segador: Combate",
+    "tipo": "Combate",
+    "descripcion": "Si al atacar sacas un éxito, puedes matar a un Zombi adicional idéntico al primero en la misma zona (1 disparo mata a 2 zombis iguales)."
+  },
+  {
+    "id": "regeneration",
+    "nombre": "Regeneración",
+    "tipo": "Defensa",
+    "descripcion": "Al final de cada turno de juego, el Superviviente recupera todas las Heridas perdidas (o 1 herida, según versión de la regla)."
+  },
+  {
+    "id": "roll_6_plus_1_die",
+    "nombre": "Seises: +1 Dado",
+    "tipo": "Combate",
+    "descripcion": "Por cada 6 obtenido en una tirada de combate, puedes tirar un dado adicional."
+  },
+  {
+    "id": "scavenger",
+    "nombre": "Carroñero",
+    "tipo": "Búsqueda",
+    "descripcion": "El Superviviente puede realizar Acciones de Búsqueda en cualquier Zona (incluyendo calles), no solo en habitaciones."
+  },
+  {
+    "id": "shove",
+    "nombre": "Empujón",
+    "tipo": "Combate",
+    "descripcion": "El Superviviente puede gastar 1 Acción para empujar a todos los Zombis de su zona a una zona adyacente."
+  },
+  {
+    "id": "sidestep",
+    "nombre": "Paso Lateral",
+    "tipo": "Defensa",
+    "descripcion": "Cuando un Zombi ataca al Superviviente, este puede cancelar el ataque gastando 1 Acción de Movimiento (si la tiene disponible)."
+  },
+  {
+    "id": "slippery",
+    "nombre": "Escurridizo",
+    "tipo": "Movimiento",
+    "descripcion": "El Superviviente no gasta acciones extra para salir de una zona con Zombis."
+  },
+  {
+    "id": "sniper",
+    "nombre": "Francotirador",
+    "tipo": "Combate",
+    "descripcion": "Al usar armas A Distancia, el Superviviente elige libremente sus objetivos (ignora la prioridad de blancos)."
+  },
+  {
+    "id": "sprint",
+    "nombre": "Sprint",
+    "tipo": "Movimiento",
+    "descripcion": "El Superviviente puede gastar 1 Acción de Movimiento para mover 2 o 3 Zonas en lugar de 1."
+  },
+  {
+    "id": "super_strength",
+    "nombre": "Súper Fuerza",
+    "tipo": "Combate",
+    "descripcion": "El valor de Daño de las armas Cuerpo a Cuerpo del Superviviente se convierte en 3 (Mata Abominaciones)."
+  },
+  {
+    "id": "tactician",
+    "nombre": "Táctico",
+    "tipo": "Especial",
+    "descripcion": "El Superviviente puede jugar su turno en cualquier momento durante la Fase de Jugadores (antes o después de cualquier otro jugador)."
+  },
+  {
+    "id": "taunt",
+    "nombre": "Provocar",
+    "tipo": "Control",
+    "descripcion": "El Superviviente puede gastar 1 Acción para atraer a los Zombis de zonas cercanas hacia su posición (ignorando a otros supervivientes)."
+  },
+  {
+    "id": "tough",
+    "nombre": "Duro",
+    "tipo": "Defensa",
+    "descripcion": "El Superviviente ignora la primera Herida que reciba en cada Fase de Zombis."
+  },
+  {
+    "id": "webbing",
+    "nombre": "Cartucheras",
+    "tipo": "Inventario",
+    "descripcion": "El equipo en la reserva del Superviviente se considera equipado en mano (puede usarlo inmediatamente sin gastar acción para cambiar)."
+  },
+  {
+    "id": "zombie_link",
+    "nombre": "Enlace Zombi",
+    "tipo": "Especial",
+    "descripcion": "El Superviviente juega un turno extra al final de cada Fase de Zombis (después de que muevan los Zombis, antes del siguiente turno de jugadores)."
+  }
+]

@@ -26,9 +26,9 @@ public abstract class Actor : GameEntity, IActor
         HealthComponent = GetRequiredComponent<IHealthComponent>();
     }
 
-    public bool HasBehaviour<T>() where T : IActorBehaviour
+    public new bool HasTrait<T>() where T : IActorTrait
     {
-        return GetBehaviourComponent().HasBehaviour<T>();
+        return GetTraitComponent().HasTrait<T>();
     }
 
     public void SetPositionComponent(IPositionComponent positionComponent)

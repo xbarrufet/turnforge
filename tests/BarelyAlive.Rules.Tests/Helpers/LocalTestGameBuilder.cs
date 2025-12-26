@@ -23,8 +23,18 @@ public class LocalTestGameBuilder
     /// </summary>
     public LocalTestGameBuilder WithBoard()
     {
+        return WithBoard(mock => {
+            mock.Setup(m => m.IsValidPosition(It.IsAny<Position>())).Returns(true);
+        });
+    }
+
+    /// <summary>
+    /// Add a mocked board with custom setup action.
+    /// </summary>
+    public LocalTestGameBuilder WithBoard(Action<Mock<ISpatialModel>> setupMock)
+    {
         var spatialMock = new Mock<ISpatialModel>();
-        spatialMock.Setup(m => m.IsValidPosition(It.IsAny<Position>())).Returns(true);
+        setupMock(spatialMock);
         
         _board = new GameBoard(spatialMock.Object);
         return this;
@@ -44,6 +54,7 @@ public class LocalTestGameBuilder
         out string agentId,
         string? name = null,
         string category = "Player",
+        string? team = null,
         Position? position = null,
         int? ap = null,
         int? maxAp = null)
@@ -52,6 +63,9 @@ public class LocalTestGameBuilder
         agentId = id.ToString();
         
         var agent = new Agent(id, definitionId, name ?? definitionId, category);
+        
+        // Set Team (defaults to Category if not specified for backwards compatibility)
+        agent.Team = team ?? category;
         
         // Set position on existing PositionComponent (Actor constructor creates empty one)
         var pos = position ?? Position.FromTile(new TileId(Guid.NewGuid()));

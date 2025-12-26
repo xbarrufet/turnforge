@@ -1,0 +1,216 @@
+[
+  {
+    "id": "start_01",
+    "nombre": "Bate de Béisbol",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 2,
+    "precision": "3+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Equipo Inicial"
+    ]
+  },
+  {
+    "id": "start_02",
+    "nombre": "Palanca",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 1,
+    "precision": "4+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Equipo Inicial",
+      "Abre puertas (sin tirada)"
+    ]
+  },
+  {
+    "id": "start_03",
+    "nombre": "Hacha de Bombero",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 1,
+    "precision": "4+",
+    "dano": 2,
+    "reglas_especiales": [
+      "Equipo Inicial",
+      "Abre puertas (sin tirada)"
+    ]
+  },
+  {
+    "id": "start_04",
+    "nombre": "Pistola",
+    "tipo": "A distancia",
+    "rango": "0-1",
+    "dados": 1,
+    "precision": "3+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Equipo Inicial (algunas versiones)",
+      "Dual",
+      "Ruidosa"
+    ]
+  },
+  {
+    "id": "eq_01",
+    "nombre": "Escopeta",
+    "tipo": "A distancia",
+    "rango": "0-1",
+    "dados": 2,
+    "precision": "4+",
+    "dano": 2,
+    "reglas_especiales": [
+      "Ruidosa",
+      "Puede usarse para abrir puertas (Tirada 4+)"
+    ]
+  },
+  {
+    "id": "eq_02",
+    "nombre": "Escopeta Recortada",
+    "tipo": "A distancia",
+    "rango": "0-1",
+    "dados": 2,
+    "precision": "3+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Dual",
+      "Ruidosa"
+    ]
+  },
+  {
+    "id": "eq_03",
+    "nombre": "Subfusil (Sub MG)",
+    "tipo": "A distancia",
+    "rango": "0-1",
+    "dados": 3,
+    "precision": "5+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Dual",
+      "Ruidosa"
+    ]
+  },
+  {
+    "id": "eq_04",
+    "nombre": "Rifle",
+    "tipo": "A distancia",
+    "rango": "1-3",
+    "dados": 1,
+    "precision": "3+",
+    "dano": 1,
+    "reglas_especiales": [
+      "Ruidosa",
+      "Francotirador (Eliges el objetivo)"
+    ]
+  },
+  {
+    "id": "eq_05",
+    "nombre": "Machete",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 2,
+    "precision": "4+",
+    "dano": 2,
+    "reglas_especiales": [
+      "Dual"
+    ]
+  },
+  {
+    "id": "eq_06",
+    "nombre": "Katana",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 3,
+    "precision": "4+",
+    "dano": 1,
+    "reglas_especiales": []
+  },
+  {
+    "id": "eq_07",
+    "nombre": "Sartén",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 2,
+    "precision": "6",
+    "dano": 1,
+    "reglas_especiales": [
+      "Acierto con 1: El Superviviente gana 1 punto de adrenalina extra",
+      "Precision baja (6)"
+    ]
+  },
+  {
+    "id": "eq_08",
+    "nombre": "Motosierra",
+    "tipo": "Cuerpo a cuerpo",
+    "rango": "0",
+    "dados": 5,
+    "precision": "5+",
+    "dano": 2,
+    "reglas_especiales": [
+      "Abre puertas (sin tirada)",
+      "Ruidosa"
+    ]
+  },
+  {
+    "id": "eq_09",
+    "nombre": "Cóctel Molotov",
+    "tipo": "Especial",
+    "rango": "0-1",
+    "dados": 0,
+    "precision": "N/A",
+    "dano": "Fatal",
+    "reglas_especiales": [
+      "Un solo uso",
+      "Elimina a todos los actores en la zona (incluyendo Abominaciones)",
+      "No genera ruido al explotar, pero la acción de lanzar puede atraer"
+    ]
+  },
+  {
+    "id": "item_01",
+    "nombre": "Linterna",
+    "tipo": "Apoyo",
+    "rango": null,
+    "dados": null,
+    "precision": null,
+    "dano": null,
+    "reglas_especiales": [
+      "Al Buscar, roba 2 cartas y elige 1"
+    ]
+  },
+  {
+    "id": "item_02",
+    "nombre": "Mucha Munición",
+    "tipo": "Apoyo",
+    "rango": null,
+    "dados": null,
+    "precision": null,
+    "dano": null,
+    "reglas_especiales": [
+      "Permite repetir todas las tiradas de ataque a Distancia"
+    ]
+  },
+  {
+    "id": "item_03",
+    "nombre": "Agua / Arroz / Conservas",
+    "tipo": "Suministro",
+    "rango": null,
+    "dados": null,
+    "precision": null,
+    "dano": null,
+    "reglas_especiales": [
+      "Descartar para ganar Puntos de Adrenalina (XP)"
+    ]
+  },
+  {
+    "id": "item_04",
+    "nombre": "Máscara de Hockey",
+    "tipo": "Defensa / Apoyo",
+    "rango": null,
+    "dados": null,
+    "precision": null,
+    "dano": null,
+    "reglas_especiales": [
+      "Previene 1 punto de daño si la armadura (si la hay) falla"
+    ]
+  }
+]

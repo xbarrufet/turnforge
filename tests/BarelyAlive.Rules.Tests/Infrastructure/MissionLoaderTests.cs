@@ -38,7 +38,7 @@ public class MissionLoaderTests
         var explicitDoorInJson = "55f54395-6e94-4d1a-9694-824050f4a867";
         var doorProps = props.Where(p => p.DefinitionId == "Door").ToList();
         Assert.That(doorProps, Is.Not.Empty, "Should have at least the explicit door");
-        Assert.That(doorProps.Any(d => d.Position != Position.Empty && d.Position.IsConnection && d.Position.ConnectionId.ToString() == explicitDoorInJson), "Explicit door missing");
+        Assert.That(doorProps.Any(d => d.Position != Position.Empty && d.Position.IsConnection && d.Position.ConnectionId.ToString().Equals(explicitDoorInJson, StringComparison.OrdinalIgnoreCase)), "Explicit door missing");
         
         // Check for auto-generated doors?
         // User requested NO auto-generation. Doors are hardcoded in JSON.

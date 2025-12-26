@@ -57,6 +57,9 @@ public static class GameEngineFactory
         services.RegisterSingleton(gameEngineContext.AgentSpawnStrategy);
 
         // 3️⃣ Registro de comandos y handlers propios del engine
+        var interactionRegistry = new TurnForge.Engine.Strategies.Pipelines.InteractionRegistry();
+        services.RegisterSingleton(interactionRegistry);
+        
         EngineCommandRegistration.Register(services);
 
         // 4️⃣ Resolver de handlers (engine infra)

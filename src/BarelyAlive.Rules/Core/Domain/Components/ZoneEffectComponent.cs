@@ -3,7 +3,7 @@ using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Components;
 
-public class ZoneEffectComponent(List<IZoneBehaviour> behaviours) : IGameEntityComponent
+public class ZoneEffectComponent(List<IZoneTrait> traits) : IGameEntityComponent
 {
-    public IReadOnlyList<IZoneBehaviour> Behaviours { get; } = behaviours;
+    public IReadOnlyList<IZoneTrait> Traits { get; } = traits;
 }

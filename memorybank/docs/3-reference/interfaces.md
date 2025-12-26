@@ -61,6 +61,21 @@ public interface ISpawnStrategy<TDescriptor>
 }
 ```
 
+## Strategy System
+
+| Interface | Description |
+|-----------|-------------|
+| `IActionStrategy<T>` | Validates and calculates logic for a command type. |
+| `StrategyResult` | Outcome of a strategy: Completed, Suspended, or Failed. |
+| `IInteractionNode` | A step in a pipeline strategy. |
+
+```csharp
+public interface IActionStrategy<TCommand> where TCommand : IActionCommand
+{
+    StrategyResult Execute(TCommand command, ActionContext context);
+}
+```
+
 ## Services
 
 | Interface | Description |

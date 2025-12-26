@@ -3,6 +3,8 @@
     {
       "AgentName": "Amy",
       "Category": "Survivor",
+      "Team": "Survivors",
+      "ControllerId": "Player1",
       "MaxHealth": 3,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 3,
@@ -11,6 +13,8 @@
     {
       "AgentName": "Doug",
       "Category": "Survivor",
+      "Team": "Survivors",
+      "ControllerId": "Player2",
       "MaxHealth": 3,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 3,
@@ -19,6 +23,8 @@
     {
       "AgentName": "Walker",
       "Category": "Zombie",
+      "Team": "Zombies",
+      "ControllerId": "AI",
       "MaxHealth": 1,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 1,
@@ -27,6 +33,8 @@
     {
       "AgentName": "Runner",
       "Category": "Zombie",
+      "Team": "Zombies",
+      "ControllerId": "AI",
       "MaxHealth": 1,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 2,
@@ -35,6 +43,8 @@
     {
       "AgentName": "Fatty",
       "Category": "Zombie",
+      "Team": "Zombies",
+      "ControllerId": "AI",
       "MaxHealth": 2,
       "MaxBaseMovement": 1,
       "MaxActionPoints": 1,

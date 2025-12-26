@@ -40,7 +40,16 @@ public interface IGameStateQuery
     IReadOnlyList<Agent> GetAgentsByCategory(string category);
     
     /// <summary>
-    /// Get a prop by its EntityId string.
+    /// Get all agents belonging to a specific team/faction.
+    /// </summary>
+    /// <param name="team">Team name (e.g., "Survivors", "Orcs")</param>
+    IReadOnlyList<Agent> GetAgentsByTeam(string team);
+    
+    /// <summary>
+    /// Get all agents controlled by a specific player/AI.
+    /// </summary>
+    /// <param name="controllerId">Controller ID (e.g., "Player1", "AI")</param>
+    IReadOnlyList<Agent> GetAgentsByController(string controllerId);
     /// </summary>
     Prop? GetProp(string propId);
     
@@ -78,6 +87,18 @@ public interface IGameStateQuery
     IReadOnlyList<Position> GetValidMoveDestinations(string agentId);
     
     /// <summary>
+    /// Get all valid combat targets for an agent.
+    /// Used by UI to preview available attack targets before execution.
+    /// </summary>
+    /// <param name="agentId">Agent ID to query</param>
+    /// <returns>List of agents that can be attacked. Empty if no valid targets.</returns>
+    /// <remarks>
+    /// Current implementation: Returns agents in adjacent tiles with a different category.
+    /// Does NOT check weapon range or line of sight (future enhancement).
+    /// </remarks>
+    IReadOnlyList<Agent> GetValidCombatTargets(string agentId);
+    
+    /// <summary>
     /// Checks if all agents in a specific category have consumed all their action points.
     /// </summary>
     /// <param name="category">Category to check (e.g., "Survivor", "Zombie")</param>
@@ -87,4 +108,22 @@ public interface IGameStateQuery
     /// Returns true if no agents exist in the category (vacuous truth).
     /// </remarks>
     bool IsAllAgentsActionPointsConsumed(string category);
+    
+    // ────────────────────────────────────────────────────────────
+    // Item Queries
+    // ────────────────────────────────────────────────────────────
+    
+    /// <summary>
+    /// Get an item by its EntityId string.
+    /// </summary>
+    /// <param name="itemId">String representation of EntityId</param>
+    /// <returns>Item if found, null otherwise</returns>
+    TurnForge.Engine.Entities.Items.Item? GetItem(string itemId);
+    
+    /// <summary>
+    /// Get all items owned by an entity (Agent or Container).
+    /// </summary>
+    /// <param name="ownerId">Owner's EntityId string</param>
+    /// <returns>List of items belonging to the owner</returns>
+    IReadOnlyList<TurnForge.Engine.Entities.Items.Item> GetItemsByOwner(string ownerId);
 }

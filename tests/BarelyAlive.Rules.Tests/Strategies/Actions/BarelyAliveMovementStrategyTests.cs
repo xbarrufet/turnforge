@@ -19,13 +19,13 @@ public class BarelyAliveMovementStrategyTests
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
-            .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 3, position: startPosition)
+            .WithAgent("survivor", out var survivorId, category: "Survivor", team: "Survivors", ap: 3, position: startPosition)
             .Build();
         
         var query = new GameStateQueryService(state, board);
         var context = new ActionContext(state, state.Board!);
         var strategy = new BarelyAliveMovementStrategy(query);
-       var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
+        var targetPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var command = new MoveCommand(survivorId, true, targetPosition);
         
         // Act
@@ -43,9 +43,9 @@ public class BarelyAliveMovementStrategyTests
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
-            .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 5, position: sharedPosition)
-            .WithAgent("zombie1", out var _, category: "Zombie", position: sharedPosition)
-            .WithAgent("zombie2", out var _, category: "Zombie", position: sharedPosition)
+            .WithAgent("survivor", out var survivorId, category: "Survivor", team: "Survivors", ap: 5, position: sharedPosition)
+            .WithAgent("zombie1", out var _, category: "Zombie", team: "Zombies", position: sharedPosition)
+            .WithAgent("zombie2", out var _, category: "Zombie", team: "Zombies", position: sharedPosition)
             .Build();
         
         var query = new GameStateQueryService(state, board);
@@ -69,8 +69,8 @@ public class BarelyAliveMovementStrategyTests
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
-            .WithAgent("zombie", out var zombieId, category: "Zombie", ap: 3, position: startPosition)
-            .WithAgent("survivor", out var _, category: "Survivor", position: startPosition)
+            .WithAgent("zombie", out var zombieId, category: "Zombie", team: "Zombies", ap: 3, position: startPosition)
+            .WithAgent("survivor", out var _, category: "Survivor", team: "Survivors", position: startPosition)
             .Build();
         
         var query = new GameStateQueryService(state, board);
@@ -94,9 +94,9 @@ public class BarelyAliveMovementStrategyTests
         var sharedPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
-            .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 2, position: sharedPosition) // Only 2 AP
-            .WithAgent("zombie1", out var _, category: "Zombie", position: sharedPosition)
-            .WithAgent("zombie2", out var _, category: "Zombie", position: sharedPosition)
+            .WithAgent("survivor", out var survivorId, category: "Survivor", team: "Survivors", ap: 2, position: sharedPosition) // Only 2 AP
+            .WithAgent("zombie1", out var _, category: "Zombie", team: "Zombies", position: sharedPosition)
+            .WithAgent("zombie2", out var _, category: "Zombie", team: "Zombies", position: sharedPosition)
             .Build(); // Would need 3 AP (1 + 2 zombies)
         
         var query = new GameStateQueryService(state, board);
@@ -120,8 +120,8 @@ public class BarelyAliveMovementStrategyTests
         var startPosition = Position.FromTile(new TileId(Guid.NewGuid()));
         var (state, board) = new LocalTestGameBuilder()
             .WithBoard()
-            .WithAgent("survivor", out var survivorId, category: "Survivor", ap: 1, position: startPosition)
-            .WithAgent("zombie", out var _, category: "Zombie", position: startPosition)
+            .WithAgent("survivor", out var survivorId, category: "Survivor", team: "Survivors", ap: 1, position: startPosition)
+            .WithAgent("zombie", out var _, category: "Zombie", team: "Zombies", position: startPosition)
             .Build();
         
         var query = new GameStateQueryService(state, board);

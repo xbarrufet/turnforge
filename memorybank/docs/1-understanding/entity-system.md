@@ -15,7 +15,7 @@ GameEntity (abstract)
 Components are atomic pieces of entity data. All entity mutations operate at component level.
 
 **Base Components:**
-- `BehaviourComponent`: Dynamic behaviors (e.g., "Fly", "Swim")
+- `TraitContainerComponent`: Dynamic traits (e.g., "Fly", "Swim")
 - `PositionComponent`: Tile position on board
 - `HealthComponent`: Current/max health
 - `MovementComponent`: Movement points (Agents only)

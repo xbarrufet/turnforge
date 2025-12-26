@@ -6,59 +6,64 @@ Strategies encapsulate complex game logic, keeping Handlers clean and reusable.
 - **Handlers** should only manage the command workflow (validation -> routing).
 - **Strategies** should contain the actual rules (calculations, pathfinding, cost checks).
 
-## Example: Movement Strategy
+## Example: Movement Strategy (Fast Track)
 
 ```csharp
-public interface IMoveStrategy
+public class BasicMoveStrategy : IActionStrategy<MoveCommand>
 {
-    MovementResult CalculateMovement(Agent agent, Position target);
-}
-
-public class GridMoveStrategy : IMoveStrategy
-{
-    public MovementResult CalculateMovement(Agent agent, Position target)
+    public StrategyResult Execute(MoveCommand command, ActionContext context)
     {
-        var distance = Math.Abs(agent.Position.X - target.X) + Math.Abs(agent.Position.Y - target.Y);
-        var cost = distance * 1; // 1 AP per tile
+        var agent = context.Query.GetAgent(command.AgentId);
         
-        if (agent.CurrentAP < cost)
-            return MovementResult.Fail("Not enough AP");
+        // 1. Validation
+        if (!context.Board.IsValid(command.Destination))
+            return StrategyResult.Failed("Invalid destination");
             
-        return MovementResult.Success(cost);
+        // 2. Logic (Calculation)
+        var path = context.Board.Pathfind(agent.Position, command.Destination);
+        var cost = path.Length * 1;
+        
+        // 3. Result
+        var decision = new MoveDecision(command.AgentId, command.Destination, cost);
+        return StrategyResult.Completed(decision);
+    }
+}
+```
+
+## Interactive Strategies (Pipelines)
+
+For complex actions requiring user input (e.g., dice rolls), use `PipelineStrategy<T>`.
+
+### Structure
+- **Nodes**: Small, stateless steps (e.g., `ValidateRange`, `RequestRoll`, `ApplyDamage`).
+- **Context**: Data shared between nodes via `ActionContext.Variables`.
+- **Suspension**: A node can return `NodeResult.Suspend()`, pausing execution until UI responds.
+
+### Example Node
+```csharp
+public record RequestHitRollNode : IInteractionNode
+{
+    public NodeResult Execute(ActionContext context)
+    {
+        if (context.Variables.ContainsKey("HitRoll"))
+            return NodeResult.Continue(); // Already rolled, move next
+            
+        // Suspend and ask UI to roll dice
+        return NodeResult.Suspend(new InteractionRequest 
+        { 
+            Type = "DiceRoll", 
+            Prompt = "Roll for Hit!" 
+        });
     }
 }
 ```
 
 ## Using Strategies in Handlers
 
-Inject the strategy into your handler.
+Handlers are now generic and standardized (`ActionCommandHandler<T>`). They inject the strategy and handle the `StrategyResult` automatically, managing the `InteractionRegistry` if suspension occurs.
 
 ```csharp
-public class MoveHandler : ICommandHandler<MoveCommand>
-{
-    private readonly IMoveStrategy _strategy;
-    
-    public MoveHandler(IMoveStrategy strategy)
-    {
-        _strategy = strategy;
-    }
-
-    public CommandResult Handle(MoveCommand command)
-    {
-        var agent = _repository.LoadAgent(command.AgentId);
-        
-        // Delegate logic to strategy
-        var result = _strategy.CalculateMovement(agent, command.Target);
-        
-        if (!result.Success)
-            return CommandResult.Failed(result.Error);
-            
-        var decision = new MoveDecision(agent.Id, command.Target, result.Cost);
-        return CommandResult.Ok([decision]);
-    }
-}
+// No need to write manual handlers for standard actions!
+// process logic is encapsulated in the Strategy.
+services.RegisterSingleton<IActionStrategy<MoveCommand>>(new BasicMoveStrategy());
 ```
-
-## Strategy Benefits
-1. **Testable**: Unit test logic without mocking the whole engine.
-2. **Swappable**: Change rules (e.g., `FlightMoveStrategy` vs `WalkMoveStrategy`) without changing command flow.

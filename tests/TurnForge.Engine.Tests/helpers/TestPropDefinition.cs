@@ -16,5 +16,5 @@ public class TestPropDefinition : BaseGameEntityDefinition
     [MapToComponent(typeof(IHealthComponent), nameof(IHealthComponent.MaxHealth))]
     public int MaxHealth { get; set; } = 1;
 
-    public IReadOnlyList<IActorBehaviour> Behaviours { get; set; } = new List<IActorBehaviour>();
+    public IReadOnlyList<IActorTrait> Traits { get; set; } = new List<IActorTrait>();
 }

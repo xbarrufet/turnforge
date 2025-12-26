@@ -18,7 +18,7 @@ public class TestAgentDefinition : BaseGameEntityDefinition
 
     public int MaxMovement { get; set; } = 1;
 
-    public IReadOnlyList<IActorBehaviour> Behaviours { get; set; } = new List<IActorBehaviour>();
+    public IReadOnlyList<IActorTrait> Traits { get; set; } = new List<IActorTrait>();
     
     public string AgentName { get; set; } = string.Empty;
 }

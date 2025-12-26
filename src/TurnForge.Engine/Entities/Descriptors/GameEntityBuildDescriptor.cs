@@ -20,4 +20,15 @@ public class GameEntityBuildDescriptor(string definitionId) : IGameEntityBuildDe
     /// </summary>
     [MapToComponent(typeof(IPositionComponent), "CurrentPosition")]
     public Position Position { get; set; } = Position.Empty;
+    
+    /// <summary>
+    /// Team/Faction override for this spawn. If null, uses Definition value.
+    /// </summary>
+    public string? Team { get; set; }
+    
+    /// <summary>
+    /// Controller ID override for this spawn. If null, uses Definition value.
+    /// </summary>
+    public string? ControllerId { get; set; }
 }
+

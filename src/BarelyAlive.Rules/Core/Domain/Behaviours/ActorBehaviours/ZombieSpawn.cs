@@ -4,8 +4,8 @@ using TurnForge.Engine.Entities.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 
-[ActorBehaviour("ZombieSpawn")]
-public sealed class ZombieSpawn : ActorBehaviour, TurnForge.Engine.Components.Interfaces.IGameEntityComponent
+[ActorTrait("ZombieSpawn")]
+public sealed class ZombieSpawn : ActorTrait, TurnForge.Engine.Components.Interfaces.IGameEntityComponent
 {
     // Marker behavior for Zombie Spawn points
 }

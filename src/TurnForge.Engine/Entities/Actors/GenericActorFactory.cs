@@ -94,6 +94,12 @@ public sealed class GenericActorFactory(
     {
         agent.PositionComponent.CurrentPosition = descriptor.Position;
     }
+    
+    // Team: descriptor overrides definition
+    agent.Team = descriptor.Team ?? definition.Team ?? string.Empty;
+    
+    // Controller: descriptor overrides definition
+    agent.ControllerId = descriptor.ControllerId ?? definition.ControllerId;
 
     // Add extra components from descriptor
     foreach (var component in descriptor.ExtraComponents)

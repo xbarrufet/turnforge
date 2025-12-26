@@ -29,15 +29,18 @@ public sealed class ActionCommandHandler<TCommand> : ICommandHandler<TCommand>
     private readonly IActionStrategy<TCommand> _strategy;
     private readonly IGameRepository _repository;
     private readonly IGameStateQuery _queryService;
+    private readonly TurnForge.Engine.Strategies.Pipelines.InteractionRegistry _interactionRegistry;
     
     public ActionCommandHandler(
         IActionStrategy<TCommand> strategy,
         IGameStateQuery queryService,
-        IGameRepository repository)
+        IGameRepository repository,
+        TurnForge.Engine.Strategies.Pipelines.InteractionRegistry interactionRegistry)
     {
         _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _interactionRegistry = interactionRegistry ?? throw new ArgumentNullException(nameof(interactionRegistry));
     }
     
     public CommandResult Handle(TCommand command)
@@ -69,6 +72,20 @@ public sealed class ActionCommandHandler<TCommand> : ICommandHandler<TCommand>
         var strategyResult = _strategy.Execute(command, context);
         
         // 4. Return result to FSM
+        if (strategyResult.IsSuspended)
+        {
+            if (strategyResult.Interaction == null)
+                return CommandResult.Fail("Strategy suspended but returned no interaction request");
+                
+            // Register context for resumption
+            _interactionRegistry.Register(context);
+            
+            // Ensure request has correct SessionId matching the context
+            var request = strategyResult.Interaction with { SessionId = context.SessionId };
+            
+            return CommandResult.Suspended(request);
+        }
+        
         if (!strategyResult.IsValid)
         {
             // Return first error (CommandResult.Fail only accepts single string)

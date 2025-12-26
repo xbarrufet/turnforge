@@ -52,6 +52,34 @@ TASK → Complete → DONE
 (See BACKLOG_COMPLETED.md for completed parts)
 - Pending: Simulator (FEATURE-008).
 
+
+### EPIC-002: BarelyAlive E2E Validation System
+
+**Status:** 🟡 IN PROGRESS (3/4 features done)  
+**Priority:** High  
+**Effort:** 3-4 weeks
+
+**Vision:**  
+Enable rapid E2E validation of BarelyAlive functionality without requiring Godot UI. Provide both programmatic test infrastructure and interactive console simulator for testing game flows, command sequences, and state transitions.
+
+**Success Criteria:**
+- [x] Fluent API for scenario creation in tests
+- [x] JSON-based scenario serialization
+- [x] Command builder for common operations
+- [x] Movement API exposed through BarelyAlive
+- [x] State query API exposed through BarelyAlive
+- [ ] Console simulator for interactive testing
+- [ ] Documentation with examples
+
+**Related Features:**
+- FEATURE-007: Test Scenario Infrastructure ✅
+- FEATURE-009: Movement API ✅
+- FEATURE-010: Game State Query API ✅
+- FEATURE-008: Console Simulator Project
+
+**Dependencies:**
+- None (builds on existing BarelyAlive.Rules.Tests infrastructure)
+
 ---
 
 ## ⚪ Ready to Work
@@ -86,63 +114,6 @@ Service for board queries with game state integration (occupied positions, neigh
 
 ---
 
-#### FEATURE-006: Dynamic Stats Component
-
-**Status:** 🟢 DONE
-**Completed:** 2025-12-25
-**Priority:** High
-**Effort:** 3 days
-**User Ref:** Feature 005 (Dynamic Attribute System)
-
-**Description:**
-Flexible attribute system that allows entities to possess arbitrary stats (e.g., "Strength", "Agility", "AttackDamage") without hardcoding properties. Attributes can represent fixed integers or random dice formulas.
-
-**Deliverables:**
-- ✅ `AttributeComponent` (Immutable)
-- ✅ `AttributeValue` struct (Base, Current, Dice)
-- ✅ `DiceThrowType` value object and parser
-- ✅ `BaseGameEntityDefinition` updated with `Attributes` dictionary
-- ✅ `GenericActorFactory` updated to parse and attach attributes
-- ✅ Unit tests validating parsing and factory integration
-
-**Files Created/Modified:**
-- `src/TurnForge.Engine/Values/AttributeValue.cs`
-- `src/TurnForge.Engine/Values/DiceThrowType.cs`
-- `src/TurnForge.Engine/Components/AttributeComponent.cs`
-- `src/TurnForge.Engine/Entities/Definitions/GameEntityDefinition.cs`
-- `src/TurnForge.Engine/Entities/Actors/GenericActorFactory.cs`
-
----
-
-#### FEATURE-007: Test Scenario Infrastructure
-
-**Status:** 🟢 DONE  
-**Priority:** High  
-**Effort:** 5-7 days  
-**Epic:** EPIC-002 (E2E Validation)
-**Completed:** 2025-12-25
-
-**Description:**  
-Flu ent test infrastructure for creating E2E scenarios programmatically. Enables scenario serialization to JSON for reusable test cases.
-
-**Completed Deliverables:**
-- ✅ `ScenarioRunner` with fluent API (Given/When/Then)
-- ✅ `CommandBuilder` for creating commands fluently
-- ✅ `ScenarioSerializer` for JSON scenario loading/saving
-- ✅ Example scenarios in `tests/BarelyAlive.Rules.Tests/Examples/`
-- ✅ Working tests validating infrastructure
-- ✅ Comprehensive documentation in `Helpers/README.md`
-
-**Files Created:**
-- `tests/BarelyAlive.Rules.Tests/Helpers/ScenarioRunner.cs`
-- `tests/BarelyAlive.Rules.Tests/Helpers/CommandBuilder.cs`
-- `tests/BarelyAlive.Rules.Tests/Helpers/ScenarioSerializer.cs`
-- `tests/BarelyAlive.Rules.Tests/Examples/ScenarioRunnerExamples.cs`
-- `tests/BarelyAlive.Rules.Tests/Helpers/README.md`
-
-**Test Results:** All 4 example tests passing
-
----
 
 #### FEATURE-008: Console Simulator Project
 
@@ -187,64 +158,6 @@ $ simulator run scenarios/test_combat.json
 
 ---
 
-#### FEATURE-009: Movement API for BarelyAlive
-
-**Status:** ✅ DONE  
-**Priority:** High  
-**Effort:** 2-3 days  
-**Epic:** EPIC-002 (E2E Validation)
-
-**Description:**  
-Add movement command API to BarelyAlive using Option A (hybrid approach): generic command API with domain-specific query results.
-
-**Completed Deliverables:**
-- [x] `MoveCharacter(characterId, targetTile)` in `IBarelyAliveApis` (generic, works for any agent)
-- [x] `MoveCharacterHandler` to execute `MoveCommand`
-- [x] `AgentMovedProjector` (placeholder for future movement effects)
-- [x] `TileReference` DTO for position references
-- [x] Updated `BarelyAliveApis`, `TestBootstrap`, `GameBootstrap` 
-- [x] All existing tests pass
-
-**Files Created/Modified:**
-- Created: `MoveCharacterHandler.cs`, `TileReference.cs`, `AgentMovedProjector.cs`
-- Modified: `IBarelyAliveApis.cs`, `BarelyAliveApis.cs`, `GameBootstrap.cs`, `BarelyAliveGame.cs`, `TestBootstrap.cs`, `DomainProjector.cs`
-
-**Dependencies:**
-- None (extends existing API)
-
----
-
-#### FEATURE-010: Game State Query API for BarelyAlive
-
-**Status:** ✅ DONE  
-**Priority:** High  
-**Effort:** 2-3 days  
-**Epic:** EPIC-002 (E2E Validation)
-
-**Description:**  
-Add game state query API to BarelyAlive with domain-specific separation (Survivors vs Zombies) for easier UI consumption.
-
-**Completed Deliverables:**
-- [x] `GetGameState()` returning `GameStateSnapshot`
-- [x] `QueryGameStateHandler` to fetch and project state
-- [x] Domain-specific DTOs: `SurvivorDto`, `ZombieDto`, `PropDto`, `BoardDto`
-- [x] Separate Survivors/Zombies collections in snapshot
-- [x] All existing tests pass
-
-**Files Created/Modified:**
-- Created: `QueryGameStateHandler.cs`, `GameStateSnapshot.cs` (with SurvivorDto, ZombieDto, PropDto, BoardDto)
-- Modified: `IBarelyAliveApis.cs`, `BarelyAliveApis.cs`
-
-**Design Decision:**
-- Used **Option A: Hybrid Approach**
-- Query returns domain-specific collections (Survivors/Zombies separated)
-- Command uses generic method (MoveCharacter works for all)
-- Balances domain clarity with API maintainability
-
-**Dependencies:**
-- None (extends existing API)
-
----
 
 #### FEATURE-011: Action Query Service (GetValidMoveDestinations)
 
@@ -295,102 +208,175 @@ public interface IGameStateQuery
 
 #### FEATURE-012: DiceThrow Service
 
-**Status:** ⚪ BACKLOG  
+**Status:** 🟢 DONE (2025-12-26)  
 **Priority:** High  
 **Effort:** 3-5 days  
 **Epic:** EPIC-001 (Services)
 
 **Description:**  
-Create a robust dice rolling service supporting standard RPG dice notation with modifiers and comparison operations. Provides deterministic random number generation for skill checks, damage rolls, and action validation.
+Create a robust dice rolling service supporting standard RPG dice notation with modifiers (keep highest/lowest, reroll) and pass/fail checks. Provides deterministic random number generation for skill checks, damage rolls, and action validation.
+
+**Namespace:** `TurnForge.Engine.Services.Dice`
 
 **Acceptance Criteria:**
-- [ ] `DiceThrowType` value object representing dice notation (e.g., "1D20", "2D6+3")
-- [ ] Parse dice notation strings into structured format
-- [ ] Execute rolls: `Roll(DiceThrowType)` returning result
-- [ ] Fluent comparison API: `Roll(1D6).IsHigherOrEqualThan(3)` returns bool
+- [ ] `DiceThrowType` value object representing dice notation (e.g., "1D20", "2D6+3", "3D6kh2")
+- [ ] `DiceThrowLimit` value object for pass threshold (e.g., "10+" means ≥10)
+- [ ] Parse dice notation strings into structured format (including modifiers)
+- [ ] Execute rolls: `Roll(DiceThrowType)`, `Roll(DiceThrowType, DiceThrowLimit)` returning result
+- [ ] `DiceRollResult` with:
+  - `Total` - Final sum including modifier
+  - `FinalRolls[]` - Dice kept after modifiers applied
+  - `History[]` - Complete roll history (optional, controlled by `trackHistory` flag)
+  - `Pass` - `bool?` (null if no limit, true/false if limit provided)
+- [ ] Fluent comparison API: `Roll("1D6").IsHigherOrEqualThan(3)` returns bool
 - [ ] Support for:
   - Single/multiple dice: `1D20`, `3D6`
-  - Modifiers: `1D6+2`, `2D4-1`
-  - Advantage/disadvantage (optional): `2D20 keep highest`
+  - Arithmetic modifiers: `1D6+2`, `2D4-1`
+  - Keep highest: `3D6kh2` or fluent `.KeepHighest(2)`
+  - Keep lowest: `3D6kl2` or fluent `.KeepLowest(2)`
+  - Reroll threshold: `2D6r1` (reroll 1s) or fluent `.Reroll(1, maxTimes: 1)`
 - [ ] Deterministic seeding for tests (inject `Random` or seed)
 - [ ] Unit tests with mocked randomness
 - [ ] Documentation with dice notation grammar
 
 **API Design:**
 ```csharp
-// Value Object for dice notation
+// ========== VALUE OBJECTS ==========
+
 public record DiceThrowType
 {
-    public int DiceCount { get; init; }      // 2 in "2D6"
-    public int DiceSides { get; init; }      // 6 in "2D6"
-    public int Modifier { get; init; }       // +3 in "2D6+3"
+    public int DiceCount { get; init; }           // 3 in "3D6"
+    public int DiceSides { get; init; }           // 6 in "3D6"
+    public int Modifier { get; init; }            // +2 in "3D6+2"
+    public IReadOnlyList<IDiceModifier> Modifiers { get; init; } = [];
     
-    public static DiceThrowType Parse(string notation); // "1D20+5"
+    public static DiceThrowType Parse(string notation);  // "3D6kh2+5"
+    
+    // Fluent builders
+    public DiceThrowType KeepHighest(int count);
+    public DiceThrowType KeepLowest(int count);
+    public DiceThrowType Reroll(int threshold, int maxTimes = 1);
 }
 
-// Service interface
+public record DiceThrowLimit
+{
+    public int Threshold { get; init; }           // 10 in "10+"
+    public static DiceThrowLimit Parse(string notation);  // "10+"
+    public bool IsPassed(int total) => total >= Threshold;
+}
+
+// ========== MODIFIER INTERFACE ==========
+
+public interface IDiceModifier
+{
+    ModifierResult Apply(IReadOnlyList<int> rolls, Random random);
+}
+
+public record ModifierResult(
+    IReadOnlyList<int> FinalRolls,
+    IReadOnlyList<RollHistoryEntry> History
+);
+
+public record RollHistoryEntry(
+    int OriginalValue,
+    int? RerolledTo,        // null if kept as-is
+    string Reason           // "KeepHighest", "Reroll ≤1", "Dropped"
+);
+
+// Built-in modifiers
+public record KeepHighestModifier(int Count) : IDiceModifier;
+public record KeepLowestModifier(int Count) : IDiceModifier;
+public record RerollModifier(int Threshold, int MaxTimes = 1) : IDiceModifier;
+
+// ========== SERVICE ==========
+
 public interface IDiceThrowService
 {
-    DiceRollResult Roll(DiceThrowType diceThrow);
-    DiceRollResult Roll(string notation); // Convenience overload
+    DiceRollResult Roll(DiceThrowType diceThrow, bool trackHistory = false);
+    DiceRollResult Roll(string notation, bool trackHistory = false);
+    DiceRollResult Roll(DiceThrowType diceThrow, DiceThrowLimit limit, bool trackHistory = false);
+    DiceRollResult Roll(string diceNotation, string limitNotation, bool trackHistory = false);
 }
 
-// Result with fluent comparisons
+// ========== RESULT ==========
+
 public record DiceRollResult
 {
     public int Total { get; init; }
-    public IReadOnlyList<int> IndividualRolls { get; init; }
+    public IReadOnlyList<int> FinalRolls { get; init; }
+    public IReadOnlyList<RollHistoryEntry>? History { get; init; }  // null if trackHistory=false
     public DiceThrowType DiceThrow { get; init; }
+    public DiceThrowLimit? Limit { get; init; }
+    public bool? Pass => Limit?.IsPassed(Total);  // null if no limit
     
     // Fluent comparisons
-    public bool IsHigherOrEqualThan(int threshold);
-    public bool IsLowerThan(int threshold);
-    public bool IsExactly(int value);
+    public bool IsHigherOrEqualThan(int threshold) => Total >= threshold;
+    public bool IsLowerThan(int threshold) => Total < threshold;
+    public bool IsExactly(int value) => Total == value;
 }
 ```
 
 **Example Usage:**
 ```csharp
-// In ActionStrategy
-var diceService = serviceProvider.GetRequiredService<IDiceThrowService>();
+// Setup (deterministic for tests)
+var service = new DiceThrowService(new Random(42));
 
-// Parse notation
-var dangerCheck = DiceThrowType.Parse("1D6");
-var result = diceService.Roll(dangerCheck);
+// Simple roll
+var damage = service.Roll("2D6+3");
+Console.WriteLine($"Damage: {damage.Total}");
 
-if (result.IsHigherOrEqualThan(4))
-{
-    // Passed check
-    yield return new ActionDecision(/* ... */);
-}
-else
-{
-    // Failed - apply damage
-    yield return new ActionDecision(/* apply damage */);
-}
+// Advantage (2D20 keep highest)
+var advantage = DiceThrowType.Parse("2D20").KeepHighest(1);
+var attackRoll = service.Roll(advantage);
 
-// Inline notation
-var damage = diceService.Roll("2D6+3");
+// Or via notation
+var attackRoll2 = service.Roll("2D20kh1");
+
+// With pass/fail check
+var dangerCheck = service.Roll("1D6", "4+");
+if (dangerCheck.Pass == true) { /* Safe */ }
+
+// Reroll ones, with history
+var rerollOnes = DiceThrowType.Parse("3D6").Reroll(1);
+var r = service.Roll(rerollOnes, trackHistory: true);
+// r.History: [{ Original: 1, RerolledTo: 4, Reason: "Reroll ≤1" }, ...]
 ```
-
-**Technical Notes:**
-- **Deterministic Testing:** Inject `Random` instance for predictable tests
-- **Value Object:** `DiceThrowType` is immutable, validated on creation
-- **Parser:** Use regex or simple parser for dice notation
-- **Extensibility:** Support custom dice formulas via strategy pattern
-- **Performance:** Cache parsed notation if needed
 
 **Grammar (Dice Notation):**
 ```
-<dice> ::= <count>D<sides>[<modifier>]
-<count> ::= positive integer (default 1)
-<sides> ::= positive integer
+<dice>     ::= <count>D<sides>[<keep>][<reroll>][<modifier>]
+<count>    ::= positive integer (default 1)
+<sides>    ::= positive integer
+<keep>     ::= 'kh'<n> | 'kl'<n>    // keep highest/lowest n dice
+<reroll>   ::= 'r'<n>               // reroll dice ≤n (once)
 <modifier> ::= [+|-]<value>
+
+<limit>    ::= <threshold>'+'       // e.g., "10+"
+```
+
+**File Structure:**
+```
+src/TurnForge.Engine/Services/Dice/
+├── IDiceThrowService.cs
+├── DiceThrowService.cs
+├── ValueObjects/
+│   ├── DiceThrowType.cs
+│   ├── DiceThrowLimit.cs
+│   └── DiceRollResult.cs
+├── Modifiers/
+│   ├── IDiceModifier.cs
+│   ├── KeepHighestModifier.cs
+│   ├── KeepLowestModifier.cs
+│   └── RerollModifier.cs
+└── Parsing/
+    └── DiceNotationParser.cs
 ```
 
 **Related Features:**
 - IDEA-004: Conditional Actions with Dice Roll Validation (primary consumer)
 - FEATURE-006: Dynamic Stats Component (stat-based check modifiers)
+- IDEA-009: Custom Dice Modifiers (future extensibility)
+- IDEA-010: Extensible Dice Parser (future extensibility)
 
 **Dependencies:**
 - None (core service, no game logic dependencies)
@@ -689,79 +675,128 @@ No standardized approach for:
 
 ### FEATURE-013: Items & Inventory System
 
-**Status:** ⚪ BACKLOG  
+**Status:** 🟡 IN PROGRESS  
 **Priority:** High  
 **Effort:** 5-8 days  
 **Epic:** EPIC-003 (New System)
 
 **Description:**  
-Items are a new type of GameEntity. Unlike Actors, they do not have a Position component. They represent game elements such as weapons, keys, and miscellaneous objects that agents can use or carry in their inventory.
+Items are a new type of GameEntity representing weapons, armor, keys, and miscellaneous objects. They use the component system and have unique identity (EntityId) but no PositionComponent.
 
-**Architecture Decisions:**
-1.  **Item as GameEntity:** Items inherit from `GameEntity` to use the component system and have unique Identity (`EntityId`). They do NOT have a `PositionComponent`.
-2.  **Loot / On Board:** Items never exist directly on the board with a position. They must always be contained within a `Prop` (e.g., "Chest", "Loot Bag", "Weapon Rack") that has a `ContainerComponent`.
-    - **Drop Action:** Dropping an item implies placing it into an existing container or spawning a new "Loot Container" prop at the target location.
-3.  **Inventory:** Agents hold references (`EntityId`) to items in their inventory, not the item data itself. This allows items to maintain their own state (durability, enchantments) independently.
+**Architecture Decisions (AGREED 2025-12-26):**
 
-**Proposed Components:**
+1. **Item as GameEntity:** Items inherit from `GameEntity` with `AttributeComponent` for stats and `ItemComponent` for ownership/category.
+2. **Always Owned:** Items always belong to an owner (Agent or Container). Never standalone on board.
+3. **Separate Components:** 
+   - `InventoryComponent` = storage (Agents AND Containers)
+   - `EquipmentComponent` = slots (Agents only)
+4. **Exclusive Slots:** Equipped items are NOT in Inventory.Items (mutually exclusive).
+5. **YAGNI Inventory:** Infinite capacity, no weight system for v1.0.
 
-**1. Item Definition & Component**
+**Components:**
+
 ```csharp
-// Definition
-public class ItemDefinition : GameEntityDefinition
-{
-    public string ItemType { get; init; } // "Weapon", "Consumable"
-    public int Weight { get; init; }
-    public int MaxStack { get; init; }
-}
+// ========== ITEM ==========
 
-// Runtime Component
+// Ownership and categorization
 public class ItemComponent : GameEntityComponent
 {
-    public EntityId? OwnerId { get; set; } // Agent or Prop holding this
-    public int Quantity { get; set; } = 1;
+    public EntityId? OwnerId { get; set; }  // Agent or Container
+    public string Category { get; init; }    // "Weapon", "Armor", "Key"
 }
-```
 
-**2. Inventory Component (Agent)**
-```csharp
+// ========== AGENT/CONTAINER ==========
+
+// Storage (both Agents and Containers)
 public class InventoryComponent : GameEntityComponent
 {
-    private readonly List<EntityId> _itemIds = new();
-    public IReadOnlyList<EntityId> Items => _itemIds;
-    public int CurrentWeight { get; private set; }
-    public int MaxCapacity { get; init; }
+    private readonly List<EntityId> _items = new();
+    public IReadOnlyList<EntityId> Items => _items;
+    
+    public void Add(EntityId itemId);
+    public void Remove(EntityId itemId);
+    public bool Contains(EntityId itemId);
 }
-```
 
-**3. Container Component (Prop)**
-```csharp
-public class ContainerComponent : GameEntityComponent
+// Equipment slots (Agents only)
+public class EquipmentComponent : GameEntityComponent
 {
-    private readonly List<EntityId> _itemIds = new();
-    public IReadOnlyList<EntityId> Items => _itemIds;
-    public bool IsLocked { get; set; }
+    private readonly Dictionary<string, EntityId?> _slots = new();
+    
+    public EntityId? GetEquipped(string slot);
+    public void Equip(string slot, EntityId itemId);
+    public void Unequip(string slot);
+    public IReadOnlyDictionary<string, EntityId?> Slots => _slots;
 }
 ```
 
-**Required Commands:**
-- `PickupItemCommand(AgentId agent, EntityId item, EntityId fromContainer)`
-- `DropItemCommand(AgentId agent, EntityId item, EntityId toContainer)` (or create new container)
-- `TransferItemCommand(AgentId fromAgent, AgentId toAgent, EntityId item)`
-- `UseItemCommand(AgentId agent, EntityId item)`
+**Entity Structure:**
 
-**Remaining Questions:**
-- [ ] How to handle item specific effects (weapon damage, consumable healing)?
-- [ ] Equipment slots: fixed engine slots or game-configurable?
-- [ ] UI representation: separate item panel or integrated into agent view?
+| Entity | Components |
+|--------|------------|
+| Item | `AttributeComponent`, `ItemComponent` |
+| Agent | `InventoryComponent`, `EquipmentComponent`, ... |
+| Container (Prop) | `InventoryComponent` |
 
-**Next Steps:**
-- [ ] Create `Item` entity type and `ItemComponent`
-- [ ] Implement `InventoryComponent` and `ContainerComponent`
-- [ ] Implement Commands (Pickup, Drop, Use)
-- [ ] Create "LootBag" prop definition for dropped items
-- [ ] Implement Commands (Pickup, Drop, Use)
-- [ ] Create "LootBag" prop definition for dropped items
+**Commands (v1.0 - MVP):**
+- `EquipItemCommand(agentId, itemId, slot)` - Move item: Inventory → Slot
+- `UnequipItemCommand(agentId, slot)` - Move item: Slot → Inventory
+
+**Commands (v1.1 - Future):**
+- `PickupItemCommand(agentId, itemId, containerId)` - Container → Agent
+- `DropItemCommand(agentId, itemId, containerId?)` - Agent → Container
+- `LootCommand(agentId, containerId)` - Spawn items into container
+- `SearchCommand(agentId, propId)` - Discover items in prop
+
+**Queries:**
+- `IGameStateQuery.GetItem(string itemId)` - Retrieve item by ID
+- `IGameStateQuery.GetItemsByOwner(EntityId ownerId)` - All items of an owner
+
+**Usage in Combat:**
+
+```csharp
+// Strategy reads equipped weapon stats
+var equipment = agent.GetComponent<EquipmentComponent>();
+var weaponId = equipment?.GetEquipped("Weapon");
+
+if (weaponId != null)
+{
+    var weapon = query.GetItem(weaponId);
+    var damage = weapon.GetAttribute<int>("Damage") ?? 1;
+    var range = weapon.GetAttribute<int>("Range") ?? 1;
+}
+```
+
+**File Structure:**
+```
+src/TurnForge.Engine/
+├── Entities/Items/
+│   ├── Item.cs
+│   ├── ItemDefinition.cs
+│   └── ItemDescriptor.cs
+├── Components/
+│   ├── ItemComponent.cs
+│   ├── InventoryComponent.cs
+│   └── EquipmentComponent.cs
+└── Commands/Items/
+    ├── EquipItemCommand.cs
+    └── UnequipItemCommand.cs
+```
+
+**Acceptance Criteria (v1.0):**
+- [ ] `Item` entity with `ItemComponent` and `AttributeComponent`
+- [ ] `ItemDefinition` + `ItemDescriptor` for spawning
+- [ ] `InventoryComponent` (storage list)
+- [ ] `EquipmentComponent` (slot dictionary)
+- [ ] `EquipItemCommand` + `UnequipItemCommand`
+- [ ] `GetItem()` query in `IGameStateQuery`
+- [ ] Items spawned with Agents via descriptor
+- [ ] Unit tests for all components and commands
+- [ ] Documentation in memorybank/docs
+
+**Dependencies:**
+- AttributeComponent (existing)
+- GameEntity system (existing)
 
 ---
 
@@ -825,6 +860,48 @@ Refactor the Engine execution model to be asynchronous and event-driven.
 **Next Steps:**
 - [ ] Prototype Async wrapper around current Orchestrator.
 - [ ] Evaluate thread safety of GameState access.
+
+---
+
+### IDEA-009: Custom Dice Modifiers
+
+**Status:** 💡 FUTURE (YAGNI)  
+**Proposed By:** Xavier Barrufet, 2025-12-26  
+**Related:** FEATURE-012 (DiceThrow Service)
+
+**Problem / Opportunity:**  
+Games may need custom dice manipulation beyond keep highest/lowest/reroll. Examples: exploding dice (reroll and add on max), counting successes, dice pools.
+
+**Proposal:**  
+Allow game-specific `IDiceModifier` implementations to be registered and used via notation or fluent API.
+
+**Deferred Because:**  
+Built-in modifiers (kh, kl, reroll) cover 90% of use cases. Evaluate after FEATURE-012 is in production.
+
+**Next Steps:**
+- [ ] Wait for real use case that can't be solved with built-in modifiers
+- [ ] Design plugin registration mechanism if needed
+
+---
+
+### IDEA-010: Extensible Dice Parser
+
+**Status:** 💡 FUTURE (YAGNI)  
+**Proposed By:** Xavier Barrufet, 2025-12-26  
+**Related:** FEATURE-012 (DiceThrow Service)
+
+**Problem / Opportunity:**  
+Different games use different dice notation conventions. Some may want custom syntax (e.g., "4dF" for Fate dice, "d%" for percentile).
+
+**Proposal:**  
+Make the dice notation parser injectable/extensible to support custom notation rules.
+
+**Deferred Because:**  
+Standard D&D/RPG notation covers initial needs. Custom notation can be added later without breaking existing API.
+
+**Next Steps:**
+- [ ] Wait for concrete game that needs custom notation
+- [ ] Evaluate if string-to-DiceThrowType mapping is sufficient
 
 ---
 

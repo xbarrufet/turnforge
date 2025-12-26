@@ -37,10 +37,10 @@ public static class PropertyAutoMapper
 
         foreach (var sourceProp in sourceProperties)
         {
-            // 0. Handle [MapToBehaviours] (Special Case)
-            if (sourceProp.GetCustomAttribute<MapToBehavioursAttribute>() != null)
+            // 0. Handle [MapToTraits] (Special Case)
+            if (sourceProp.GetCustomAttribute<MapToTraitsAttribute>() != null)
             {
-                MapBehaviours(source, target, sourceProp);
+                MapTraits(source, target, sourceProp);
                 continue;
             }
 
@@ -145,20 +145,20 @@ public static class PropertyAutoMapper
         targetProp.SetValue(component, value);
     }
 
-    private static void MapBehaviours(object source, GameEntity target, PropertyInfo sourceProperty)
+    private static void MapTraits(object source, GameEntity target, PropertyInfo sourceProperty)
     {
         // Re-using logic from original EngineAutoMapper
          var value = sourceProperty.GetValue(source);
         if (value == null) return;
 
-        var behaviourComponent = target.GetComponent<IBehaviourComponent>();
-        if (behaviourComponent == null) return;
+        var traitComponent = target.GetComponent<ITraitContainerComponent>();
+        if (traitComponent == null) return;
 
-        if (value is IEnumerable<IBaseBehaviour> behaviours)
+        if (value is IEnumerable<IBaseTrait> traits)
         {
-            foreach (var behaviour in behaviours)
+            foreach (var trait in traits)
             {
-                behaviourComponent.AddBehaviour(behaviour);
+                traitComponent.AddTrait(trait);
             }
         }
     }

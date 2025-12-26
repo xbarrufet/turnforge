@@ -57,6 +57,26 @@ public sealed class GameStateQueryService : IGameStateQuery
             .ToList();
     }
     
+    public IReadOnlyList<Agent> GetAgentsByTeam(string team)
+    {
+        if (string.IsNullOrWhiteSpace(team))
+            return Array.Empty<Agent>();
+        
+        return _state.GetAgents()
+            .Where(a => a.Team.Equals(team, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    
+    public IReadOnlyList<Agent> GetAgentsByController(string controllerId)
+    {
+        if (string.IsNullOrWhiteSpace(controllerId))
+            return Array.Empty<Agent>();
+        
+        return _state.GetAgents()
+            .Where(a => controllerId.Equals(a.ControllerId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+    
     public bool IsPositionOccupied(Position position)
     {
         if (position == Position.Empty)
@@ -174,5 +194,66 @@ public sealed class GameStateQueryService : IGameStateQuery
             
             return apComponent.CurrentActionPoints <= 0;
         });
+    }
+    
+    // ────────────────────────────────────────────────────────────
+    // Item Queries
+    // ────────────────────────────────────────────────────────────
+    
+    public Entities.Items.Item? GetItem(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return null;
+        
+        return _state.GetItems()
+            .FirstOrDefault(i => i.Id.ToString() == itemId);
+    }
+    
+    public IReadOnlyList<Entities.Items.Item> GetItemsByOwner(string ownerId)
+    {
+        if (string.IsNullOrWhiteSpace(ownerId))
+            return Array.Empty<Entities.Items.Item>();
+        
+        return _state.GetItems()
+            .Where(i => i.ItemComponent.OwnerId?.ToString() == ownerId)
+            .ToList();
+    }
+    
+    // ────────────────────────────────────────────────────────────
+    // Combat Queries
+    // ────────────────────────────────────────────────────────────
+    
+    public IReadOnlyList<Agent> GetValidCombatTargets(string agentId)
+    {
+        // 1. Get agent
+        var agent = GetAgent(agentId);
+        if (agent == null) 
+            return Array.Empty<Agent>();
+        
+        // 2. Get agent position and team
+        var currentPos = agent.PositionComponent.CurrentPosition;
+        var myTeam = agent.Team;
+        
+        // 3. Get neighbors from board
+        var neighbors = _board.GetNeighbors(currentPos);
+        
+        // 4. Find agents in adjacent positions with different team
+        var targets = new List<Agent>();
+        foreach (var neighborPos in neighbors)
+        {
+            var agentsAtPos = GetAgentsAt(neighborPos);
+            foreach (var potentialTarget in agentsAtPos)
+            {
+                // Different team = valid target (empty team = neutral, attackable)
+                if (string.IsNullOrEmpty(myTeam) || 
+                    string.IsNullOrEmpty(potentialTarget.Team) ||
+                    !potentialTarget.Team.Equals(myTeam, StringComparison.OrdinalIgnoreCase))
+                {
+                    targets.Add(potentialTarget);
+                }
+            }
+        }
+        
+        return targets;
     }
 }

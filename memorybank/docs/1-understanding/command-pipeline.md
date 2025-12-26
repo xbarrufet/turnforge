@@ -16,14 +16,20 @@ All commands must:
 ## Execution Steps
 
 1. **Command Validation** - FSM checks command allowed in current state
-2. **Handler Execution** - Handler generates `IDecision[]` (NO state mutation)
-3. **Decision Scheduling** - Decisions enqueued to `Scheduler`
-4. **OnCommandExecutionEnd** - Immediate decisions execute
-5. **Transition Check** - FSM checks if state should advance
-6. **OnStateEnd** - Cleanup decisions for old state
-7. **Transition** - FSM moves to new state
-8. **OnStateStart** - Init decisions for new state
-9. **ACK Wait** - Engine awaits UI acknowledgment
+2. **Handler Execution** - Handler invokes Strategy.
+    - If **Completed**: Returns `IDecision[]`.
+    - If **Suspended**: Returns `InteractionRequest`. Context saved in `InteractionRegistry`. Command chain halts.
+3. **User Interaction** (if Suspended)
+    - UI prompts user.
+    - User sends `SubmitInteractionCommand`.
+    - Engine retrieves context and resumes Strategy.
+4. **Decision Scheduling** - Decisions enqueued to `Scheduler`
+5. **OnCommandExecutionEnd** - Immediate decisions execute
+6. **Transition Check** - FSM checks if state should advance
+7. **OnStateEnd** - Cleanup decisions for old state
+8. **Transition** - FSM moves to new state
+9. **OnStateStart** - Init decisions for new state
+10. **ACK Wait** - Engine awaits UI acknowledgment
 
 ## Command Validation
 

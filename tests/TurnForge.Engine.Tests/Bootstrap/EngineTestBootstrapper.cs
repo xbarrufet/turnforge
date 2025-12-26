@@ -34,9 +34,9 @@ internal static class EngineTestBootstrapper
                     Category = "Test",
                     PositionComponent = new BasePositionComponent(Position.Empty),
                     MaxHealth = 100,
-                    MaxMovement = 3,
-                    Behaviours = new List<IActorBehaviour>()
-                });
+                     MaxMovement = 3,
+                     Traits = new List<IActorTrait>()
+                 });
 
         agentDefs.Register("Survivor2",
              new TestAgentDefinition
@@ -47,7 +47,7 @@ internal static class EngineTestBootstrapper
                  PositionComponent = new BasePositionComponent(Position.Empty),
                  MaxHealth = 100,
                  MaxMovement = 3,
-                 Behaviours = new List<IActorBehaviour>()
+                 Traits = new List<IActorTrait>()
              });
 
         /*var gameContext = new GameEngineContext(

@@ -24,11 +24,11 @@ public static class EngineAutoMapper
         // Iterate over all public instance properties of the source
         foreach (var sourceProperty in sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            // Check for [MapToBehaviours] first (special case)
-            var behaviourAttribute = sourceProperty.GetCustomAttribute<MapToBehavioursAttribute>();
-            if (behaviourAttribute != null)
+            // Check for [MapToTraits] first (special case)
+            var traitAttribute = sourceProperty.GetCustomAttribute<MapToTraitsAttribute>();
+            if (traitAttribute != null)
             {
-                MapBehaviours(source, target, sourceProperty);
+                MapTraits(source, target, sourceProperty);
                 continue; // Skip other attributes for this property
             }
             
@@ -42,37 +42,37 @@ public static class EngineAutoMapper
     }
 
     /// <summary>
-    /// Maps a behaviour collection to the entity's BehaviourComponent.
-    /// Copies each behaviour to maintain isolation between source and entity.
+    /// Maps a trait collection to the entity's TraitContainerComponent.
+    /// Copies each trait to maintain isolation between source and entity.
     /// </summary>
-    private static void MapBehaviours(object source, GameEntity target, PropertyInfo sourceProperty)
+    private static void MapTraits(object source, GameEntity target, PropertyInfo sourceProperty)
     {
         var value = sourceProperty.GetValue(source);
         if (value == null) return;
 
-        // Get BehaviourComponent from entity
-        var behaviourComponent = target.GetComponent<IBehaviourComponent>();
-        if (behaviourComponent == null)
+        // Get TraitContainerComponent from entity
+        var traitComponent = target.GetComponent<ITraitContainerComponent>();
+        if (traitComponent == null)
         {
             throw new InvalidOperationException(
-                $"Entity '{target.Name}' does not have a BehaviourComponent. " +
-                $"Cannot map behaviours from property '{sourceProperty.Name}'.");
+                $"Entity '{target.Name}' does not have a TraitContainerComponent. " +
+                $"Cannot map traits from property '{sourceProperty.Name}'.");
         }
 
-        // Verify property is an enumerable of IBaseBehaviour
-        if (value is not IEnumerable<IBaseBehaviour> behaviours)
+        // Verify property is an enumerable of IBaseTrait
+        if (value is not IEnumerable<IBaseTrait> traits)
         {
             throw new InvalidOperationException(
-                $"Property '{sourceProperty.Name}' marked with [MapToBehaviours] must be IEnumerable<IBaseBehaviour>. " +
+                $"Property '{sourceProperty.Name}' marked with [MapToTraits] must be IEnumerable<IBaseTrait>. " +
                 $"Found type: {sourceProperty.PropertyType.Name}");
         }
 
-        // Copy each behaviour to the component
-        foreach (var behaviour in behaviours)
+        // Copy each trait to the component
+        foreach (var trait in traits)
         {
-            // For now, we add the behaviour reference directly.
-            // If behaviours need to be cloned, implement ICloneable on IBaseBehaviour
-            behaviourComponent.AddBehaviour(behaviour);
+            // For now, we add the trait reference directly.
+            // If traits need to be cloned, implement ICloneable on IBaseTrait
+            traitComponent.AddTrait(trait);
         }
     }
 
