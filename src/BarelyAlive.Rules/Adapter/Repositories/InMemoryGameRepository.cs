@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
@@ -30,7 +30,7 @@ public class InMemoryGameRepository : IGameRepository
     public GameState LoadGameState()
     {
         if (_currentState == null)
-            return TurnForge.Engine.Entities.GameState.Empty();
+            return TurnForge.Engine.Definitions.GameState.Empty();
         return _currentState;
     }
 

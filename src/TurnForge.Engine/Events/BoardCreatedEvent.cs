@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using TurnForge.Engine.Appliers.Entity.Results;
-using TurnForge.Engine.Entities.Board.Interfaces; // Assuming ZoneDefinition needs this or similar
+using TurnForge.Engine.Definitions.Board.Interfaces; // Assuming ZoneDefinition needs this or similar
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Events;
 

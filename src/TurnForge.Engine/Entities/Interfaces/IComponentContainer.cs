@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using TurnForge.Engine.Components.Interfaces;
 
-namespace TurnForge.Engine.Entities.Interfaces;
+namespace TurnForge.Engine.Definitions.Interfaces;
 
 public interface IComponentContainer
 {

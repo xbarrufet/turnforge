@@ -1,16 +1,16 @@
 using TurnForge.Engine.Traits;
 using System.Linq;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
-using TurnForge.Engine.Entities.Board.Descriptors;
-using TurnForge.Engine.Entities.Board.Interfaces;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions.Board.Descriptors;
+using TurnForge.Engine.Definitions.Board.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Components;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors.Interfaces;
 using TurnForge.Engine.Spatial;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Board;
+namespace TurnForge.Engine.Definitions.Board;
 
 public sealed class BoardFactory : IBoardFactory
 {

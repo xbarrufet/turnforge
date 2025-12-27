@@ -1,9 +1,9 @@
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Descriptors;
-using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Definitions.Factories.Interfaces;
 
-namespace TurnForge.Engine.Entities.Actors.Interfaces;
+namespace TurnForge.Engine.Definitions.Actors.Interfaces;
 
 public interface IActorFactory
 {

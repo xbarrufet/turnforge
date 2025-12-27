@@ -1,8 +1,8 @@
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Factories;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;

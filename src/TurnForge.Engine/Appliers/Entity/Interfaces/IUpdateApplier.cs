@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 

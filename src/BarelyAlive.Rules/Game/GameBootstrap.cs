@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Registration;
 using TurnForge.Engine.Repositories.Interfaces;

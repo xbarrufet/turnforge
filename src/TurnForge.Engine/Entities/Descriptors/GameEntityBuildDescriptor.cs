@@ -2,7 +2,7 @@ using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Descriptors;
+namespace TurnForge.Engine.Definitions.Descriptors;
 
 /// <summary>
 /// Base class for entity build descriptors.

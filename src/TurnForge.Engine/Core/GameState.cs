@@ -1,12 +1,12 @@
 using System.Collections.Immutable;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Items;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Definitions.Items;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities;
+namespace TurnForge.Engine.Definitions;
 
 public sealed class GameState
 {

@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 
-namespace TurnForge.Engine.Entities.Interfaces;
+namespace TurnForge.Engine.Definitions.Interfaces;
 
 public interface IReadOnlyGameState
 {

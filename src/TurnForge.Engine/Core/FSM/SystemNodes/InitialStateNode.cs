@@ -1,6 +1,6 @@
 using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Core.Fsm.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace TurnForge.Engine.Core.Fsm.SystemNodes
 {

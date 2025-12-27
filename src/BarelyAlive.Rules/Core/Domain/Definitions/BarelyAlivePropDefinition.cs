@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace BarelyAlive.Rules.Core.Domain.Definitions;
 

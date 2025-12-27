@@ -605,6 +605,320 @@ Extend the action validation pipeline to support:
 
 ---
 
+### IDEA-007: Domain-Driven Entity System (DDES)
+
+**Status:** 💡 NEEDS ANALYSIS  
+**Proposed By:** Xavier Barrufet, 2025-12-27
+
+**Problem / Opportunity:**  
+TurnForge currently requires developers to create separate Definition, Descriptor, and Entity classes plus configure Traits manually. This leads to boilerplate and fragmented entity configuration. A Domain-Driven approach would allow defining entities as single decorated C# classes.
+
+**Vision:**  
+Allow developers to define entities using standard C# classes with attributes. The system would automatically derive Definitions, Traits, and Components from these classes at startup.
+
+```csharp
+// BEFORE: Multiple files and classes
+// SurvivorDefinition.cs + Survivor.cs + SurvivorDescriptor.cs + Traits configuration
+
+// AFTER: Single decorated domain class
+[EntityType(Category = "Survivor")]
+public class Survivor : Agent 
+{
+    [Trait(typeof(VitalityTrait))]
+    public int MaxHealth { get; set; }
+
+    [Trait] // Convention: finds AdrenalineTrait automatically
+    public int Adrenaline { get; set; }
+}
+```
+
+---
+
+#### Proposed Components
+
+| Component | Purpose |
+|-----------|---------|
+| `[EntityType]` | Marks class as managed entity, sets Category |
+| `[Trait]` | Maps property to Trait type (explicit or by convention) |
+| `DomainEntityScanner` | Scans assemblies for decorated classes |
+| `DefinitionGenerator` | Creates Definitions from domain classes |
+| `IDomainHydrator` | Syncs Components ↔ Domain class properties |
+| `DomainProjector` | Projects GameState entities to domain instances |
+
+---
+
+#### Analysis Against Current Codebase
+
+**Current Entity Creation Flow:**
+
+```mermaid
+graph LR
+    A[AgentDefinition] --> B[Define Traits]
+    B --> C[Register in Catalog]
+    C --> D[Create Descriptor]
+    D --> E[GenericActorFactory.BuildAgent]
+    E --> F[TraitInitializationService.InitializeComponents]
+    F --> G[Agent with Components]
+```
+
+**Proposed DDES Flow:**
+
+```mermaid
+graph LR
+    A[Domain Class with Attributes] --> B[DomainEntityScanner]
+    B --> C[DefinitionGenerator]
+    C --> D[Auto-register in Catalog]
+    D --> E[GenericActorFactory.BuildAgent]
+    E --> F[DomainHydrator.Hydrate]
+    F --> G[Domain class with state]
+```
+
+---
+
+#### Integration Points (Current State 2025-12-27)
+
+| Component | Status | Integration Notes |
+|-----------|--------|-------------------|
+| `EntityTypeRegistry` | ✅ Exists | Already scans for `[DefinitionType]`, can extend for `[EntityType]` |
+| `TraitInitializationService` | ✅ Exists | Creates Components from Traits, DDES reuses this |
+| `GenericActorFactory` | ✅ Exists | Needs extension to support domain hydration |
+| `IGameCatalog` | ✅ Exists | Auto-generated Definitions go here |
+| `BaseGameEntityDefinition` | ✅ Exists | Generated Definitions extend this |
+| Convention-based Trait lookup | ❌ New | Must implement name→Type resolution |
+| `IDomainHydrator` | ❌ New | Component↔Property synchronization |
+| `DomainProjector` | ❌ New | GameState→Domain projection |
+
+---
+
+#### Key Challenges
+
+1. **Immutability vs Mutability**
+   - GameState is immutable (copy-on-write)
+   - Domain classes have mutable properties
+   - Hydrator must create new instances on state change
+
+2. **Performance**
+   - Reflection at startup is acceptable (one-time)
+   - Runtime hydration needs cached delegates, not reflection
+   - Consider source generators for hot paths
+
+3. **Type Resolution**
+   - Convention: `Adrenaline` → `AdrenalineTrait` (add "Trait" suffix)
+   - What if trait name doesn't match? Explicit `[Trait(typeof(X))]`
+   - Handle missing traits gracefully
+
+4. **Bidirectional Sync**
+   - Read: Component→Property (hydration, easy)
+   - Write: Property→Component (mutation, harder)
+   - Write path needs Decision generation
+
+5. **Strategy Integration**
+   - Strategies receive `Agent`/`Prop`
+   - How to access domain class (`Survivor`) from strategy?
+   - Projection layer needed
+
+---
+
+#### Proposed Attributes
+
+```csharp
+/// <summary>
+/// Marks a class as a domain entity managed by TurnForge.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public class EntityTypeAttribute : Attribute
+{
+    public string Category { get; set; } = "Common";
+    public string DefinitionId { get; set; } = "";  // Auto-generated if empty
+}
+
+/// <summary>
+/// Maps a property to a Trait type.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property)]
+public class TraitAttribute : Attribute
+{
+    public Type? TraitType { get; }  // Null = convention-based
+    
+    public TraitAttribute() { }
+    public TraitAttribute(Type traitType) => TraitType = traitType;
+}
+```
+
+---
+
+#### Questions to Answer
+
+- [ ] Should domain classes inherit from `Agent`/`Prop` or be POCOs?
+- [ ] How to handle complex Traits with multiple properties?
+- [ ] Should write-back (Property→Component) be automatic or explicit?
+- [ ] What happens when domain class and Definition disagree?
+- [ ] How to integrate with serialization (JSON missions)?
+- [ ] Should hydration be on-demand or eager?
+- [ ] Impact on testing: easier or harder to mock?
+- [ ] Relationship with FEATURE-014 (Entity Simplification)?
+
+---
+
+#### Dependencies
+
+- FEATURE-014: Entity Hierarchy Simplification (complementary)
+- TraitInitializationService (reuse for trait discovery)
+- EntityTypeRegistry (extend for domain scanning)
+
+---
+
+#### Estimated Effort
+
+| Phase | Effort |
+|-------|--------|
+| Attribute design | 0.5 days |
+| DomainEntityScanner | 1 day |
+| DefinitionGenerator | 1.5 days |
+| IDomainHydrator (read) | 1 day |
+| Strategy integration | 1 day |
+| Performance optimization | 1-2 days |
+| **Total** | **6-7 days** |
+
+---
+
+#### Next Steps
+
+- [ ] Prototype `[EntityType]` scanning in a test
+- [ ] Design IDomainHydrator interface
+- [ ] Evaluate source generators for performance
+- [ ] Create detailed design document
+- [ ] Get user approval before promoting to FEATURE
+
+---
+
+#### User Experience: User vs System Responsibilities
+
+##### 1. ENTITY CREATION
+
+**👤 User Does:**
+```csharp
+// Define ONE class with attributes
+[EntityType(Category = "Survivor")]
+public class Survivor : Agent 
+{
+    [Trait(typeof(VitalityTrait))]
+    public int MaxHealth { get; set; } = 10;
+    
+    [Trait] // Convention: finds AdrenalineTrait
+    public int Adrenaline { get; set; } = 0;
+    
+    [Trait(typeof(ActionPointsTrait))]
+    public int MaxAP { get; set; } = 3;
+    
+    public Survivor(EntityId id, string defId, string name, string cat) 
+        : base(id, defId, name, cat) { }
+}
+```
+
+**User does NOT need to:**
+- ❌ Create `SurvivorDefinition`
+- ❌ Create `SurvivorDescriptor`
+- ❌ Register manually in catalog
+- ❌ Configure Traits in Definition
+
+**🤖 System Does (Startup):**
+1. **Scan** - Find classes with `[EntityType]`
+2. **Generate** - Create `BaseGameEntityDefinition` with Traits from properties
+3. **Register** - Auto-add to `IGameCatalog`
+4. **Map** - Register in `EntityTypeRegistry` for factory
+
+---
+
+##### 2. SPAWNING
+
+**👤 User Does:**
+```csharp
+// Basic spawn (uses class defaults)
+var spawn = new SpawnRequest("Survivor");
+
+// Spawn with overrides
+var spawn = new SpawnRequest("Survivor")
+{
+    RequestedTraits = [
+        new VitalityTrait(15),        // Override MaxHealth
+        new PositionTrait(spawnPoint) // Initial position
+    ]
+};
+
+engine.ExecuteCommand(new SpawnEntitiesCommand([spawn]));
+```
+
+**🤖 System Does (Runtime):**
+1. **Preprocess** - SpawnRequest → EntityDescriptor
+2. **Strategy** - Process/filter descriptors
+3. **Factory** - Create `Survivor` instance (detects domain class)
+4. **Traits** - Initialize from Definition + Overrides
+5. **Components** - TraitInitializationService creates them
+6. **Hydrate** - Sync Components → Domain properties
+
+---
+
+##### 3. STRATEGIES (Component-level updates only)
+
+**👤 User Does:**
+```csharp
+public class MoveStrategy : IActionStrategy
+{
+    public Decision Execute(Agent agent, GameState state, ActionContext ctx)
+    {
+        // Access via Component (recommended)
+        var position = agent.GetComponent<IPositionComponent>();
+        var health = agent.GetComponent<IHealthComponent>().CurrentHealth;
+        
+        // Return Decision (no direct mutation)
+        return new MoveDecision(agent.Id, newPosition);
+    }
+}
+```
+
+**Key Design Decision:**
+- Strategies receive `Agent` (base class), not `Survivor` (domain class)
+- Access state via Components
+- Mutation via Decisions/Appliers (immutability preserved)
+- Domain class (`Survivor`) is primarily for **definition**, not **runtime logic**
+
+---
+
+##### Data Flow Summary
+
+```
+GAMESTATE (Immutable)
+  └─ Entity (Agent)
+      ├─ Components: [HealthComponent, APComponent, ...]
+      └─ Traits: [VitalityTrait, ...]
+              │
+              │ Hydration (post-spawn, post-mutation)
+              ▼
+DOMAIN (View Layer)
+  └─ Survivor
+      ├─ MaxHealth (from HealthComponent)
+      ├─ Adrenaline (from AdrenalineComponent)
+      └─ MaxAP (from ActionPointsComponent)
+              │
+              │ Read-only in Strategies
+              ▼
+STRATEGY
+  ├─ Receives: Agent
+  ├─ Reads: Components
+  └─ Returns: Decision (immutable pattern)
+```
+
+---
+
+##### Open Design Questions
+
+1. **Domain class in Strategy?** → Recommendation: NO (keep Components)
+2. **Hydration timing?** → Post-spawn (required), post-applier (optional)
+3. **Write-back?** → Decisions only, no Property→Component sync
+
+---
+
 ### IDEA-005: Combat System Implementation
 
 **Status:** 💡 NEEDS ANALYSIS  
@@ -1006,4 +1320,171 @@ Standard D&D/RPG notation covers initial needs. Custom notation can be added lat
 
 ---
 
+### IDEA-009: RulebookService - Table Lookup for Combat Resolution
+
+**Status:** 💡 NEEDS ANALYSIS  
+**Proposed By:** Xavier Barrufet, 2025-12-27
+
+**Problem / Opportunity:**  
+Combat resolution in skirmish games often uses lookup tables (e.g., "Strength vs Toughness → Required roll"). Currently there's no service to manage these tables.
+
+**Proposal:**  
+Create an `IRulebookService` that provides table lookup functionality:
+
+```csharp
+public interface IRulebookService
+{
+    /// <summary>
+    /// Check if value meets threshold from table lookup.
+    /// </summary>
+    /// <param name="tableName">Table name (e.g., "ToWound")</param>
+    /// <param name="attackerValue">Attacker stat (e.g., Strength)</param>
+    /// <param name="defenderValue">Defender stat (e.g., Toughness)</param>
+    /// <param name="rollValue">Actual roll result</param>
+    bool TableCheck(string tableName, int attackerValue, int defenderValue, int rollValue);
+    
+    /// <summary>
+    /// Get required threshold from table lookup.
+    /// </summary>
+    /// <param name="tableName">Table name</param>
+    /// <param name="attackerValue">Attacker stat</param>
+    /// <param name="defenderValue">Defender stat</param>
+    /// <returns>Required threshold (e.g., 4 for "4+")</returns>
+    int GetThreshold(string tableName, int attackerValue, int defenderValue);
+    
+    /// <summary>
+    /// Simple threshold check (for non-opposed checks).
+    /// </summary>
+    bool TableCheck(string tableName, int value, int rollValue);
+}
+```
+
+**Implementation Notes:**
+- Tables can be loaded from JSON/data files
+- Each game ruleset provides its own tables
+- Example tables: `ToWound`, `ArmorSave`, `LeadershipTest`
+
+**Dependencies:**
+- Catalog/Definition system for table storage
+- DiceThrowService (for roll interpretation)
+
+---
+
+### IDEA-010: CheckerStatTrait - Checkable Attribute System
+
+**Status:** 💡 NEEDS ANALYSIS  
+**Proposed By:** Xavier Barrufet, 2025-12-27
+
+**Problem / Opportunity:**  
+Skirmish games have stats that can be "checked" with dice (ToHit, ToWound, Morale, Leadership). Each check has:
+- A dice pattern (how to roll)
+- A success condition (threshold, opposed, table)
+
+**Proposal:**  
+Create `CheckerStatTrait` and `IDiceCheckService`:
+
+```csharp
+// ─────────────────────────────────────────────────────────────
+// Trait Definition (data only)
+// ─────────────────────────────────────────────────────────────
+
+public class CheckerStatTrait : BaseTrait
+{
+    public string StatName { get; }              // "ToHit", "ToWound", "Morale"
+    public PotentialRandomValue DicePattern { get; }  // "1d6", "2d6"
+    public ICheckCondition Condition { get; }    // How to validate
+    
+    public CheckerStatTrait(string statName, PotentialRandomValue dice, ICheckCondition condition)
+    {
+        StatName = statName;
+        DicePattern = dice;
+        Condition = condition;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Check Conditions (polymorphic)
+// ─────────────────────────────────────────────────────────────
+
+public interface ICheckCondition { }
+
+/// <summary>Fixed threshold: roll >= value (e.g., "4+")</summary>
+public record FixedThreshold(int Value) : ICheckCondition;
+
+/// <summary>Opposed: roll >= parameter value</summary>
+public record OpposedCheck() : ICheckCondition;
+
+/// <summary>Table lookup: use RulebookService</summary>
+public record TableLookup(string TableName) : ICheckCondition;
+
+// ─────────────────────────────────────────────────────────────
+// Check Service (logic)
+// ─────────────────────────────────────────────────────────────
+
+public interface IDiceCheckService
+{
+    CheckResult Check(
+        CheckerStatTrait stat,
+        IDiceThrowService diceService,
+        CheckParams parameters
+    );
+}
+
+public record CheckParams(
+    int? OpposedValue = null,      // For OpposedCheck
+    int? AttackerValue = null,     // For TableLookup
+    int? DefenderValue = null,     // For TableLookup
+    IRulebookService? Rulebook = null  // Required for TableLookup
+);
+
+public record CheckResult(
+    bool Success,
+    int RollValue,
+    int RequiredThreshold,
+    string StatName
+);
+```
+
+**Example Usage:**
+```csharp
+// Define stats
+var toHit = new CheckerStatTrait("ToHit", "1d6", new FixedThreshold(4));
+var toWound = new CheckerStatTrait("ToWound", "1d6", new TableLookup("ToWound"));
+var leadership = new CheckerStatTrait("Leadership", "2d6", new OpposedCheck());
+
+// Check (caller provides context)
+var result = checkService.Check(
+    stat: toWound,
+    diceService: dice,
+    parameters: new CheckParams(
+        AttackerValue: attacker.Strength,
+        DefenderValue: defender.Toughness,
+        Rulebook: rulebookService
+    )
+);
+
+if (result.Success) { /* Apply wound */ }
+```
+
+**Who Calls Check?**
+- **Strategies** (ActionStrategy for attack resolution)
+- **Commands** (Within command handlers)
+- **Pipelines** (Combat pipeline stages)
+
+Caller is responsible for providing correct parameters based on context.
+
+**Next Steps:**
+- [ ] Implement `ICheckCondition` types
+- [ ] Implement `IDiceCheckService`
+- [ ] Implement `IRulebookService` (IDEA-009)
+- [ ] Add to combat resolution pipeline
+
+**Dependencies:**
+- IDEA-009: RulebookService
+- DiceThrowService (existing)
+- PotentialRandomValue (implemented)
+
+---
+
 **End of Backlog**
+

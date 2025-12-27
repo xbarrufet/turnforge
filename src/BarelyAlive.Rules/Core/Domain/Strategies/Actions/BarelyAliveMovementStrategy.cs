@@ -2,7 +2,7 @@ using TurnForge.Engine.Commands.Move;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Decisions.Actions;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Services.Queries;
 using TurnForge.Engine.Strategies.Actions;
 using TurnForge.Engine.ValueObjects;

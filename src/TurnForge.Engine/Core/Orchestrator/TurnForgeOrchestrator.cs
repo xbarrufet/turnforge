@@ -1,10 +1,10 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
-using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Factories.Interfaces;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 

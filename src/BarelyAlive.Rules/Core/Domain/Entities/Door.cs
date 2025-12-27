@@ -1,8 +1,8 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Definitions;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Definitions;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Core.Domain.Entities;

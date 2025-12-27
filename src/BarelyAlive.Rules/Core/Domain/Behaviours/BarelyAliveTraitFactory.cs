@@ -2,8 +2,8 @@ using BarelyAlive.Rules.Adapter.Dto;
 using BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 using BarelyAlive.Rules.Core.Domain.Behaviours.Factories;
 using BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
-using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours;
 

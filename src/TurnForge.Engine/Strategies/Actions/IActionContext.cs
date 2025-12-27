@@ -1,5 +1,5 @@
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Board;
 
 namespace TurnForge.Engine.Strategies.Actions;
 

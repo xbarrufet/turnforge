@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Definitions.Factories.Interfaces;
 
-namespace TurnForge.Engine.Entities.Board.Interfaces;
+namespace TurnForge.Engine.Definitions.Board.Interfaces;
 
 public interface IBoardFactory : IGameEntityFactory<GameBoard>
 {

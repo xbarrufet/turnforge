@@ -1,5 +1,5 @@
 using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Traits.Interfaces;
 
 

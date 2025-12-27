@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 
-namespace TurnForge.Engine.Entities.Board.Descriptors;
+namespace TurnForge.Engine.Definitions.Board.Descriptors;
 
 using System.Collections.Generic;
 using TurnForge.Engine.Spatial;

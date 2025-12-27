@@ -21,8 +21,8 @@ public class TestBootstrap
 
     private TestBootstrap(
         TurnForge.Engine.Core.Interfaces.IGameLogger? logger,
-        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>? propStrategy,
-        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>? agentStrategy,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>? propStrategy,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>? agentStrategy,
         bool enableFsm)
     {
         var safeLogger = logger ?? new TurnForge.Engine.Infrastructure.ConsoleLogger();
@@ -51,8 +51,8 @@ public class TestBootstrap
 
     public static TestBootstrap CreateNewGame(
         TurnForge.Engine.Core.Interfaces.IGameLogger? logger = null,
-        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>? propStrategy = null,
-        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>? agentStrategy = null,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>? propStrategy = null,
+        TurnForge.Engine.Strategies.Spawn.Interfaces.ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>? agentStrategy = null,
         bool enableFsm = true)
     {
         var bootstrap = new TestBootstrap(logger, propStrategy, agentStrategy, enableFsm);

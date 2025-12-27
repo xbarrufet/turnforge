@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Strategies.Spawn;
 using TurnForge.Engine.ValueObjects;
 using BarelyAlive.Rules.Core.Domain.Descriptors;

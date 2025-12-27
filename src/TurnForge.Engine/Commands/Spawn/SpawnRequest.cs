@@ -1,6 +1,6 @@
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 

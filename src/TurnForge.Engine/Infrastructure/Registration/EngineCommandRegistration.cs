@@ -2,9 +2,9 @@ using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Appliers.Entity;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
@@ -48,7 +48,7 @@ public static class EngineCommandRegistration
         
         services.Register<SpawnPropsCommandHandler>(sp =>
             new SpawnPropsCommandHandler(
-                (ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.PropDescriptor>))!,
+                (ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>))!,
                 (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!
             )
@@ -59,7 +59,7 @@ public static class EngineCommandRegistration
         
         services.Register<SpawnAgentsCommandHandler>(sp =>
             new SpawnAgentsCommandHandler(
-                (ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Entities.Actors.Descriptors.AgentDescriptor>))!,
+                (ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>))!,
                 (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
                 (IGameRepository)sp.GetService(typeof(IGameRepository))!
             )

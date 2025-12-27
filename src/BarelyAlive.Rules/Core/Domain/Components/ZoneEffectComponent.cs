@@ -1,5 +1,5 @@
 using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Components;
 

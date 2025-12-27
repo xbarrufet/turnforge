@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours.Factories;
 

@@ -1,6 +1,6 @@
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Definitions.Board.Descriptors;
 
 namespace TurnForge.Engine.Commands.Board;
 

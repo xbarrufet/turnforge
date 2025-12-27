@@ -2,7 +2,7 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Decisions.Board;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 
 namespace TurnForge.Engine.Commands.Board;

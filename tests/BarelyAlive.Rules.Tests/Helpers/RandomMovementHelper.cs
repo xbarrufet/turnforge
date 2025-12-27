@@ -12,7 +12,7 @@ public static class RandomMovementHelper
     /// Returns null if no valid destinations exist.
     /// </summary>
     public static Position? GetRandomMoveDestination(
-        TurnForge.Engine.Entities.GameState state, 
+        TurnForge.Engine.Definitions.GameState state, 
         string agentId)
     {
         if (state.Board == null) return null;

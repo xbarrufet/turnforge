@@ -2,7 +2,7 @@ using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Services.Queries;
 using TurnForge.Engine.Strategies.Actions;

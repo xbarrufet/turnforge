@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Services.Queries;
@@ -200,7 +200,7 @@ public sealed class GameStateQueryService : IGameStateQuery
     // Item Queries
     // ────────────────────────────────────────────────────────────
     
-    public Entities.Items.Item? GetItem(string itemId)
+    public Definitions.Items.Item? GetItem(string itemId)
     {
         if (string.IsNullOrWhiteSpace(itemId))
             return null;
@@ -209,10 +209,10 @@ public sealed class GameStateQueryService : IGameStateQuery
             .FirstOrDefault(i => i.Id.ToString() == itemId);
     }
     
-    public IReadOnlyList<Entities.Items.Item> GetItemsByOwner(string ownerId)
+    public IReadOnlyList<Definitions.Items.Item> GetItemsByOwner(string ownerId)
     {
         if (string.IsNullOrWhiteSpace(ownerId))
-            return Array.Empty<Entities.Items.Item>();
+            return Array.Empty<Definitions.Items.Item>();
         
         return _state.GetItems()
             .Where(i => i.ItemComponent.OwnerId?.ToString() == ownerId)

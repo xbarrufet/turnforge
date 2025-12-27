@@ -2,7 +2,7 @@ namespace TurnForge.Engine.Tests.Services.Queries;
 
 using Moq;
 using NUnit.Framework;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Services.Queries;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.Tests.Helpers;

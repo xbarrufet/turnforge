@@ -2,8 +2,8 @@ using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results;
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Strategies.Spawn;
 
 namespace TurnForge.Engine.Appliers.Entity;

@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Repositories.Interfaces;

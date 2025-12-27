@@ -1,7 +1,7 @@
 using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors;
 
-namespace TurnForge.Engine.Entities.Items;
+namespace TurnForge.Engine.Definitions.Items;
 
 /// <summary>
 /// Descriptor for spawning Item instances.

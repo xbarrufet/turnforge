@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using BarelyAlive.Rules.Tests.Infrastructure;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Tests.Infrastructure;

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Interfaces;
+namespace TurnForge.Engine.Definitions.Interfaces;
 
 public interface IGame
 {

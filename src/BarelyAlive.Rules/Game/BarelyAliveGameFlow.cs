@@ -4,7 +4,7 @@ using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Infrastructure.Registration;
 using TurnForge.Engine.ValueObjects;
 

@@ -2,8 +2,8 @@ using System.Reflection;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Core.Registries;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Factories;

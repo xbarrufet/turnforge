@@ -1,8 +1,8 @@
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Board;
+namespace TurnForge.Engine.Definitions.Board;
 
 public sealed class GameBoard(ISpatialModel spatialModel) : GameEntity(EntityId.New(), string.Empty, string.Empty, string.Empty)
 {

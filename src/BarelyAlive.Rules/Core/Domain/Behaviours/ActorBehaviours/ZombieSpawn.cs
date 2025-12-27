@@ -1,6 +1,6 @@
 using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours.ActorBehaviours;
 

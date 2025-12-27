@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TurnForge.Engine.Core.Fsm.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace TurnForge.Engine.Tests.Infrastructure.Registration
 {

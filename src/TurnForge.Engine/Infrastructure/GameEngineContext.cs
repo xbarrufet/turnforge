@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;

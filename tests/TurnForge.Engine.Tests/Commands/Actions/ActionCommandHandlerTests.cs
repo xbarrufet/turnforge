@@ -2,13 +2,13 @@ using Moq;
 using NUnit.Framework;
 using TurnForge.Engine.Commands.Actions;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Services.Queries;
 using TurnForge.Engine.Strategies.Actions;
 using TurnForge.Engine.Strategies.Interactions;
 using TurnForge.Engine.Strategies.Pipelines;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace TurnForge.Engine.Tests.Commands.Actions;
 

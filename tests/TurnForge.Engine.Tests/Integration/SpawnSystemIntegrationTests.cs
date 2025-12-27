@@ -4,9 +4,9 @@ using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Factories;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Decisions.Spawn;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Services;
 using TurnForge.Engine.ValueObjects;
@@ -33,14 +33,14 @@ public class SpawnSystemIntegrationTests
         {
             DefinitionId = "TestAgent"
         };
-        agentDef.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait("Test Agent", "TestCategory"));
+        agentDef.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait("TestCategory"));
         _catalog.RegisterDefinition(agentDef);
 
         var propDef = new TestPropDefinition
         {
             DefinitionId = "TestProp"
         };
-        propDef.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait("Test Prop", "TestPropCategory"));
+        propDef.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait("TestPropCategory"));
         _catalog.RegisterDefinition(propDef);
 
         // Setup factory
@@ -102,7 +102,7 @@ public class SpawnSystemIntegrationTests
 
         // Assert
         Assert.That(agent.DefinitionId, Is.EqualTo("TestAgent"));
-        Assert.That(agent.Name, Is.EqualTo("Test Agent"));
+        Assert.That(agent.Name, Is.EqualTo("TestAgent")); // Name now derived from definitionId
         Assert.That(agent.Category, Is.EqualTo("TestCategory"));
     }
 

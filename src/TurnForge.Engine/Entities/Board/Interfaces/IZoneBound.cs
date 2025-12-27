@@ -2,7 +2,7 @@
 
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Board.Interfaces;
+namespace TurnForge.Engine.Definitions.Board.Interfaces;
 
 
 public interface IZoneBound

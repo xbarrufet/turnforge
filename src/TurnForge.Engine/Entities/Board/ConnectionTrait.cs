@@ -1,7 +1,7 @@
 using TurnForge.Engine.Traits;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 
-namespace TurnForge.Engine.Entities.Board;
+namespace TurnForge.Engine.Definitions.Board;
 
 public abstract class ConnectionTrait : BaseTrait, IConnectionTrait
 {

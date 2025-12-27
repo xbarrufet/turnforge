@@ -1,7 +1,7 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities;
+namespace TurnForge.Engine.Definitions;
 
 public interface IGameEntity
 {

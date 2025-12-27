@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Core.Orchestrator;
 
 namespace TurnForge.Engine.Decisions.Entity.Interfaces;

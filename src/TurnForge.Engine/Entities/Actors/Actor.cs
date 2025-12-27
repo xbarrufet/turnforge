@@ -1,9 +1,9 @@
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Actors;
+namespace TurnForge.Engine.Definitions.Actors;
 
 public abstract class Actor : GameEntity, IActor
 {

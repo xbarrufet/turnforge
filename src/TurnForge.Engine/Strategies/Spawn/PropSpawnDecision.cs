@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;

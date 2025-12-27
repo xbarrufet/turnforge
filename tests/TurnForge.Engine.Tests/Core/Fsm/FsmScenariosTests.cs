@@ -8,7 +8,7 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Persistence;
@@ -83,9 +83,9 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             }
         }
         
-        internal class StubBoardFactory : TurnForge.Engine.Entities.Board.Interfaces.IBoardFactory
+        internal class StubBoardFactory : TurnForge.Engine.Definitions.Board.Interfaces.IBoardFactory
         {
-            public TurnForge.Engine.Entities.Board.GameBoard Build(TurnForge.Engine.Entities.Descriptors.Interfaces.IGameEntityDescriptor<TurnForge.Engine.Entities.Board.GameBoard> descriptor) => new(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TurnForge.Engine.ValueObjects.TileId>())));
+            public TurnForge.Engine.Definitions.Board.GameBoard Build(TurnForge.Engine.Definitions.Descriptors.Interfaces.IGameEntityDescriptor<TurnForge.Engine.Definitions.Board.GameBoard> descriptor) => new(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TurnForge.Engine.ValueObjects.TileId>())));
         }
 
         // --- Setup ---

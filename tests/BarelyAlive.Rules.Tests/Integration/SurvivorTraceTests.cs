@@ -22,7 +22,7 @@ public class SurvivorTraceTests
         
         // Setup simple board
         var (spatial, zones, _, _) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
-        var boardDesc = new TurnForge.Engine.Entities.Board.Descriptors.BoardDescriptor(spatial, zones);
+        var boardDesc = new TurnForge.Engine.Definitions.Board.Descriptors.BoardDescriptor(spatial, zones);
         _bootstrap.Engine.Runtime.ExecuteCommand(new InitializeBoardCommand(boardDesc));
         _bootstrap.Engine.Runtime.ExecuteCommand(new TurnForge.Engine.Commands.ACK.ACKCommand());
         

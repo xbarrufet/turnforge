@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Traits.Interfaces;
 
 namespace TurnForge.Engine.Traits;

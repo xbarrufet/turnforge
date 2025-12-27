@@ -3,9 +3,9 @@ using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-using TurnForge.Engine.Entities.Interfaces;
+using TurnForge.Engine.Definitions.Interfaces;
 
-namespace TurnForge.Engine.Entities;
+namespace TurnForge.Engine.Definitions;
 
 public abstract class GameEntity : IGameEntity, IComponentContainer
 {

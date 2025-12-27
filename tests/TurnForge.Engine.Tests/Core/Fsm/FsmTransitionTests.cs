@@ -8,7 +8,7 @@ using TurnForge.Engine.Core;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Interfaces;
@@ -47,9 +47,9 @@ namespace TurnForge.Engine.Tests.Core.Fsm
              public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
         }
 
-        internal class StubBoardFactory : TurnForge.Engine.Entities.Board.Interfaces.IBoardFactory
+        internal class StubBoardFactory : TurnForge.Engine.Definitions.Board.Interfaces.IBoardFactory
         {
-            public TurnForge.Engine.Entities.Board.GameBoard Build(TurnForge.Engine.Entities.Descriptors.Interfaces.IGameEntityDescriptor<TurnForge.Engine.Entities.Board.GameBoard> descriptor) => new TurnForge.Engine.Entities.Board.GameBoard(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TurnForge.Engine.ValueObjects.TileId>())));
+            public TurnForge.Engine.Definitions.Board.GameBoard Build(TurnForge.Engine.Definitions.Descriptors.Interfaces.IGameEntityDescriptor<TurnForge.Engine.Definitions.Board.GameBoard> descriptor) => new TurnForge.Engine.Definitions.Board.GameBoard(new TurnForge.Engine.Spatial.ConnectedGraphSpatialModel(new TurnForge.Engine.Spatial.MutableTileGraph(new HashSet<TurnForge.Engine.ValueObjects.TileId>())));
         }
 
         private GameEngineRuntime _runtime;
@@ -66,7 +66,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             // 1. Setup Infrastructure
             var commandBus = new CommandBus(new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider()));
             _repository = new InMemoryGameRepository();
-            _repository.SaveGameState(global::TurnForge.Engine.Entities.GameState.Empty());
+            _repository.SaveGameState(global::TurnForge.Engine.Definitions.GameState.Empty());
 
             var stubBoardFactory = new StubBoardFactory();
             _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), stubBoardFactory);

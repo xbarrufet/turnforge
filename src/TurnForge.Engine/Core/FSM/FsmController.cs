@@ -5,7 +5,7 @@ using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;

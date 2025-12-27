@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.Move;
 using TurnForge.Engine.Commands.Spawn;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Tests.Helpers;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BarelyAlive.Rules.Adapter.Dto;
 using BarelyAlive.Rules.Core.Domain.Behaviours.Factories;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 
 namespace BarelyAlive.Rules.Adapter.Mappers;
 

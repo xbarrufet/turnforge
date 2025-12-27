@@ -1,10 +1,10 @@
 using NUnit.Framework;
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 using BarelyAlive.Rules.Core.Domain.Entities;
 using BarelyAlive.Rules.Core.Domain.Descriptors;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using Moq;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace BarelyAlive.Rules.Tests.Integration;
 

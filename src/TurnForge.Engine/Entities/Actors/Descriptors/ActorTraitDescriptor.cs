@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 
-namespace TurnForge.Engine.Entities.Actors.Descriptors;
+namespace TurnForge.Engine.Definitions.Actors.Descriptors;
 
 
 public sealed record ActorTraitDescriptor(string Name, IReadOnlyDictionary<string,string> Attributes) 

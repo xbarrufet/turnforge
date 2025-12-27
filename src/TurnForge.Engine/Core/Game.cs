@@ -1,7 +1,7 @@
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Interfaces;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Definitions.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core;

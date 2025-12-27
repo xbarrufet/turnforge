@@ -4,7 +4,7 @@ using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Decisions.Actions;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Appliers.Actions;

@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Strategies.Spawn;

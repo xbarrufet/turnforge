@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.APIs.Interfaces;
 
@@ -35,9 +35,9 @@ public class GameCatalogApi : IGameCatalogApi
         return _catalog.GetAllDefinitions<T>();
     }
 
-    public void RegisterDefinition(string definitionId, string name, string category)
+    public void RegisterDefinition(string definitionId, string category)
     {
-        _catalog.RegisterDefinition(definitionId, name, category);
+        _catalog.RegisterDefinition(definitionId, category);
     }
 }
 

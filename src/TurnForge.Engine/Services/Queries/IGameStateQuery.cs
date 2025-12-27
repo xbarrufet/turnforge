@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Services.Queries;
@@ -118,12 +118,12 @@ public interface IGameStateQuery
     /// </summary>
     /// <param name="itemId">String representation of EntityId</param>
     /// <returns>Item if found, null otherwise</returns>
-    TurnForge.Engine.Entities.Items.Item? GetItem(string itemId);
+    TurnForge.Engine.Definitions.Items.Item? GetItem(string itemId);
     
     /// <summary>
     /// Get all items owned by an entity (Agent or Container).
     /// </summary>
     /// <param name="ownerId">Owner's EntityId string</param>
     /// <returns>List of items belonging to the owner</returns>
-    IReadOnlyList<TurnForge.Engine.Entities.Items.Item> GetItemsByOwner(string ownerId);
+    IReadOnlyList<TurnForge.Engine.Definitions.Items.Item> GetItemsByOwner(string ownerId);
 }

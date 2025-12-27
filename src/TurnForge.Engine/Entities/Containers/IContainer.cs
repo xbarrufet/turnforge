@@ -1,4 +1,4 @@
-namespace TurnForge.Engine.Entities.Actors.Capabilities;
+namespace TurnForge.Engine.Definitions.Actors.Capabilities;
 
 public interface IContainer
 {

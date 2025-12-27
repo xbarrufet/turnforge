@@ -6,7 +6,7 @@ using Moq;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;

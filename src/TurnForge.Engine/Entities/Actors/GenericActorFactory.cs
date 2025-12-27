@@ -1,21 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Entities.Descriptors;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
-using TurnForge.Engine.Entities.Factories.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Factories.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Core.Registries;
 using System.Reflection;
 using TurnForge.Engine.Values;
 using TurnForge.Engine.Services;
 
-namespace TurnForge.Engine.Entities.Actors;
+namespace TurnForge.Engine.Definitions.Actors;
 
 public sealed class GenericActorFactory(
     IGameCatalog gameCatalog,TraitInitializationService traitService)
@@ -125,14 +125,14 @@ private T CreateEntityInstance<T>(Type concreteType, string definitionId, BaseGa
 {
     // Extract Identity from Trait
     var identity = definition.Traits.OfType<TurnForge.Engine.Traits.Standard.IdentityTrait>().FirstOrDefault();
-    var name = identity?.Name ?? "Unknown";
     var category = identity?.Category ?? "Common";
+    var name = definitionId; // Use definitionId as name if no specific name
 
     var instance = Activator.CreateInstance(
         concreteType, 
         EntityId.New(), 
         definitionId, 
-        name, 
+        name,
         category);
     
     if (instance == null)

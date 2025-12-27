@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core.Orchestrator;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Decisions.Board;

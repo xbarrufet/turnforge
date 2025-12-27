@@ -6,8 +6,8 @@ using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Events;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Board.Descriptors;
 
 namespace BarelyAlive.Rules.Tests.Helpers;
 

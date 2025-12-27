@@ -23,7 +23,7 @@ public class TestInitGame
         
         // 2. Parse Mission
         var (spatial, zones, props, agents) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
-        var boardDesc = new TurnForge.Engine.Entities.Board.Descriptors.BoardDescriptor(spatial, zones);
+        var boardDesc = new TurnForge.Engine.Definitions.Board.Descriptors.BoardDescriptor(spatial, zones);
         
         // 3. Execute Commands (Mimic InitializeGameHandler + StartGame)
         

@@ -1,6 +1,6 @@
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors.Interfaces;
 
-namespace TurnForge.Engine.Entities.Factories.Interfaces;
+namespace TurnForge.Engine.Definitions.Factories.Interfaces;
 
 public interface IGameEntityFactory<T> where T : GameEntity
 {

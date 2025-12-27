@@ -1,7 +1,7 @@
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Board;
+namespace TurnForge.Engine.Definitions.Board;
 
 public static class ZoneBoundFactory
 {

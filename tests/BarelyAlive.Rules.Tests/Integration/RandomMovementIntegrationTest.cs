@@ -3,7 +3,7 @@ using BarelyAlive.Rules.Tests.Helpers;
 using BarelyAlive.Rules.Tests.Infrastructure;
 using NUnit.Framework;
 using TurnForge.Engine.Commands.Spawn;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
 
 namespace BarelyAlive.Rules.Tests.Integration;

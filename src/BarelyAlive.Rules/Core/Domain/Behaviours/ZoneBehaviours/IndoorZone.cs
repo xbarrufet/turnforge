@@ -1,6 +1,6 @@
 using BarelyAlive.Rules.Core.Domain.Behaviours.Attributes;
-using TurnForge.Engine.Entities.Board;
-using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Definitions.Board.Interfaces;
 
 namespace BarelyAlive.Rules.Core.Domain.Behaviours.ZoneBehaviours;
 

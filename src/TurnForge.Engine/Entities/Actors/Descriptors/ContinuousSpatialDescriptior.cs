@@ -1,4 +1,4 @@
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.Spawn.Descriptors;

@@ -1,6 +1,6 @@
 using TurnForge.Engine.Commands;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Core.Fsm;
 
 namespace TurnForge.Engine.Core.Fsm.Interfaces;

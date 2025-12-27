@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TurnForge.Engine.Core.Attributes;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Descriptors;
 
 namespace TurnForge.Engine.Core.Registries;
 

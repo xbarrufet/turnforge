@@ -1,10 +1,10 @@
 using NUnit.Framework;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Core.Registries;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Core.Registries;
@@ -32,11 +32,8 @@ public class EntityTypeRegistryTests
     {
         public int MaxHealth { get; set; } = 100;
         
-        public TestPlayerDefinition(string definitionId, string name, string category)
-            : base(definitionId) 
-        {
-            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
-        }
+        public TestPlayerDefinition(string definitionId, string category)
+            : base(definitionId, category) { }
     }
 
     // Test descriptor
@@ -57,11 +54,8 @@ public class EntityTypeRegistryTests
 
     public class TestEnemyDefinition : BaseGameEntityDefinition
     {
-        public TestEnemyDefinition(string definitionId, string name, string category)
-            : base(definitionId) 
-        {
-            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
-        }
+        public TestEnemyDefinition(string definitionId, string category)
+            : base(definitionId, category) { }
     }
 
     // Prop entity for testing
@@ -75,11 +69,8 @@ public class EntityTypeRegistryTests
 
     public class TestDoorDefinition : BaseGameEntityDefinition
     {
-        public TestDoorDefinition(string definitionId, string name, string category)
-            : base(definitionId)
-        {
-            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
-        }
+        public TestDoorDefinition(string definitionId, string category)
+            : base(definitionId, category) { }
     }
 
     public class TestDoorDescriptor : PropDescriptor

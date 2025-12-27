@@ -1,12 +1,12 @@
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Events;
 using TurnForge.Engine.Decisions.Spawn;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
-using TurnForge.Engine.Entities.Actors.Interfaces;
+using TurnForge.Engine.Definitions.Actors.Interfaces;
 
 namespace TurnForge.Engine.Appliers.Spawn;
 

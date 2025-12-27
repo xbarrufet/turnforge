@@ -2,7 +2,7 @@ using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Decisions.Board;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Events;
 
 namespace TurnForge.Engine.Appliers.Board;

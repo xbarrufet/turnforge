@@ -1,5 +1,5 @@
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 
 namespace TurnForge.Engine.Appliers.Entity.Interfaces;
 

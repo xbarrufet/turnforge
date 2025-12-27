@@ -4,7 +4,7 @@ using BarelyAlive.Rules.Core.Domain.Projectors;
 using TurnForge.Engine.Commands.Board;
 using TurnForge.Engine.Commands.Spawn;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Definitions.Board.Descriptors;
 
 namespace BarelyAlive.Rules.Apis.Handlers;
 

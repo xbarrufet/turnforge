@@ -1,6 +1,6 @@
 using TurnForge.Engine.Decisions.Spawn;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Descriptors;
 
 namespace TurnForge.Engine.Strategies.Spawn.Interfaces;
 

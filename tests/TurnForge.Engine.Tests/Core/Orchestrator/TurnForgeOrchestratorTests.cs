@@ -5,11 +5,11 @@ using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Events;
 using TurnForge.Engine.Appliers.Entity.Interfaces;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
-using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Spatial.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TFGameState = TurnForge.Engine.Entities.GameState;
+using TFGameState = TurnForge.Engine.Definitions.GameState;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Tests.Core.Orchestrator;

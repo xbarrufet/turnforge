@@ -1,5 +1,5 @@
     using BarelyAlive.Rules.Registration;
-    using TurnForge.Engine.Entities;
+    using TurnForge.Engine.Definitions;
     using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
     using TurnForge.Engine.Registration;
 
@@ -46,10 +46,10 @@
             Entities.Register(definition.DefinitionId, definition);
         }
 
-        public void RegisterDefinition(string definitionId, string name, string category)
+        public void RegisterDefinition(string definitionId, string category)
         {
-            var def = new BaseGameEntityDefinition(definitionId);
-            def.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
+            var def = new BaseGameEntityDefinition(definitionId, category);
+            def.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait(category));
             Entities.Register(definitionId, def);
         }
 

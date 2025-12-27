@@ -2,7 +2,7 @@ using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Items;
+namespace TurnForge.Engine.Definitions.Items;
 
 /// <summary>
 /// Represents an item in the game (weapon, armor, key, etc.).

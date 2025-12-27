@@ -2,7 +2,7 @@ using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Actors;
+namespace TurnForge.Engine.Definitions.Actors;
 
 public  class Agent : Actor
 {

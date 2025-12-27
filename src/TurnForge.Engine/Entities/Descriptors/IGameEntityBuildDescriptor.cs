@@ -1,6 +1,6 @@
 using TurnForge.Engine.Components.Interfaces;
 
-namespace TurnForge.Engine.Entities.Descriptors;
+namespace TurnForge.Engine.Definitions.Descriptors;
 
 public interface IGameEntityBuildDescriptor
 {

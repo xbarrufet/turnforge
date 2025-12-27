@@ -1,5 +1,5 @@
 using BarelyAlive.Rules.Core.Domain.Entities;
-using TurnForge.Engine.Entities;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 
 namespace BarelyAlive.Rules.Tests.Infrastructure;
@@ -158,9 +158,9 @@ public static class TestHelpers
     }
     """;
     
-    public static TurnForge.Engine.Entities.Board.Descriptors.BoardDescriptor GetMission01BoardDescriptor()
+    public static TurnForge.Engine.Definitions.Board.Descriptors.BoardDescriptor GetMission01BoardDescriptor()
     {
         var (spatial, zones, _, _) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(Mission01Json);
-        return new TurnForge.Engine.Entities.Board.Descriptors.BoardDescriptor(spatial, zones);
+        return new TurnForge.Engine.Definitions.Board.Descriptors.BoardDescriptor(spatial, zones);
     }
 }

@@ -1,7 +1,7 @@
-using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.Core;
-using TurnForge.Engine.Entities; 
+using TurnForge.Engine.Definitions; 
 using TurnForge.Engine.ValueObjects;
 using BarelyAlive.Rules.Tests.Infrastructure;
 using System.Linq;
