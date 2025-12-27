@@ -124,6 +124,25 @@ public sealed class GameEngineRuntime : IGameEngine
                 transaction.Events = [.. events];
                 return transaction;
             }
+            else if (result.Success && _fsmController == null)
+            {
+                // NO-FSM Fallback: Apply decisions and save state
+                var state = _repository.LoadGameState();
+                _orchestrator.SetState(state);
+                
+                var events = new List<IGameEvent>();
+                foreach (var d in result.Decisions)
+                {
+                    events.AddRange(_orchestrator.Apply(d));
+                }
+                
+                _repository.SaveGameState(_orchestrator.CurrentState);
+                
+                transaction.Result = result;
+                transaction.Events = events.ToArray();
+                return transaction;
+            }
+
             transaction.Result = result;
             _logger.Log($"Command {command.GetType().Name} executed. Success: {result.Success}");
             return transaction;

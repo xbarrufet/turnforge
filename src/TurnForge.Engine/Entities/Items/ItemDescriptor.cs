@@ -15,12 +15,21 @@ public class ItemDescriptor : IGameEntityBuildDescriptor
     /// <summary>
     /// Definition ID to look up in the catalog.
     /// </summary>
-    public string DefinitionID { get; set; } = string.Empty;
+    /// <summary>
+    /// Definition ID to look up in the catalog.
+    /// </summary>
+    public string DefinitionId { get; set; } = string.Empty;
     
     /// <summary>
     /// Extra components to add (implements interface requirement).
     /// </summary>
     public List<IGameEntityComponent> ExtraComponents { get; init; } = new();
+
+    /// <summary>
+    /// Required by IGameEntityBuildDescriptor interface.
+    /// Items generally don't use trait overrides yet, but must support the interface.
+    /// </summary>
+    public List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> RequestedTraits { get; } = new();
     
     /// <summary>
     /// Optional override for item name.
@@ -36,7 +45,7 @@ public class ItemDescriptor : IGameEntityBuildDescriptor
     
     public ItemDescriptor(string definitionId)
     {
-        DefinitionID = definitionId;
+        DefinitionId = definitionId;
     }
     
     /// <summary>

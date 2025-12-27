@@ -1,4 +1,4 @@
-using TurnForge.Engine.Behaviours;
+using TurnForge.Engine.Traits;
 using System.Linq;
 using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.Entities.Board.Descriptors;

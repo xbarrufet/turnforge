@@ -13,7 +13,6 @@ namespace TurnForge.Engine.Entities.Items;
 /// 
 /// Key components:
 /// - ItemComponent: ownership and category
-/// - AttributeComponent: stats (Damage, Range, etc.)
 /// </remarks>
 public class Item : GameEntity
 {
@@ -34,27 +33,7 @@ public class Item : GameEntity
         ItemComponent = itemComponent;
     }
     
-    /// <summary>
-    /// Gets an attribute value from this item.
-    /// </summary>
-    /// <typeparam name="T">Type of the attribute value.</typeparam>
-    /// <param name="key">Attribute name (e.g., "Damage", "Range").</param>
-    /// <returns>Attribute value, or default if not found.</returns>
-    public T? GetAttribute<T>(string key)
-    {
-        var attributes = GetComponent<AttributeComponent>();
-        var value = attributes?.Get(key);
-        if (value == null) return default;
-        
-        // For int type, return CurrentValue
-        if (typeof(T) == typeof(int))
-        {
-            return (T)(object)value.Value.CurrentValue;
-        }
-        
-        // For other types, try direct conversion
-        return default;
-    }
+
     
     /// <summary>
     /// Sets the owner of this item.

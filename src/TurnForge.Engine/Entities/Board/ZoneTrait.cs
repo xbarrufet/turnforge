@@ -1,5 +1,5 @@
-using TurnForge.Engine.Behaviours;
-using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Traits;
+using TurnForge.Engine.Traits.Interfaces;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Components;
 

@@ -1,6 +1,6 @@
-using TurnForge.Engine.Behaviours.Interfaces; // NOTE: Checking imports
+using TurnForge.Engine.Traits.Interfaces; // NOTE: Checking imports
 using TurnForge.Engine.Entities.Actors.Interfaces;
-using TurnForge.Engine.Behaviours;
+using TurnForge.Engine.Traits;
 
 namespace TurnForge.Engine.Entities.Actors;
 

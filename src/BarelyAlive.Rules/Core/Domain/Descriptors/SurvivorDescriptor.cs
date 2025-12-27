@@ -22,15 +22,9 @@ namespace BarelyAlive.Rules.Core.Domain.Descriptors;
 /// </remarks>
 public class SurvivorDescriptor : AgentDescriptor
 {
-    /// <summary>
-    /// Faction the survivor belongs to (e.g., "Player", "Police", "Military").
-    /// </summary>
-    public string Faction { get; set; } = "Player";
-    
-    /// <summary>
-    /// Number of action points the survivor starts with.
-    /// </summary>
-    public int ActionPoints { get; set; } = 3;
+    // Properties removed in favor of Traits (TeamTrait, ActionPointsTrait)
+    // - Faction -> TeamTrait
+    // - ActionPoints -> ActionPointsTrait
     
     public SurvivorDescriptor(string definitionId) : base(definitionId) { }
 }

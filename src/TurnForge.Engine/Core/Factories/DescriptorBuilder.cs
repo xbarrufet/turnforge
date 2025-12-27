@@ -39,19 +39,13 @@ public static class DescriptorBuilder
         // 1. Create descriptor instance
         var descriptor = CreateDescriptor<TDescriptor>(request.DefinitionId, definition);
         
-        // 2. Apply property overrides if present
-        if (request.PropertyOverrides != null && request.PropertyOverrides.Count > 0)
+        // 2. Map Traits overrides
+        if (request.TraitsToOverride != null)
         {
-            ApplyOverrides(descriptor, request.PropertyOverrides);
-        }
-        
-        // 3. Apply position if specified (not Position.Empty)
-        if (request.Position != Position.Empty)
-        {
-            SetPosition(descriptor, request.Position);
+            descriptor.RequestedTraits.AddRange(request.TraitsToOverride);
         }
 
-        // 4. Copy extra components if present
+        // 3. Copy extra components if present
         if (request.ExtraComponents != null)
         {
             descriptor.ExtraComponents.AddRange(request.ExtraComponents);
@@ -129,61 +123,5 @@ public static class DescriptorBuilder
         var descriptor = (TDescriptor)Activator.CreateInstance(descriptorType, definitionId)!;
         
         return descriptor;
-    }
-    
-    /// <summary>
-    /// Applies property overrides to descriptor using reflection.
-    /// </summary>
-    private static void ApplyOverrides<TDescriptor>(
-        TDescriptor descriptor,
-        Dictionary<string, object> overrides)
-        where TDescriptor : IGameEntityBuildDescriptor
-    {
-        var descriptorType = descriptor.GetType();
-        
-        foreach (var (propertyName, value) in overrides)
-        {
-            var prop = descriptorType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            
-            if (prop == null)
-            {
-                // Property not found - log warning and continue
-                // (Could throw exception if strict validation is needed)
-                continue;
-            }
-            
-            if (!prop.CanWrite)
-            {
-                // Property is readonly - skip
-                continue;
-            }
-            
-            try
-            {
-                // Try to set the value (may require type conversion)
-                prop.SetValue(descriptor, value);
-            }
-            catch (ArgumentException)
-            {
-                // Type mismatch - log warning and continue
-                // (Could throw exception if strict validation is needed)
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Sets position on descriptor if it has a Position property.
-    /// </summary>
-    private static void SetPosition<TDescriptor>(TDescriptor descriptor, Position position)
-        where TDescriptor : IGameEntityBuildDescriptor
-    {
-        // Try to find Position property via reflection
-        var positionProp = descriptor.GetType()
-            .GetProperty("Position", BindingFlags.Public | BindingFlags.Instance);
-        
-        if (positionProp != null && positionProp.CanWrite && positionProp.PropertyType == typeof(Position))
-        {
-            positionProp.SetValue(descriptor, position);
-        }
     }
 }

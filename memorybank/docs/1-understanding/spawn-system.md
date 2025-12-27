@@ -15,11 +15,9 @@ The `SpawnRequest` is the user-facing API for requesting entity spawns.
 
 ```csharp
 public sealed record SpawnRequest(
-    string DefinitionId,  // Required
-    int Count = 1,        // Optional: batch spawn
-    Position? Position = null,  // Optional: strategy decides if null
-    Dictionary<string, object>? PropertyOverrides = null,
-    IEnumerable<IGameEntityComponent>? ExtraComponents = null
+    string DefinitionId,         // Required
+    int Count = 1,               // Optional: batch spawn
+    IEnumerable<IBaseTrait>? TraitsToOverride = null // Optional: Override characteristics
 );
 ```
 
@@ -28,7 +26,7 @@ public sealed record SpawnRequest(
 var request = SpawnRequestBuilder
     .For("Survivors.Mike")
     .At(spawnPoint)
-    .WithProperty("Health", 12)
+    .WithTrait(new ActionPointsTrait(12))
     .Build();
 ```
 

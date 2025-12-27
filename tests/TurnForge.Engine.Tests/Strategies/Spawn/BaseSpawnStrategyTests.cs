@@ -149,6 +149,6 @@ public class BaseSpawnStrategyTests
 
         // Assert
         Assert.That(decisions.Count, Is.EqualTo(1));
-        Assert.That(decisions[0].Descriptor.DefinitionID, Is.EqualTo("D1"));
+        Assert.That(decisions[0].Descriptor.DefinitionId, Is.EqualTo("D1"));
     }
 }

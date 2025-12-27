@@ -1,4 +1,5 @@
 using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Traits.Standard;
 
 namespace TurnForge.Engine.Components;
 
@@ -15,6 +16,13 @@ public sealed class BaseHealthComponent : IHealthComponent
         MaxHealth = 1;
         CurrentHealth = 1;
     }
+
+    public BaseHealthComponent(VitalityTrait trait)
+{
+    MaxHealth = trait.BaseMaxHP;
+    CurrentHealth = trait.BaseMaxHP;
+    // Si tinguéssim propietat IsImmortal al component, l'assignaríem aquí també.
+}
 
     public BaseHealthComponent(int maxHealth)
     {

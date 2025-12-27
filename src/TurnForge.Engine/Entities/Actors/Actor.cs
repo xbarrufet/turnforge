@@ -17,7 +17,6 @@ public abstract class Actor : GameEntity, IActor
         string definitionId) : base(id, name, category, definitionId)
     {
         // Register empty components in GameEntity's component dictionary
-        // This ensures EngineAutoMapper can find them when mapping properties
         AddComponent(IPositionComponent.Empty());
         AddComponent(IHealthComponent.Empty());
         
@@ -31,14 +30,28 @@ public abstract class Actor : GameEntity, IActor
         return GetTraitComponent().HasTrait<T>();
     }
 
+    public override void AddComponent<T>(T component)
+    {
+        base.AddComponent(component);
+        if (component is IPositionComponent pc) PositionComponent = pc;
+        if (component is IHealthComponent hc) HealthComponent = hc;
+    }
+
+    public override void ReplaceComponent<T>(T component)
+    {
+        base.ReplaceComponent(component);
+        if (component is IPositionComponent pc) PositionComponent = pc;
+        if (component is IHealthComponent hc) HealthComponent = hc;
+    }
+
     public void SetPositionComponent(IPositionComponent positionComponent)
     {
-        AddComponent(positionComponent);
+        ReplaceComponent(positionComponent);
     }
 
     public void SetHealthComponent(IHealthComponent healthComponent)
     {
-        AddComponent(healthComponent);
+        ReplaceComponent(healthComponent);
     }
 
  

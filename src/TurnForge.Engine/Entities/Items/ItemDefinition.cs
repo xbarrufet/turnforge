@@ -12,8 +12,9 @@ public class ItemDefinition : BaseGameEntityDefinition
     public ItemDefinition() { }
     
     public ItemDefinition(string definitionId, string name, string category)
-        : base(definitionId, name, category)
+        : base(definitionId)
     {
+        Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
     }
     
     /// <summary>

@@ -1,5 +1,5 @@
-using TurnForge.Engine.Behaviours;
-using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Traits;
+using TurnForge.Engine.Traits.Interfaces;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Entities;
 
@@ -16,7 +16,7 @@ public class TraitContainerComponent : ITraitContainerComponent
         set => _traits = value.ToList(); 
     }
 
-    public TraitContainerComponent(IEnumerable<BaseTrait> traits)
+    public TraitContainerComponent(IEnumerable< BaseTrait> traits)
     {
         _traits = traits.ToList();
     }

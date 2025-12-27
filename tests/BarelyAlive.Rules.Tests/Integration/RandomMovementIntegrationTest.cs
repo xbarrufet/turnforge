@@ -20,9 +20,12 @@ public class RandomMovementIntegrationTest
             .GivenMission(TestHelpers.Mission01Json)
             .GivenSurvivors("Survivor.Mike")
             .GivenAgents(new SpawnRequest(
-                "Zombie.Runner", // DefinitionId
-                1, // Count
-                new Position(new TileId(Guid.Parse("66a0dadc-d774-4ce9-a3ec-0213e9528af6"))) // Position
+                DefinitionId: "Zombie.Runner",
+                Count: 1,
+                TraitsToOverride: new List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> 
+                { 
+                    new TurnForge.Engine.Traits.Standard.PositionTrait(new Position(new TileId(Guid.Parse("66a0dadc-d774-4ce9-a3ec-0213e9528af6")))) 
+                }
             ));
         
         // WHEN: Execute 10 rounds of random movement

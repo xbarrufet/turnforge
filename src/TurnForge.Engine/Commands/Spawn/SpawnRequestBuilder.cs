@@ -26,8 +26,7 @@ public sealed class SpawnRequestBuilder
 {
     private string _definitionId = string.Empty;
     private int _count = 1;
-    private Position _position = Position.Empty;
-    private Dictionary<string, object> _overrides = new();
+    private List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> _traits = new();
     private List<IGameEntityComponent> _components = new();
 
     /// <summary>
@@ -51,13 +50,15 @@ public sealed class SpawnRequestBuilder
     }
 
     /// <summary>
-    /// Sets the spawn position.
+    /// Sets the spawn position by adding a PositionTrait.
     /// </summary>
     /// <param name="position">World position where entity should spawn</param>
     /// <returns>Builder instance for method chaining</returns>
     public SpawnRequestBuilder At(Position position)
     {
-        _position = position;
+        // Add or replace PositionTrait
+        _traits.RemoveAll(t => t is TurnForge.Engine.Traits.Standard.PositionTrait);
+        _traits.Add(new TurnForge.Engine.Traits.Standard.PositionTrait(position));
         return this;
     }
 
@@ -78,41 +79,14 @@ public sealed class SpawnRequestBuilder
     }
 
     /// <summary>
-    /// Adds a property override that will be applied to the descriptor.
+    /// Adds a trait override to the spawn request.
     /// </summary>
-    /// <param name="key">Property name (must match descriptor property name)</param>
-    /// <param name="value">Property value</param>
+    /// <param name="trait">The trait to add</param>
     /// <returns>Builder instance for method chaining</returns>
-    /// <remarks>
-    /// The property will be mapped to the descriptor via reflection in DescriptorBuilder.
-    /// If the descriptor doesn't have a matching property, it will be silently ignored.
-    /// </remarks>
-    public SpawnRequestBuilder WithProperty(string key, object value)
+    public SpawnRequestBuilder WithTrait(TurnForge.Engine.Traits.Interfaces.IBaseTrait trait)
     {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentException("Property key cannot be null or empty", nameof(key));
-        }
-
-        _overrides[key] = value;
-        return this;
-    }
-
-    /// <summary>
-    /// Type-safe property override with generic constraint.
-    /// </summary>
-    /// <typeparam name="T">Type of the property value</typeparam>
-    /// <param name="key">Property name</param>
-    /// <param name="value">Property value</param>
-    /// <returns>Builder instance for method chaining</returns>
-    public SpawnRequestBuilder WithProperty<T>(string key, T value)
-    {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentException("Property key cannot be null or empty", nameof(key));
-        }
-
-        _overrides[key] = value!;
+        if (trait == null) throw new ArgumentNullException(nameof(trait));
+        _traits.Add(trait);
         return this;
     }
 
@@ -175,8 +149,7 @@ public sealed class SpawnRequestBuilder
         return new SpawnRequest(
             _definitionId,
             _count,
-            _position, // Non-nullable, defaults to Position.Empty
-            _overrides.Count > 0 ? _overrides : null,
+            _traits.Count > 0 ? _traits : null,
             _components.Count > 0 ? _components : null
         );
     }

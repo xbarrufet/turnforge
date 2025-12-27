@@ -1,7 +1,7 @@
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Traits.Interfaces;
 
-namespace TurnForge.Engine.Behaviours;
+namespace TurnForge.Engine.Traits;
 
 /// <summary>
 /// Base class for all entity traits. Traits add dynamic logic to entities.

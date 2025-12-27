@@ -88,10 +88,16 @@ public sealed class MissionLoader
             .Cast<IGameEntityComponent>() 
             .ToList();
 
+        // Create Traits list with Position
+        var traits = new List<TurnForge.Engine.Traits.Interfaces.IBaseTrait>
+        {
+            new TurnForge.Engine.Traits.Standard.PositionTrait(position)
+        };
+
         // Create SpawnRequest instead of Descriptor
         return new SpawnRequest(
             DefinitionId: agentName,
-            Position: position,
+            TraitsToOverride: traits,
             ExtraComponents: behaviours
         );
     }
@@ -229,9 +235,16 @@ public sealed class MissionLoader
             actorComponents.Add(new BarelyAlive.Rules.Core.Domain.Components.ZoneEffectComponent(zoneTraits));
         }
 
+        // Prepare Traits list
+        var traits = new List<TurnForge.Engine.Traits.Interfaces.IBaseTrait>();
+        if (position != Position.Empty)
+        {
+            traits.Add(new TurnForge.Engine.Traits.Standard.PositionTrait(position));
+        }
+
         return new SpawnRequest(
             DefinitionId: definitionId,
-            Position: position,
+            TraitsToOverride: traits,
             ExtraComponents: actorComponents
         );
     }

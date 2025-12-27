@@ -30,45 +30,23 @@ public interface IHealthComponent : IGameEntityComponent
 }
 ```
 
-## Definition-Descriptor Pattern (Auto-Mapping)
+## Trait-Based Architecture
 
-**Definition** = Blueprint (Data Source)
-```csharp
-[EntityType(typeof(Survivor))]
-public class SurvivorDefinition : AgentDefinition
-{
-    // FT-004: Implicit Mapping
-    // Matches properties in IHealthComponent by name/type automatically.
-    public int MaxHealth { get; set; } = 10;
-    
-    // Explicit mapping for different names
-    [MapToComponent(typeof(IFactionComponent), "FactionName")]
-    public string Team { get; set; } = "Survivors";
-}
-```
+Entities are defined by **Traits**.
 
-**Descriptor** = Spawn Request (Overrides)
-```csharp
-public class SurvivorDescriptor : AgentDescriptor
-{
-    public SurvivorDescriptor(string definitionId) : base(definitionId) { }
-    
-    // Automatically maps to IPositionComponent.CurrentPosition if matched
-    // Or used by Strategy/Factory logic
-    public Position Position { get; set; }
-}
-```
+*   **Definition**: A collection of default Traits.
+*   **Descriptor**: A collection of override Traits (requested at spawn).
+*   **Initialization**: The `TraitInitializationService` converts Traits into mutable **Components**.
 
-**Property Discovery (FT-004):**
-1. **Implicit (Default):** Properties on Definition/Descriptor map to Component properties with same name and type.
-2. **Explicit (`[MapToComponent]`):** Redirects mapping to specific specific component/property.
-3. **Opt-Out (`[DoNotMap]`):** Attributes on Component properties prevent external setting.
+**Process:**
+1.  **Definition**: "Mike" has `VitalityTrait(10)` and `TeamTrait("Survivors")`.
+2.  **Spawn Request**: requesting "Mike" but overrides with `VitalityTrait(5)`.
+3.  **Merge**: Final Trait set = `VitalityTrait(5)`, `TeamTrait("Survivors")`.
+4.  **Hydration**:
+    *   `VitalityTrait` -> finds component with `ctor(VitalityTrait)` -> Creates `HealthComponent(5)`.
+    *   `TeamTrait` -> finds component with `ctor(TeamTrait)` -> Creates `TeamComponent("Survivors")`.
 
-**Factory Process:**
-1. Handler creates `Descriptor` from command
-2. `SpawnStrategy` validates and builds `SpawnDecision<Descriptor>`
-3. `SpawnApplier` fetches `Definition`, creates entity, maps properties
-4. Result: Entity in `GameState` with merged Definition + Descriptor data
+This eliminates the need for complex reflection-based property mapping ("Auto-Mapping").
 
 ## Component Lookup
 

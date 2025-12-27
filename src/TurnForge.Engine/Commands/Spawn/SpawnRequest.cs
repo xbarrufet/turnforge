@@ -27,7 +27,6 @@ namespace TurnForge.Engine.Commands.Spawn;
 public sealed record SpawnRequest(
     string DefinitionId,  // Required: entity definition ID to spawn
     int Count = 1,       // Optional: number of entities to spawn (batch spawn)
-    Position Position = default!,  // Optional: spawn position (Position.Empty = strategy decides)
-    Dictionary<string, object>? PropertyOverrides = null,  // Optional: override specific descriptor properties
+    IEnumerable<TurnForge.Engine.Traits.Interfaces.IBaseTrait>? TraitsToOverride = null,  // Optional: traits to override or add
     IEnumerable<IGameEntityComponent>? ExtraComponents = null // Optional: extra components/behaviors
 );

@@ -1,4 +1,4 @@
-using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Traits.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.ValueObjects;
@@ -42,13 +42,18 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
     public IReadOnlyCollection<IGameEntityComponent> Components => _components.Values;
 
     
-    public void AddComponent<T>(T component) where T : IGameEntityComponent
+    public virtual void AddComponent<T>(T component) where T : IGameEntityComponent
     {
-        var type = typeof(T);
+        var type = component.GetType();
         
         if (component is TraitContainerComponent traitComponent)
         {
             traitComponent.SetOwner(this);
+        }
+        else if (component is ITeamComponent teamComponent)
+        {
+            Team = teamComponent.Team;
+            ControllerId = teamComponent.ControllerId;
         }
         else
         {
@@ -57,6 +62,21 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
 
         }
         _components[type] = component;
+    }
+
+    public virtual void ReplaceComponent<T>(T component) where T : IGameEntityComponent
+    {
+        var type = component.GetType();
+        if (component is ITeamComponent teamComponent)
+        {
+            Team = teamComponent.Team;
+            ControllerId = teamComponent.ControllerId;
+        }
+
+        if (!_components.ContainsKey(type))
+            AddComponent<T>(component);
+        else
+            _components[type] = component;
     }
     
     public bool HasComponent<T>() where T : class, IGameEntityComponent

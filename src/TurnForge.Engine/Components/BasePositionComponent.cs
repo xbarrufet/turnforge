@@ -17,6 +17,11 @@ namespace TurnForge.Engine.Components
             CurrentPosition = position;
         }
 
+        public BasePositionComponent(TurnForge.Engine.Traits.Standard.PositionTrait trait)
+        {
+            CurrentPosition = trait.InitialPosition;
+        }
+
         public static BasePositionComponent Empty => new BasePositionComponent(Position.Empty);
     }
 }

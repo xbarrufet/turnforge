@@ -1,4 +1,4 @@
-using TurnForge.Engine.Behaviours;
+using TurnForge.Engine.Traits;
 using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace TurnForge.Engine.Entities.Board;

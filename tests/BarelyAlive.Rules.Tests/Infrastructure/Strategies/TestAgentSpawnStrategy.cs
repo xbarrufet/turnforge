@@ -38,7 +38,14 @@ public class TestAgentSpawnStrategy : ISpawnStrategy<AgentDescriptor>
 
         foreach (var descriptor in descriptors)
         {
-            descriptor.Position = playerSpawn.PositionComponent.CurrentPosition;
+            // Update Position via Traits
+            var positionTrait = descriptor.RequestedTraits.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+            if (positionTrait != null)
+            {
+                 // Replace existing
+                 descriptor.RequestedTraits.Remove(positionTrait);
+            }
+            descriptor.RequestedTraits.Add(new TurnForge.Engine.Traits.Standard.PositionTrait(playerSpawn.PositionComponent.CurrentPosition));
         }
 
         return descriptors;

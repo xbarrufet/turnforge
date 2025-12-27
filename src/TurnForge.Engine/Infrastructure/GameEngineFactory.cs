@@ -17,6 +17,7 @@ using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
+using TurnForge.Engine.Services;
 
 namespace TurnForge.Engine.Infrastructure;
 
@@ -39,6 +40,8 @@ public static class GameEngineFactory
         // 1️⃣ ServiceProvider del engine
         var services = new SimpleServiceProvider();
 
+        services.RegisterSingleton<TraitInitializationService>(new TraitInitializationService());
+
         // 1️⃣ Servicios internos del engine
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
         services.RegisterSingleton<IBoardFactory>(new BoardFactory());
@@ -47,7 +50,8 @@ public static class GameEngineFactory
         services.RegisterSingleton<IGameCatalog>(gameCatalog);
         services.RegisterSingleton<IActorFactory>(
             new GenericActorFactory(
-                services.Resolve<IGameCatalog>()
+                services.Resolve<IGameCatalog>(),
+                services.Resolve<TraitInitializationService>()
             ));
 
 

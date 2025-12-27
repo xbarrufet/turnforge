@@ -25,6 +25,9 @@ public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
     /// <summary>
     /// Override ProcessDescriptor to use pattern matching for type dispatch.
     /// </summary>
+    /// <summary>
+    /// Override ProcessDescriptor to use pattern matching for type dispatch.
+    /// </summary>
     protected override AgentDescriptor ProcessDescriptor(
         AgentDescriptor descriptor,
         GameState state)
@@ -52,31 +55,42 @@ public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
         var playerSpawn = state.GetProps()
             .FirstOrDefault(p => p.Category == "Spawn.Player");
 
-        // Assign position if found
-        if (playerSpawn?.PositionComponent != null)
+        // Handle Position
+        var positionTrait = descriptor.RequestedTraits
+            .OfType<TurnForge.Engine.Traits.Standard.PositionTrait>()
+            .FirstOrDefault();
+
+        // If no explicit position requested, try to use spawn point or fallback
+        if (positionTrait == null || positionTrait.InitialPosition == Position.Empty)
         {
-            descriptor.Position = playerSpawn.PositionComponent.CurrentPosition;
-        }
-        else
-        {
-            // Fallback: keep position from request or set to empty
-            if (descriptor.Position == Position.Empty)
+            if (playerSpawn?.PositionComponent != null)
             {
-                descriptor.Position = Position.Empty;
+                // Add/Update PositionTrait with spawn point
+                AddOrUpdateTrait(descriptor, new TurnForge.Engine.Traits.Standard.PositionTrait(playerSpawn.PositionComponent.CurrentPosition));
             }
         }
 
-        // Ensure faction is set to Player (can be overridden from SpawnRequest)
-        if (string.IsNullOrEmpty(descriptor.Faction))
+        // Handle Faction (Team)
+        var teamTrait = descriptor.RequestedTraits
+            .OfType<TurnForge.Engine.Traits.Standard.TeamTrait>()
+            .FirstOrDefault();
+            
+        if (teamTrait == null)
         {
-            descriptor.Faction = "Player";
+             // Default to "Player" team
+             AddOrUpdateTrait(descriptor, new TurnForge.Engine.Traits.Standard.TeamTrait("Player", "Player"));
         }
         
-        // Add Action Points component
-        descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(descriptor.ActionPoints)
+        // Handle Action Points
+        var apTrait = descriptor.RequestedTraits
+            .OfType<TurnForge.Engine.Traits.Standard.ActionPointsTrait>()
+            .FirstOrDefault();
+
+        if (apTrait == null)
         {
-             CurrentActionPoints = descriptor.ActionPoints
-        });
+            // Default 3 AP for Survivors
+            AddOrUpdateTrait(descriptor, new TurnForge.Engine.Traits.Standard.ActionPointsTrait(3));
+        }
 
         return descriptor;
     }
@@ -89,23 +103,30 @@ public class BarelyAliveSpawnStrategy : BaseSpawnStrategy
         GameState state)
     {
         // Heuristic: If definition starts with "Zombie.", give 1 AP
-        if (descriptor.DefinitionID.StartsWith("Zombie."))
+        if (descriptor.DefinitionId.StartsWith("Zombie."))
         {
-            descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(1)
-            {
-                 CurrentActionPoints = 1
-            });
+             AddOrUpdateTrait(descriptor, new TurnForge.Engine.Traits.Standard.ActionPointsTrait(1));
         }
-        else if (descriptor.DefinitionID.StartsWith("Survivor."))
+        else if (descriptor.DefinitionId.StartsWith("Survivor."))
         {
             // Fallback for generic AgentDescriptor for Survivor
-            descriptor.ExtraComponents.Add(new TurnForge.Engine.Components.BaseActionPointsComponent(3)
-            {
-                 CurrentActionPoints = 3
-            });
+             AddOrUpdateTrait(descriptor, new TurnForge.Engine.Traits.Standard.ActionPointsTrait(3));
         }
         
-        // Accept as-is - no modifications needed
         return descriptor;
+    }
+
+    private void AddOrUpdateTrait<T>(AgentDescriptor descriptor, T trait) where T : TurnForge.Engine.Traits.Interfaces.IBaseTrait
+    {
+        // Remove existing of same type
+        var existing = descriptor.RequestedTraits
+            .FirstOrDefault(t => t.GetType() == trait.GetType());
+            
+        if (existing != null)
+        {
+            descriptor.RequestedTraits.Remove(existing);
+        }
+        
+        descriptor.RequestedTraits.Add(trait);
     }
 }

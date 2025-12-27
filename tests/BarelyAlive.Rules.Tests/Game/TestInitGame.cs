@@ -16,8 +16,10 @@ public class TestInitGame
     public void InitGame_ShouldUseSpawnStrategies_Correctly()
     {
         // 1. Create Game with Custom Strategies
-        // 1. Create Game with Default Strategies (Configurable*SpawnStrategy)
-        var bootstrap = TestBootstrap.CreateNewGame();
+        // 1. Create Game with Custom Strategy to verify injection
+        var bootstrap = TestBootstrap.CreateNewGame(
+            agentStrategy: new BarelyAlive.Rules.Tests.Infrastructure.Strategies.TestAgentSpawnStrategy()
+        );
         
         // 2. Parse Mission
         var (spatial, zones, props, agents) = BarelyAlive.Rules.Adapter.Loaders.MissionLoader.ParseMissionString(TestHelpers.Mission01Json);
@@ -45,7 +47,10 @@ public class TestInitGame
         var dummyPos = new Position(new TileId(System.Guid.Parse("d7de841d-64a5-48b3-9662-0fe757a8950e"))); // (0,0)
         var testAgents = new List<SpawnRequest>
         {
-             new SpawnRequest(TestHelpers.MikeId,1, dummyPos),
+             new SpawnRequest(
+                 DefinitionId: TestHelpers.MikeId, 
+                 TraitsToOverride: new List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> { new TurnForge.Engine.Traits.Standard.PositionTrait(dummyPos) }
+             ),
              new SpawnRequest(TestHelpers.DougId)
         };
         

@@ -73,10 +73,12 @@ public sealed class BasicMeleeAttackStrategy : IActionStrategy<AttackCommand>
             var weapon = _queryService.GetItem(command.WeaponId);
             if (weapon != null)
             {
-                var dmg = weapon.GetAttribute<int>("Damage");
-                var hit = weapon.GetAttribute<int>("HitBonus");
-                weaponDamage = dmg != 0 ? dmg : 1;
-                weaponHitBonus = hit;
+                var stats = weapon.GetComponent<WeaponStatsComponent>();
+                if (stats != null)
+                {
+                    weaponDamage = stats.Damage != 0 ? stats.Damage : 1;
+                    weaponHitBonus = stats.HitBonus;
+                }
             }
         }
         

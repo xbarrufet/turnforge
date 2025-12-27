@@ -40,8 +40,11 @@ public class SurvivorDefinition : BaseGameEntityDefinition
     public string Faction { get; set; } = "Player";
     public int ActionPoints { get; set; } = 3;
     
-    public SurvivorDefinition(string definitionId, string name, string category) 
-        : base(definitionId, name, category)
+    public SurvivorDefinition(string definitionId) 
+        : base(definitionId)
     {
+        // Using int constructor if available or parameterless
+        // Default traits can be added here if needed, but Identity is usually external
+        Traits.Add(new TurnForge.Engine.Traits.Standard.VitalityTrait(maxHP: MaxHealth));
     }
 }

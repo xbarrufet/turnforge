@@ -8,6 +8,7 @@ using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Actors;
 using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Infrastructure.Catalog;
+using TurnForge.Engine.Services;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Tests.Integration;
@@ -28,21 +29,22 @@ public class SpawnSystemIntegrationTests
     {
         // Setup catalog with test definitions
         _catalog = new InMemoryGameCatalog();
-        _catalog.RegisterDefinition(new TestAgentDefinition
+        var agentDef = new TestAgentDefinition
         {
-            DefinitionId = "TestAgent",
-            Name = "Test Agent",
-            Category = "TestCategory"
-        });
-        _catalog.RegisterDefinition(new TestPropDefinition
+            DefinitionId = "TestAgent"
+        };
+        agentDef.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait("Test Agent", "TestCategory"));
+        _catalog.RegisterDefinition(agentDef);
+
+        var propDef = new TestPropDefinition
         {
-            DefinitionId = "TestProp",
-            Name = "Test Prop",
-            Category = "TestPropCategory"
-        });
+            DefinitionId = "TestProp"
+        };
+        propDef.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait("Test Prop", "TestPropCategory"));
+        _catalog.RegisterDefinition(propDef);
 
         // Setup factory
-        _factory = new GenericActorFactory(_catalog);
+        _factory = new GenericActorFactory(_catalog, new TraitInitializationService());
 
         // Setup appliers
         var agentApplier = new AgentSpawnApplier(_factory);
@@ -159,7 +161,7 @@ public class SpawnSystemIntegrationTests
 
         // Assert
         Assert.That(descriptor, Is.Not.Null);
-        Assert.That(descriptor.DefinitionID, Is.EqualTo("TestAgent"));
+        Assert.That(descriptor.DefinitionId, Is.EqualTo("TestAgent"));
     }
 
     [Test]

@@ -4,6 +4,7 @@ namespace TurnForge.Engine.Entities.Descriptors;
 
 public interface IGameEntityBuildDescriptor
 {
-    public string DefinitionID { get; set; }
-    public List<IGameEntityComponent> ExtraComponents { get; }
+    public    string DefinitionId { get; }
+    List<IGameEntityComponent> ExtraComponents { get; }
+    List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> RequestedTraits { get; }
 }

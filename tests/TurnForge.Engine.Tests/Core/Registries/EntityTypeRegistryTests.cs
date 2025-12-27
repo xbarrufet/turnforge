@@ -33,7 +33,10 @@ public class EntityTypeRegistryTests
         public int MaxHealth { get; set; } = 100;
         
         public TestPlayerDefinition(string definitionId, string name, string category)
-            : base(definitionId, name, category) { }
+            : base(definitionId) 
+        {
+            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
+        }
     }
 
     // Test descriptor
@@ -55,7 +58,10 @@ public class EntityTypeRegistryTests
     public class TestEnemyDefinition : BaseGameEntityDefinition
     {
         public TestEnemyDefinition(string definitionId, string name, string category)
-            : base(definitionId, name, category) { }
+            : base(definitionId) 
+        {
+            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
+        }
     }
 
     // Prop entity for testing
@@ -70,7 +76,10 @@ public class EntityTypeRegistryTests
     public class TestDoorDefinition : BaseGameEntityDefinition
     {
         public TestDoorDefinition(string definitionId, string name, string category)
-            : base(definitionId, name, category) { }
+            : base(definitionId)
+        {
+            Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
+        }
     }
 
     public class TestDoorDescriptor : PropDescriptor

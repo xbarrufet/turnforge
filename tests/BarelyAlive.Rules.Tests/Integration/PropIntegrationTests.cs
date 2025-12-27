@@ -18,7 +18,7 @@ public class PropIntegrationTests
     public void Setup()
     {
         _mockCatalog = new Mock<IGameCatalog>();
-        _factory = new GenericActorFactory(_mockCatalog.Object);
+        _factory = new GenericActorFactory(_mockCatalog.Object, new TurnForge.Engine.Services.TraitInitializationService());
     }
 
     [Test]
@@ -26,11 +26,17 @@ public class PropIntegrationTests
     {
         // Arrange
         var defId = "Spawn.Zombie";
-        var definition = new ZombieSpawnDefinition(defId, "Zombie Spawn", "Spawn") { Order = 1 };
-        var descriptor = new ZombieSpawnDescriptor(defId)
-        {
-            Order = 99 // Override value
+        var definition = new ZombieSpawnDefinition(defId)
+        { 
+            // Order = 1, // Legacy
+            Traits = { 
+                new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Spawn", "Spawn")
+            }
         };
+        
+        // Use Trait instead of Property Property
+        var descriptor = new ZombieSpawnDescriptor(defId);
+        descriptor.RequestedTraits.Add(new BarelyAlive.Rules.Core.Domain.Traits.SpawnOrderTrait(99));
 
         _mockCatalog.Setup(c => c.GetDefinition<BaseGameEntityDefinition>(defId))
             .Returns(definition);
@@ -52,8 +58,11 @@ public class PropIntegrationTests
     {
         // Arrange
         var defId = "Door";
-        var definition = new DoorDefinition(defId, "Door", "Prop");
-        var descriptor = new DoorDescriptor(defId, Color.Green); // Constructor sets color
+        var definition = new DoorDefinition(defId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Door", "Prop") } };
+        
+        // Use Trait instead of Property
+        var descriptor = new DoorDescriptor(defId);
+        descriptor.RequestedTraits.Add(new BarelyAlive.Rules.Core.Domain.Traits.ColorTrait(Color.Green));
 
         _mockCatalog.Setup(c => c.GetDefinition<BaseGameEntityDefinition>(defId))
             .Returns(definition);

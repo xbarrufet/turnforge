@@ -1,4 +1,5 @@
-using TurnForge.Engine.Behaviours.Interfaces;
+using TurnForge.Engine.Traits;
+using TurnForge.Engine.Traits.Interfaces;
 
 namespace TurnForge.Engine.Components.Interfaces;
 
@@ -8,12 +9,16 @@ namespace TurnForge.Engine.Components.Interfaces;
 /// </summary>
 public interface ITraitContainerComponent : IGameEntityComponent
 {
+
+    IReadOnlyList<BaseTrait> Traits {get;}
     // Query methods
     bool HasTrait<T>() where T : IBaseTrait;
     T? GetTrait<T>() where T : IBaseTrait;
     T GetRequiredTrait<T>() where T : IBaseTrait;
     bool TryGetTrait<T>(out T? trait) where T : IBaseTrait;
     
+
+
     // Mutation methods for runtime trait management
     void AddTrait(IBaseTrait trait);
     bool RemoveTrait<T>() where T : IBaseTrait;

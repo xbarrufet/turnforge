@@ -24,7 +24,7 @@ public class SpawnRequestBuilderTests
         // Assert
         Assert.That(request.DefinitionId, Is.EqualTo("Survivors.Mike"));
         Assert.That(request.Count, Is.EqualTo(1));
-        Assert.That(request.PropertyOverrides, Is.Null);
+        Assert.That(request.TraitsToOverride, Is.Null);
         Assert.That(request.ExtraComponents, Is.Null);
     }
 
@@ -38,7 +38,7 @@ public class SpawnRequestBuilderTests
     }
 
     [Test]
-    public void At_SetsPosition()
+    public void At_SetsPositionTrait()
     {
         // Act
         var request = SpawnRequestBuilder
@@ -47,7 +47,11 @@ public class SpawnRequestBuilderTests
             .Build();
 
         // Assert
-        Assert.That(request.Position, Is.EqualTo(_testPosition));
+        var traits = request.TraitsToOverride;
+        Assert.That(traits, Is.Not.Null);
+        var posTrait = traits!.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+        Assert.That(posTrait, Is.Not.Null);
+        Assert.That(posTrait!.InitialPosition, Is.EqualTo(_testPosition));
     }
 
     [Test]
@@ -75,47 +79,21 @@ public class SpawnRequestBuilderTests
     }
 
     [Test]
-    public void WithProperty_AddsToOverrides()
+    public void WithTrait_AddsToTraits()
     {
+        // Arrange
+        var trait = new TurnForge.Engine.Traits.Standard.TeamTrait("TeamA", "Controller1");
+
         // Act
         var request = SpawnRequestBuilder
             .For("Enemies.Boss")
-            .WithProperty("Health", 500)
-            .WithProperty("PhaseCount", 3)
+            .WithTrait(trait)
             .Build();
 
         // Assert
-        Assert.That(request.PropertyOverrides, Is.Not.Null);
-        Assert.That(request.PropertyOverrides!.Count, Is.EqualTo(2));
-        Assert.That(request.PropertyOverrides["Health"], Is.EqualTo(500));
-        Assert.That(request.PropertyOverrides["PhaseCount"], Is.EqualTo(3));
-    }
-
-    [Test]
-    public void WithProperty_Generic_AddsToOverrides()
-    {
-        // Act
-        var request = SpawnRequestBuilder
-            .For("Survivors.Mike")
-            .WithProperty<int>("Health", 12)
-            .WithProperty<string>("Faction", "Police")
-            .Build();
-
-        // Assert
-        Assert.That(request.PropertyOverrides!["Health"], Is.EqualTo(12));
-        Assert.That(request.PropertyOverrides["Faction"], Is.EqualTo("Police"));
-    }
-
-    [Test]
-    public void WithProperty_NullOrEmptyKey_ThrowsArgumentException()
-    {
-        // Arrange
-        var builder = SpawnRequestBuilder.For("Test");
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => builder.WithProperty(null!, "value"));
-        Assert.Throws<ArgumentException>(() => builder.WithProperty("", "value"));
-        Assert.Throws<ArgumentException>(() => builder.WithProperty<int>(null!, 123));
+        Assert.That(request.TraitsToOverride, Is.Not.Null);
+        Assert.That(request.TraitsToOverride!.Count(), Is.EqualTo(1));
+        Assert.That(request.TraitsToOverride.First(), Is.SameAs(trait));
     }
 
     [Test]
@@ -168,26 +146,26 @@ public class SpawnRequestBuilderTests
     {
         // Arrange
         var component = new TestComponent();
+        var trait = new TurnForge.Engine.Traits.Standard.TeamTrait("TeamB", "Controller2");
 
         // Act
         var request = SpawnRequestBuilder
             .For("Enemies.DragonBoss")
             .At(_testPosition)
             .WithCount(1)
-            .WithProperty("Health", 1000)
-            .WithProperty("PhaseCount", 5)
-            .WithProperty<string>("Faction", "Undead")
+            .WithTrait(trait)
             .WithComponent(component)
             .Build();
 
         // Assert
         Assert.That(request.DefinitionId, Is.EqualTo("Enemies.DragonBoss"));
-        Assert.That(request.Position, Is.EqualTo(_testPosition));
         Assert.That(request.Count, Is.EqualTo(1));
-        Assert.That(request.PropertyOverrides!.Count, Is.EqualTo(3));
-        Assert.That(request.PropertyOverrides["Health"], Is.EqualTo(1000));
-        Assert.That(request.PropertyOverrides["PhaseCount"], Is.EqualTo(5));
-        Assert.That(request.PropertyOverrides["Faction"], Is.EqualTo("Undead"));
+        
+        var traits = request.TraitsToOverride;
+        Assert.That(traits!.Count(), Is.EqualTo(2)); // Position + Team
+        Assert.That(traits.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().Any(), Is.True);
+        Assert.That(traits.OfType<TurnForge.Engine.Traits.Standard.TeamTrait>().Any(), Is.True);
+        
         Assert.That(request.ExtraComponents!.Count(), Is.EqualTo(1));
     }
 
@@ -202,7 +180,10 @@ public class SpawnRequestBuilderTests
         // Assert
         Assert.That(request, Is.Not.Null);
         Assert.That(request.DefinitionId, Is.EqualTo("Survivors.Mike"));
-        Assert.That(request.Position, Is.EqualTo(_testPosition));
+        
+        var posTrait = request.TraitsToOverride!.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+        Assert.That(posTrait, Is.Not.Null);
+        Assert.That(posTrait!.InitialPosition, Is.EqualTo(_testPosition));
     }
 
     [Test]
@@ -214,32 +195,6 @@ public class SpawnRequestBuilderTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => builder.Build());
-    }
-
-    [Test]
-    public void ComplexScenario_BatchSpawnWithVariations()
-    {
-        // Arrange
-        var positions = Enumerable.Range(0, 5)
-            .Select(_ => new Position(new TileId(Guid.NewGuid())))
-            .ToList();
-
-        // Act - Create 5 zombies with increasing health
-        var requests = positions.Select((pos, index) => SpawnRequestBuilder
-            .For("Enemies.Zombie")
-            .At(pos)
-            .WithProperty("Health", 10 + (index * 5))
-            .WithProperty("Speed", index % 2 == 0 ? "Fast" : "Slow")
-            .Build())
-            .ToList();
-
-        // Assert
-        Assert.That(requests.Count, Is.EqualTo(5));
-        Assert.That(requests[0].PropertyOverrides!["Health"], Is.EqualTo(10));
-        Assert.That(requests[2].PropertyOverrides!["Health"], Is.EqualTo(20));
-        Assert.That(requests[4].PropertyOverrides!["Health"], Is.EqualTo(30));
-        Assert.That(requests[0].PropertyOverrides["Speed"], Is.EqualTo("Fast"));
-        Assert.That(requests[1].PropertyOverrides["Speed"], Is.EqualTo("Slow"));
     }
 
     // Helper test component

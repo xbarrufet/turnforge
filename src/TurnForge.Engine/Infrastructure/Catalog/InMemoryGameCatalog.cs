@@ -48,7 +48,9 @@
 
         public void RegisterDefinition(string definitionId, string name, string category)
         {
-            Entities.Register(definitionId, new BaseGameEntityDefinition(definitionId, name, category));
+            var def = new BaseGameEntityDefinition(definitionId);
+            def.Traits.Add(new TurnForge.Engine.Traits.Standard.IdentityTrait(name, category));
+            Entities.Register(definitionId, def);
         }
 
         public InMemoryGameCatalog()

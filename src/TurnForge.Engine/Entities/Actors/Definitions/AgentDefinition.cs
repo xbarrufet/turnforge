@@ -2,8 +2,7 @@ namespace TurnForge.Engine.Entities.Actors.Definitions;
 
 public abstract class AgentDefinition: BaseGameEntityDefinition
 {
-    protected AgentDefinition(string definitionId, string name, string category) : base(definitionId, name, category) {
-
+    protected AgentDefinition(string definitionId) : base(definitionId) {
     }
 
    public AgentDefinition():base()

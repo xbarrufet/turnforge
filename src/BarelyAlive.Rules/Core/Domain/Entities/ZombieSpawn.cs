@@ -35,6 +35,13 @@ public class ZombieSpawnComponent : IGameEntityComponent
     /// Spawn order for zombie waves (lower values spawn first).
     /// </summary>
     public int Order { get; set; } = 1;
+
+    public ZombieSpawnComponent() { }
+
+    public ZombieSpawnComponent(BarelyAlive.Rules.Core.Domain.Traits.SpawnOrderTrait trait)
+    {
+        Order = trait.Order;
+    }
 }
 
 /// <summary>
@@ -44,8 +51,8 @@ public class ZombieSpawnDefinition : PropDefinition
 {
     public int Order { get; set; } = 1;
     
-    public ZombieSpawnDefinition(string definitionId, string name, string category) 
-        : base(definitionId, name, category)
+    public ZombieSpawnDefinition(string definitionId) 
+        : base(definitionId)
     {
     }
 }

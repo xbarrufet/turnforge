@@ -28,6 +28,13 @@ public enum Color
 public class ColorComponent : IGameEntityComponent
 {
     public Color Color { get; set; }
+
+    public ColorComponent() { }
+
+    public ColorComponent(BarelyAlive.Rules.Core.Domain.Traits.ColorTrait trait)
+    {
+        Color = trait.Color;
+    }
 }
 
 
@@ -62,5 +69,5 @@ public class DoorDescriptor : PropDescriptor
 }
 
 
-public class DoorDefinition(string definitionId, string name, string category) : PropDefinition(definitionId, name, category)
+public class DoorDefinition(string definitionId) : PropDefinition(definitionId)
 {}

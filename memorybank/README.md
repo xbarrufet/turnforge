@@ -31,7 +31,7 @@ This documentation is organized into **3 focused sections**:
 - [FSM System](docs/1-understanding/fsm-system.md)
 - [Spawn System](docs/1-understanding/spawn-system.md)
 - [Orchestrator](docs/1-understanding/orchestrator.md)
-- [Effects System](docs/1-understanding/effects-system.md)
+- [Effects & Events](docs/1-understanding/events-system.md)
 
 **Read this to:** Understand design patterns, execution model, internal systems.
 
@@ -42,7 +42,7 @@ This documentation is organized into **3 focused sections**:
 
 - [Getting Started](docs/2-using/getting-started.md)
 - [Entities & Spawning](docs/2-using/entities.md)
-- [Components](docs/2-using/components.md)
+- [Components & Traits](docs/2-using/entities.md)
 - [Sending Commands](docs/2-using/commands.md)
 - [Strategies](docs/2-using/strategies.md)
 - [Phases & FSM](docs/2-using/phases.md)
@@ -81,15 +81,13 @@ This documentation is organized into **3 focused sections**:
 - Understand the Command-Decision-Applier pattern → [Architecture](docs/1-understanding/architecture.md)
 - Learn how FSM controls game flow → [FSM System](docs/1-understanding/fsm-system.md)
 - Implement a custom move strategy → [Strategy System API](docs/2-using/strategies.md)
-- Create a new component → [Component API](docs/2-using/components.md)
+- Create a new component → [Component API](docs/2-using/entities.md)
 - Find IActionStrategy signature → [Strategy Interfaces](docs/3-reference/strategies-ref.md)
 - See a complete working example → [Examples](examples/)
 
 ---
 
-## 📝 Legacy Documentation
 
-- [ENTIDADES.md](ENTIDADES.md) - Original monolithic documentation (deprecated, use sections above)
 
 ---
 

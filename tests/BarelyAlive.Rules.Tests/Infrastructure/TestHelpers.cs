@@ -16,23 +16,23 @@ public static class TestHelpers
     public const string DoorId = "Door";
     public const string AreaId = "Area";
 
-    public static readonly SurvivorDefinition MikeDef = new(MikeId, "Mike", "Survivor");
-    public static readonly SurvivorDefinition DougDef = new(DougId, "Doug", "Survivor");
+    public static readonly SurvivorDefinition MikeDef = new(MikeId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Mike", "Survivor") } };
+    public static readonly SurvivorDefinition DougDef = new(DougId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Doug", "Survivor") } };
     
     // Zombies
-    public static readonly BaseGameEntityDefinition ZRunnerDef = new(ZRunnerId, "Zombie Runner", "Zombie");
-    public static readonly BaseGameEntityDefinition ZFatDef = new(ZFatId, "Zombie Fat", "Zombie");
-    public static readonly BaseGameEntityDefinition ZNormalDef = new(ZNormalId, "Zombie Normal", "Zombie");
+    public static readonly BaseGameEntityDefinition ZRunnerDef = new(ZRunnerId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Runner", "Zombie") } };
+    public static readonly BaseGameEntityDefinition ZFatDef = new(ZFatId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Fat", "Zombie") } };
+    public static readonly BaseGameEntityDefinition ZNormalDef = new(ZNormalId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Normal", "Zombie") } };
     
     // Spawn
-    public static readonly BaseGameEntityDefinition SpawnPlayerDef = new(SpawnPlayerId, "Spawn Player", "Spawn.Player");
-    public static readonly BaseGameEntityDefinition SpawnZombieDef = new(SpawnZombieId, "Spawn Zombie", "Spawn.Zombie");
+    public static readonly BaseGameEntityDefinition SpawnPlayerDef = new(SpawnPlayerId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Player", "Spawn.Player") } };
+    public static readonly BaseGameEntityDefinition SpawnZombieDef = new(SpawnZombieId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Zombie", "Spawn.Zombie") } };
 
     // Zones
-    public static readonly BaseGameEntityDefinition AreaDef = new(AreaId, "Tile", "Board");
+    public static readonly BaseGameEntityDefinition AreaDef = new(AreaId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Tile", "Board") } };
     
     // Doors
-    public static readonly DoorDefinition DoorDef = new(DoorId, "Door", "Connections");
+    public static readonly DoorDefinition DoorDef = new(DoorId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Door", "Connections") } };
 
     public static void RegisterTestEntities(this TurnForge.Engine.APIs.Interfaces.IGameCatalogApi catalog)
     {

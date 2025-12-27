@@ -28,8 +28,12 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
         if (zombieSpawnPos == Position.Empty)
         {
             // Check in descriptors being spawned
-            var zDesc = descriptors.FirstOrDefault(d => d.DefinitionID == TestHelpers.SpawnZombieId);
-            zombieSpawnPos = zDesc?.Position ?? Position.Empty;
+            var zDesc = descriptors.FirstOrDefault(d => d.DefinitionId == TestHelpers.SpawnZombieId);
+            var zTrait = zDesc?.RequestedTraits.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+            if(zTrait != null)
+            {
+                zombieSpawnPos = zTrait.InitialPosition;
+            }
         }
         
         if (zombieSpawnPos == Position.Empty)
@@ -40,9 +44,10 @@ public class TestPropSpawnStrategy : ISpawnStrategy<PropDescriptor>
         // 2. Assign position to those missing it (e.g. if logic requires)
         foreach (var descriptor in descriptors)
         {
-            if (descriptor.Position == Position.Empty)
+            var hasPos = descriptor.RequestedTraits.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().Any();
+            if (!hasPos)
             {
-                descriptor.Position = zombieSpawnPos;
+                descriptor.RequestedTraits.Add(new TurnForge.Engine.Traits.Standard.PositionTrait(zombieSpawnPos));
             }
         }
 

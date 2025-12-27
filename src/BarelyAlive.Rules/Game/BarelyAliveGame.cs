@@ -69,23 +69,30 @@ private static string zona="6afac418-e205-4125-839a-48452ec273e2";
         //resgstrem les definitions
         //_catalog.RegisterDefinition("Survivors.Mike", survivorDef);
         //survivors
-        var mikeDef = new SurvivorDefinition(mike, "Mike", "Survivor");
-        var dougDef = new SurvivorDefinition(doug, "Doug", "Survivor");
+        var mikeDef = new SurvivorDefinition(mike) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Mike", "Survivor") } };
+        var dougDef = new SurvivorDefinition(doug) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Doug", "Survivor") } };
         _turnForge.GameCatalog.RegisterDefinition(mikeDef);
         _turnForge.GameCatalog.RegisterDefinition(dougDef);
         //zombies
-        _turnForge.GameCatalog.RegisterDefinition(zrunner,"Zombie Runner", "Zombie");
-        _turnForge.GameCatalog.RegisterDefinition(zfat,"Zombie Fat", "Zombie");
-        _turnForge.GameCatalog.RegisterDefinition(znormal,"Zombie Normal", "Zombie");
+        var zRunnerDef = new TurnForge.Engine.Entities.BaseGameEntityDefinition(zrunner) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Runner", "Zombie") } };
+        _turnForge.GameCatalog.RegisterDefinition(zRunnerDef);
+        
+        var zFatDef = new TurnForge.Engine.Entities.BaseGameEntityDefinition(zfat) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Fat", "Zombie") } };
+        _turnForge.GameCatalog.RegisterDefinition(zFatDef);
+        
+        var zNormalDef = new TurnForge.Engine.Entities.BaseGameEntityDefinition(znormal) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Normal", "Zombie") } };
+        _turnForge.GameCatalog.RegisterDefinition(zNormalDef);
         //spawn
-        _turnForge.GameCatalog.RegisterDefinition(spawnPlayer,"Spawn Player", "Spawn");
-        var zombiSpawn = new ZombieSpawnDefinition(spawZombie, "Spawn Zombie", "Spawn") { Order = 1 };
+        var spawnPlayerDef = new TurnForge.Engine.Entities.BaseGameEntityDefinition(spawnPlayer) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Player", "Spawn") } };
+        _turnForge.GameCatalog.RegisterDefinition(spawnPlayerDef);
+        var zombiSpawn = new ZombieSpawnDefinition(spawZombie) { Order = 1, Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Zombie", "Spawn") } };
         _turnForge.GameCatalog.RegisterDefinition(zombiSpawn);
 
         //zones
-        _turnForge.GameCatalog.RegisterDefinition(zona,"Tile", "Board");
+        var zonaDef = new TurnForge.Engine.Entities.BaseGameEntityDefinition(zona) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Tile", "Board") } };
+        _turnForge.GameCatalog.RegisterDefinition(zonaDef);
         //doors
-        var door = new DoorDefinition(porta,"Door", "Connections");
+        var door = new DoorDefinition(porta) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Door", "Connections") } };
         _turnForge.GameCatalog.RegisterDefinition(door);
     } 
 

@@ -38,7 +38,10 @@ public class MissionLoaderTests
         var explicitDoorInJson = "55f54395-6e94-4d1a-9694-824050f4a867";
         var doorProps = props.Where(p => p.DefinitionId == "Door").ToList();
         Assert.That(doorProps, Is.Not.Empty, "Should have at least the explicit door");
-        Assert.That(doorProps.Any(d => d.Position != Position.Empty && d.Position.IsConnection && d.Position.ConnectionId.ToString().Equals(explicitDoorInJson, StringComparison.OrdinalIgnoreCase)), "Explicit door missing");
+        Assert.That(doorProps.Any(d => {
+            var posTrait = d.TraitsToOverride?.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+            return posTrait != null && posTrait.InitialPosition.IsConnection && posTrait.InitialPosition.ConnectionId.ToString().Equals(explicitDoorInJson, StringComparison.OrdinalIgnoreCase);
+        }), "Explicit door missing");
         
         // Check for auto-generated doors?
         // User requested NO auto-generation. Doors are hardcoded in JSON.
@@ -46,7 +49,10 @@ public class MissionLoaderTests
         // Total = 12.
         var spawnProps = props.Where(p => p.DefinitionId == "Spawn.Zombie" || p.DefinitionId == "Spawn.Player").ToList();
         Assert.That(spawnProps.Count, Is.EqualTo(2), "Should have 2 spawns");
-        Assert.That(spawnProps.All(s => s.Position != Position.Empty && !s.Position.IsConnection), "Spawns should be on Tiles (not connections)");
+        Assert.That(spawnProps.All(s => {
+             var posTrait = s.TraitsToOverride?.OfType<TurnForge.Engine.Traits.Standard.PositionTrait>().FirstOrDefault();
+             return posTrait != null && !posTrait.InitialPosition.IsConnection;
+        }), "Spawns should be on Tiles (not connections)");
         
         Assert.That(props.Count, Is.EqualTo(12), "Should match exact number of props (Areas + Explicit in JSON)");
     }

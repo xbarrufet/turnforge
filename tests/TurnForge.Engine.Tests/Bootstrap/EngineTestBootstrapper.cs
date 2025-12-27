@@ -21,34 +21,8 @@ internal static class EngineTestBootstrapper
         var repository = new InMemoryGameRepository();
        
 
-        // Mock registries
-        var propDefs = new TestDefinitionRegistry<string, TestPropDefinition>();
-        var agentDefs = new TestDefinitionRegistry<string, TestAgentDefinition>();
-
-        // Register test definitions
-        agentDefs.Register("Survivor1",
-                new TestAgentDefinition
-                {
-                    DefinitionId = "Survivor1",
-                    AgentName = "Survivor1",
-                    Category = "Test",
-                    PositionComponent = new BasePositionComponent(Position.Empty),
-                    MaxHealth = 100,
-                     MaxMovement = 3,
-                     Traits = new List<IActorTrait>()
-                 });
-
-        agentDefs.Register("Survivor2",
-             new TestAgentDefinition
-             {
-                 DefinitionId = "Survivor2",
-                 AgentName = "Survivor2",
-                 Category = "Test",
-                 PositionComponent = new BasePositionComponent(Position.Empty),
-                 MaxHealth = 100,
-                 MaxMovement = 3,
-                 Traits = new List<IActorTrait>()
-             });
+        // Local variables were unused and relying on deleted types.
+        // If repository setup is needed, it goes here.
 
         /*var gameContext = new GameEngineContext(
             repository,

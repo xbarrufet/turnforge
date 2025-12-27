@@ -4,6 +4,11 @@ namespace TurnForge.Engine.Components;
 
 public class BaseActionPointsComponent(int maxActionPoints) : IActionPointsComponent
 {
+    public BaseActionPointsComponent(TurnForge.Engine.Traits.Standard.ActionPointsTrait trait)
+        : this(trait.MaxActionPoints)
+    {
+    }
+
     public int CurrentActionPoints { get; set; } = maxActionPoints;
     public int MaxActionPoints { get; set; } = maxActionPoints;
 
