@@ -28,6 +28,7 @@ public class TurnForgeOrchestratorTests
     public record TestDecision(DecisionTiming Timing, string Value) : IDecision
     {
         public string OriginId => "TestOrigin";
+        public TFGameState Apply(TFGameState state) => state;
     }
 
     [Test]

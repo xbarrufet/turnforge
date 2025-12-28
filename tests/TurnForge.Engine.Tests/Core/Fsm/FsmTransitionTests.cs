@@ -15,6 +15,7 @@ using TurnForge.Engine.Infrastructure.Interfaces;
 using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Infrastructure.Registration;
 using TurnForge.Engine.Core.Orchestrator; 
+using TurnForge.Engine.Core.Workflow;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 
@@ -69,7 +70,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             _repository.SaveGameState(global::TurnForge.Engine.Definitions.GameState.Empty());
 
             var stubBoardFactory = new StubBoardFactory();
-            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), stubBoardFactory);
+            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new WorkflowOrchestrator(), new ConsoleLogger(), stubBoardFactory);
 
             // 2. Build FSM Sequence
             var builder = new GameFlowBuilder();
@@ -140,7 +141,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
              services.Register<ICommandHandler<startFsmCommand>>(sp => new startFsmHandler());
              var resolver = new ServiceProviderCommandHandlerResolver(services);
              var commandBus = new CommandBus(resolver);
-             _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), new StubBoardFactory());
+             _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new WorkflowOrchestrator(), new ConsoleLogger(), new StubBoardFactory());
              _runtime.SetFsmController(_controller);
 
             // Act

@@ -1,8 +1,8 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Definitions.Actors.Definitions;
 using TurnForge.Engine.ValueObjects;
 using BarelyAlive.Rules.Core.Domain.Descriptors;
 
@@ -52,7 +52,7 @@ public class ZombieSpawnDefinition : PropDefinition
     public int Order { get; set; } = 1;
     
     public ZombieSpawnDefinition(string definitionId) 
-        : base(definitionId)
+        : base(definitionId, "System")
     {
     }
 }

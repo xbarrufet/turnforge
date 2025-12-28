@@ -1,6 +1,8 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Decisions.Actions;
 
@@ -61,5 +63,34 @@ public sealed record ActionDecision : IDecision
         return ComponentUpdates.TryGetValue(typeof(T), out var component)
             ? (T)component
             : default;
+    }
+
+    public Definitions.GameState Apply(Definitions.GameState state)
+    {
+        // 1. Try Update Agent
+        var agentKey = new TurnForge.Engine.ValueObjects.EntityId(System.Guid.Parse(EntityId));
+        if (state.Agents.TryGetValue(agentKey, out var agent))
+        {
+            var clone = (Definitions.Actors.Agent)agent.Clone();
+            foreach(var component in ComponentUpdates.Values)
+            {
+                 clone.ReplaceComponent(component);
+            }
+            return state.WithAgent(clone);
+        }
+
+        // 2. Try Update Prop
+        if (state.Props.TryGetValue(agentKey, out var prop))
+        {
+             var clone = (Definitions.Actors.Prop)prop.Clone();
+             foreach(var component in ComponentUpdates.Values)
+            {
+                 clone.ReplaceComponent(component);
+            }
+            return state.WithProp(clone);
+        }
+
+        // 3. Entity Not Found - Return state as is (or log warning?)
+        return state;
     }
 }

@@ -110,7 +110,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             _repository = new InMemoryGameRepository();
             _repository.SaveGameState(GameState.Empty());
 
-            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new ConsoleLogger(), new StubBoardFactory());
+            _runtime = new GameEngineRuntime(commandBus, _repository, new TurnForgeOrchestrator(), new TurnForge.Engine.Core.Workflow.WorkflowOrchestrator(), new ConsoleLogger(), new StubBoardFactory());
 
             var builder = new GameFlowBuilder();
             builder
@@ -242,6 +242,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         {
             public DecisionTiming Timing => DecisionTiming.Immediate;
             public string OriginId => "Test";
+            public GameState Apply(GameState state) => state;
         }
         
         public class TestApplier : IApplier<TestDecision>
@@ -260,7 +261,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             orchestrator.RegisterApplier(new TestApplier());
             
             // Re-init Runtime with this orchestrator
-            _runtime = new GameEngineRuntime(new CommandBus(new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider())), _repository, orchestrator, new ConsoleLogger(), new StubBoardFactory());
+            _runtime = new GameEngineRuntime(new CommandBus(new ServiceProviderCommandHandlerResolver(new SimpleServiceProvider())), _repository, orchestrator, new TurnForge.Engine.Core.Workflow.WorkflowOrchestrator(), new ConsoleLogger(), new StubBoardFactory());
             _runtime.SetFsmController(_controller);
 
             // We need a command that produces TestDecision

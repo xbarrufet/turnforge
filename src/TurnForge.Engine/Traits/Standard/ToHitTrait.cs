@@ -37,4 +37,25 @@ public class ToHitTrait : CheckerStatTrait
         : base(StatNameConst, dice, new TableLookup(tableName))
     {
     }
+
+    /// <summary>
+    /// Generic constructor for Builder.
+    /// </summary>
+    public ToHitTrait(PotentialRandomValue dice, ICheckCondition condition, ICheckScope? scope = null) 
+        : base(StatNameConst, dice, condition, scope) { }
+
+    public class Builder
+    {
+        private PotentialRandomValue _dice = "1d6";
+        private ICheckCondition _condition = new FixedThreshold(4);
+        private ICheckScope? _scope;
+
+        public Builder Dice(PotentialRandomValue dice) { _dice = dice; return this; }
+        public Builder On(int value) { _condition = new FixedThreshold(value); return this; }
+        public Builder VsSomething() { _condition = new OpposedCheck(); return this; }
+        public Builder Table(string tableName) { _condition = new TableLookup(tableName); return this; }
+        public Builder Scope(ICheckScope scope) { _scope = scope; return this; }
+        
+        public ToHitTrait Build() => new(_dice, _condition, _scope);
+    }
 }

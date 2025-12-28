@@ -7,4 +7,11 @@ namespace TurnForge.Engine.Traits.Standard;
 public class IdentityTrait(string category) : BaseTrait
 {
     public string Category { get; } = category;
+
+    public class Builder
+    {
+        private string _category = "Common";
+        public Builder Category(string category) { _category = category; return this; }
+        public IdentityTrait Build() => new(_category);
+    }
 }

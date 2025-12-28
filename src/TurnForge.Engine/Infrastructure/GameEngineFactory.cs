@@ -15,6 +15,7 @@ using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Infrastructure.Factories;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
+using TurnForge.Engine.Core.Workflow;
 using TurnForge.Engine.Registration;
 using TurnForge.Engine.Strategies.Spawn.Interfaces;
 using TurnForge.Engine.Services;
@@ -90,11 +91,15 @@ public static class GameEngineFactory
         orchestrator.RegisterApplier(new AgentSpawnApplier(genericActorFactory));
         orchestrator.RegisterApplier(new PropSpawnApplier(genericActorFactory));
 
+        // 7.6 Workflow Orchestrator
+        var workflowOrchestrator = new WorkflowOrchestrator();
+
         // 8️⃣ TurnForge (fachada pública)
         var runtime = new GameEngineRuntime(
             commandBus, 
             gameEngineContext.GameRepository, 
             orchestrator, 
+            workflowOrchestrator,
             gameEngineContext.Logger,
             boardFactory); // Inject BoardFactory
         var catalogApi = new GameCatalogApi(gameCatalog);

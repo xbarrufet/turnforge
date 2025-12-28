@@ -37,7 +37,26 @@ TurnForge is built around a **strict separation of concerns** between presentati
 
 ## 2. Architecture & Data Flow
 
-The engine operates in a unidirectional cycle:
+### Current Architecture (Workflow-Centric)
+
+The engine now operates using a **Workflow-centric** model for game logic:
+
+```mermaid
+graph TD
+    UI[Client / UI] -->|1. Action| FSM[FSM Node]
+    FSM -->|2. LaunchWorkflow| WO[WorkflowOrchestrator]
+    WO -->|3. Execute| Nodes[Workflow Nodes]
+    Nodes -->|4. Record| Ctx[WorkflowContext]
+    Ctx -->|5. Events| React[Reactions]
+    React -->|6. More Decisions| Ctx
+    WO -->|7. Atomic Commit| Orch[Orchestrator]
+    Orch -->|8. Apply| State[GameState]
+    State -->|9. Update| UI
+```
+
+> **Note**: The legacy Command→Handler→Strategy flow still exists for spawn operations but will be migrated to Workflows.
+
+### Legacy Architecture (Commands)
 
 ```mermaid
 graph TD
@@ -51,27 +70,32 @@ graph TD
     Projector -->|8. Update| UI
 ```
 
-### 1. Command Layer (API)
-The central entry point to the engine is `IGameEngine.ExecuteCommand(ICommand)`. This interface handles all state mutations safely.
-*   **`InitGameCommand`**: Creates the Static World (Board, Zones, Props).
-*   **`StartGameCommand`**: Spawns Dynamic Actors (Agents, NPCs) and starts the FSM.
-*   **Gameplay Commands**: `MoveUnit`, `Attack`, `EndTurn`.
+### 1. Workflow Layer (New)
+The central execution model for game logic. See [Workflow Engine Documentation](file:///Users/barrufex/Development/TurnForge/memorybank/docs/workflow_engine.md).
+*   **`IWorkflow`**: Defines structure (Nodes) and rules (Reactions)
+*   **`INode`**: Execution steps (validation, calculation)
+*   **`IReaction`**: Event-driven rules (traps, triggers)
+*   **`WorkflowContext`**: Accumulates decisions for atomic commit
 
-### 2. Orchestrator (The Execution Heart)
-The **Orchestrator** is responsible for executing the **Decisions** produced by Strategies. It acts as a transaction manager using **Appliers**.
+### 2. Command Layer (Legacy/System)
+Still used for system commands (`InitGameCommand`, `StartGameCommand`, `SpawnAgentsCommand`).
+*   Will be gradually migrated to Workflow pattern.
+
+### 3. Orchestrator (The Execution Heart)
+The **Orchestrator** is responsible for executing the **Decisions** produced by Workflows. It acts as a transaction manager using **Appliers**.
 *   **Registry**: Maps every `DecisionType` to a specific `IApplier`.
 *   **Scheduler**: Manages delayed or phase-dependent decisions (e.g., "Apply Poison `OnTurnStart`").
-*   **CommandTransaction**: Bundles all side effects of a command into a single atomic execution unit.
+*   **Atomic Commit**: All decisions from a Workflow are applied together on success.
 
-### 3. Appliers (State Mutators)
+### 4. Appliers (State Mutators)
 Appliers are the **only** components allowed to write to `GameState`.
 *   **`BuildApplier<T>`**: Handles Entity Creation (e.g., Spawning a Prop).
 *   **`UpdateApplier<T>`**: Handles Component modifications (e.g., Reducing Health).
 
-### 4. Finite State Machine (FSM)
+### 5. Finite State Machine (FSM)
 Controls the macro-flow of the game (e.g., `DeploymentPhase` -> `PlayerTurn` -> `EnemyTurn` -> `Victory`).
-*   The FSM dictates which **Command Handlers** are active.
-*   Transitions trigger the **Scheduler** to process pending decisions (e.g., "End of Turn" effects).
+*   FSM Nodes can launch **Workflows** via `NodeExecutionResult.LaunchWorkflow()`.
+*   Transitions trigger the **Scheduler** to process pending decisions.
 
 ---
 

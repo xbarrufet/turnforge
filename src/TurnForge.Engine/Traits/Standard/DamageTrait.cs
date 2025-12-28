@@ -106,4 +106,26 @@ public class DamageTrait : BaseTrait
     /// </summary>
     public bool HasProfile(string name) 
         => _profiles.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Builder for DamageTrait.
+    /// </summary>
+    public class Builder
+    {
+        private readonly DamageTrait _trait = new();
+
+        public Builder WithProfile(string name, PotentialRandomValue damage, string category = "Physical")
+        {
+            _trait.AddProfile(name, damage, category);
+            return this;
+        }
+
+        public Builder WithProfile(DamageProfile profile)
+        {
+            _trait.AddProfile(profile);
+            return this;
+        }
+
+        public DamageTrait Build() => _trait;
+    }
 }

@@ -75,7 +75,7 @@ public sealed class TurnForgeOrchestrator : IOrchestrator
     public IGameEvent[] Apply(IDecision decision)
     {
         var decisionType = decision.GetType();
-        _logger?.Log($"[Orchestrator] Apply: {decisionType.Name}");
+        _logger?.LogDebug($"Apply: {decisionType.Name}");
         if (_appliers.TryGetValue(decisionType, out var applier))
         {
             // Dynamic dispatch to IApplier<T>.Apply(T, GameState)

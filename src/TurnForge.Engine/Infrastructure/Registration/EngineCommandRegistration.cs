@@ -59,9 +59,8 @@ public static class EngineCommandRegistration
         
         services.Register<SpawnAgentsCommandHandler>(sp =>
             new SpawnAgentsCommandHandler(
-                (ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.AgentDescriptor>))!,
                 (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
-                (IGameRepository)sp.GetService(typeof(IGameRepository))!
+                (TurnForge.Engine.Core.Workflow.Interfaces.IWorkflowOrchestrator)sp.GetService(typeof(TurnForge.Engine.Core.Workflow.Interfaces.IWorkflowOrchestrator))!
             )
         );
         services.Register<ICommandHandler<SpawnAgentsCommand>>(sp =>

@@ -26,13 +26,8 @@ public class PropIntegrationTests
     {
         // Arrange
         var defId = "Spawn.Zombie";
-        var definition = new ZombieSpawnDefinition(defId)
-        { 
-            // Order = 1, // Legacy
-            Traits = { 
-                new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Spawn", "Spawn")
-            }
-        };
+        var definition = new ZombieSpawnDefinition(defId);
+        definition.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn"));
         
         // Use Trait instead of Property Property
         var descriptor = new ZombieSpawnDescriptor(defId);
@@ -58,7 +53,8 @@ public class PropIntegrationTests
     {
         // Arrange
         var defId = "Door";
-        var definition = new DoorDefinition(defId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Door", "Prop") } };
+        var definition = new DoorDefinition(defId);
+        definition.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait("Prop"));
         
         // Use Trait instead of Property
         var descriptor = new DoorDescriptor(defId);

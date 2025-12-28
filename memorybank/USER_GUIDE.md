@@ -321,142 +321,89 @@ public class EndTurnCommandHandler : ICommandHandler<EndTurnCommand>
 
 ---
 
-## 4. Command Flow and Results
+## 4. Workflow Engine
 
-### Command Architecture
+> **Note**: This section replaces the legacy "Command Flow and Results" pattern. See [Workflow Engine Documentation](file:///Users/barrufex/Development/TurnForge/memorybank/docs/workflow_engine.md) for comprehensive details.
+
+### Architecture Overview
 
 ```
-User Input → Command → Handler → Decisions → Appliers → GameState
+User Action → FSM Node → WorkflowOrchestrator → Nodes + Reactions → Decisions → Atomic Commit
 ```
 
-### Creating Custom Commands
+TurnForge uses a **Workflow-centric** architecture where:
+- **Workflows** define the structure (sequence of Nodes) and rules (Reactions)
+- **Nodes** are execution steps (validation, calculation, side effects)
+- **Reactions** respond to events/context (game rules, triggers)
+- **Decisions** accumulate during execution, committed atomically on success
 
-#### Step 1: Define Command
+### Quick Example: Attack Workflow
 
 ```csharp
-public record AttackCommand(
-    EntityId AttackerId,
-    EntityId TargetId,
-    string WeaponId
-) : ICommand;
-```
-
-#### Step 2: Create Handler
-
-```csharp
-public class AttackCommandHandler : ICommandHandler<AttackCommand>
+public class AttackWorkflow : IWorkflow
 {
-    public CommandResponse Handle(AttackCommand command, GameState state)
+    public WorkflowId Id { get; } = new("Attack");
+    public INode StartNode { get; }
+    public IReadOnlyList<IReaction> GlobalReactions { get; }
+
+    public AttackWorkflow(EntityId attacker, EntityId target)
     {
-        // 1. Validate
-        var attacker = state.GetAgent(command.AttackerId);
-        var target = state.GetAgent(command.TargetId);
+        var validation = new AttackValidationNode(attacker, target);
+        var damage = new DamageCalculationNode();
+        var apply = new ApplyDamageNode();
+
+        validation.NextNode = damage;
+        damage.NextNode = apply;
+
+        StartNode = validation;
+        GlobalReactions = new[] { new CriticalHitReaction() };
+    }
+}
+```
+
+### Executing Workflows
+
+Workflows are launched from FSM nodes:
+
+```csharp
+public class CombatFsmNode : LeafNode
+{
+    public override NodeExecutionResult Execute(GameState state)
+    {
+        var workflow = new AttackWorkflow(attackerId, targetId);
+        var context = new AttackWorkflowContext();
         
-        if (attacker == null || target == null)
-            return CommandResponse.Failure("Invalid entities");
-
-        // 2. Calculate damage
-        var damage = CalculateDamage(attacker, target, command.WeaponId);
-
-        // 3. Create decision
-        var decision = new DamageDecision(command.TargetId, damage);
-
-        // 4. Return response
-        return CommandResponse.Success()
-            .WithDecisions(decision)
-            .WithMessage($"{attacker.Name} attacks {target.Name} for {damage} damage!");
-    }
-
-    private int CalculateDamage(Agent attacker, Agent target, string weaponId)
-    {
-        // Your combat logic here
-        return 10;
+        return NodeExecutionResult.LaunchWorkflow(workflow, context);
     }
 }
 ```
 
-#### Step 3: Create Decision
+### Key Concepts
 
-```csharp
-public record DamageDecision(EntityId TargetId, int Damage) : IDecision;
-```
+| Concept | Description |
+|---------|-------------|
+| **Suspension** | Workflows can pause for input (dice roll, target selection) |
+| **Nested Workflows** | Reactions can trigger sub-workflows |
+| **Projected State** | Nodes see pending decisions before commit |
+| **Atomic Commit** | All decisions applied together on success |
 
-#### Step 4: Create Applier
+### Migration from Commands
 
-```csharp
-public class DamageApplier : IApplier<DamageDecision>
-{
-    public ApplierResponse Apply(DamageDecision decision, GameState state)
-    {
-        var target = state.GetAgent(decision.TargetId);
-        if (target == null)
-            return ApplierResponse.Failure("Target not found");
+| Legacy Pattern | New Pattern |
+|----------------|-------------|
+| `ICommandHandler` | `IWorkflow` + `INode` |
+| `CommandResult.WithDecisions()` | `context.RecordDecision()` |
+| Inline Strategy | `IReaction` |
+| Immediate Applier | Atomic commit on completion |
 
-        // Apply damage
-        var healthComponent = target.GetComponent<IHealthComponent>();
-        healthComponent.CurrentHealth -= decision.Damage;
-
-        // Check if dead
-        if (healthComponent.CurrentHealth <= 0)
-        {
-            state.RemoveAgent(decision.TargetId);
-            return ApplierResponse.Success()
-                .WithMessage($"{target.Name} has been defeated!");
-        }
-
-        return ApplierResponse.Success();
-    }
-}
-```
-
-### Executing Commands
-
-```csharp
-var command = new AttackCommand(
-    AttackerId: warriorId,
-    TargetId: enemyId,
-    WeaponId: "Sword.Iron"
-);
-
-var result = engine.Runtime.ExecuteCommand(command);
-
-if (result.Result.Success)
-{
-    Console.WriteLine(result.Result.Message);
-    
-    // Check transaction results
-    foreach (var applierResult in result.TransactionResult.Results)
-    {
-        Console.WriteLine(applierResult.Message);
-    }
-}
-```
-
-### Command Response Properties
-
-```csharp
-public class CommandResponse
-{
-    public bool Success { get; }
-    public string Message { get; }
-    public string? Error { get; }
-    public IReadOnlyList<IDecision> Decisions { get; }
-    public GameTransition? FsmTransition { get; }
-    
-    // Factory methods
-    public static CommandResponse Success();
-    public static CommandResponse Failure(string error);
-    
-    // Fluent builders
-    public CommandResponse WithMessage(string message);
-    public CommandResponse WithDecisions(params IDecision[] decisions);
-    public CommandResponse WithFsmTransition(GameTransition transition);
-}
-```
+📖 **Full Documentation**: [workflow_engine.md](file:///Users/barrufex/Development/TurnForge/memorybank/docs/workflow_engine.md)
 
 ---
 
 ## 5. Strategies
+
+> [!WARNING]
+> **Transitional Pattern**: Strategies will be migrated to **Workflow Reactions** in a future release. New game logic should use [Workflows](file:///Users/barrufex/Development/TurnForge/memorybank/docs/workflow_engine.md) instead.
 
 ### Spawn Strategies
 

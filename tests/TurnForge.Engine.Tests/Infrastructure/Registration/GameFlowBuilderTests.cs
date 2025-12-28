@@ -86,7 +86,7 @@ namespace TurnForge.Engine.Tests.Infrastructure.Registration
             // Check not empty
             foreach(var id in ids)
             {
-                Assert.That(id, Is.Not.EqualTo(System.Guid.Empty));
+                Assert.That(id, Is.Not.Empty);
             }
         }
     }

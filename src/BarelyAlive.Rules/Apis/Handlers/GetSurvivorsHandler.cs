@@ -27,9 +27,7 @@ public class GetSurvivorsHandler
 
     private BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition MapToSurvivorDto(BarelyAlive.Rules.Core.Domain.Entities.SurvivorDefinition def)
     {
-        // Extract Name from IdentityTrait
-        var identity = def.Traits.OfType<TurnForge.Engine.Traits.Standard.IdentityTrait>().FirstOrDefault();
-        var name = identity?.Name ?? def.DefinitionId;
+        var name = def.DefinitionId;
 
         return new BarelyAlive.Rules.Apis.Messaging.SurvivorDefinition(
             Id: def.DefinitionId,

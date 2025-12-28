@@ -26,8 +26,12 @@ This section provides quick reference tables for TurnForge's public API. Use the
 
 ### Data Types
 - **[Command Types](command-types.md)** - Built-in commands (Move, Spawn, etc).
-- **[Decision Types](decision-types.md)** - Built-in decisions (Action, Spawn).
-- **[Effect Types](effect-types.md)** - Built-in effects (Update, Spawn, Transition).
+- **[Decision Types](decisions.md)** - All decision types and usage. ← **UPDATED**
+- **[Event Types](events.md)** - Game and Workflow events. ← **NEW**
+
+### Workflow System
+- **[Workflows](workflows.md)** - Standard workflows and patterns. ← **NEW**
+- **[Reactions](reactions.md)** - Reaction implementation patterns. ← **NEW**
 
 ---
 

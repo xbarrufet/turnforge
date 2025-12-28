@@ -383,6 +383,45 @@ src/TurnForge.Engine/Services/Dice/
 
 ---
 
+#### FEATURE-013: Commands Workflow Engine
+
+**Status:** ⚪ BACKLOG  
+**Priority:** High  
+**Effort:** 2-3 weeks
+
+**Description:**  
+Implement the Commands Workflow architecture: a generic, extensible system for executing game commands as sequences of nodes (Workflow). This decouples the engine (orchestration) from the game rules (Reactions).
+
+**Documentation:**
+- [Requirements](requirements/commands_workflow.md)
+
+**Core Concepts:**
+- **Workflow:** Sequence of Nodes defined by the game.
+- **Node:** Structural unit (SystemNode, SelectionNode, etc.).
+- **Reaction:** Game rules that modify input/context.
+- **Orchestrator:** Engine component that runs the workflow.
+- **Transactional:** No game state changes until successful completion.
+
+**Acceptance Criteria:**
+- [ ] `IWorkflow`, `INode`, `IReaction` interfaces defined
+- [ ] `WorkflowOrchestrator` implementation
+- [ ] `WorkflowContext` for transient state
+- [ ] `InputActionResult` and `ActionResult` abstractions
+- [ ] Validation and node transition logic
+- [ ] `EndNode` and `IDecision` application to GameState
+- [ ] Unit tests for orchestration flow
+
+**Technical Notes:**
+- Engine does not know specific game rules.
+- Engine does not generate random results (delegated to input).
+- Atomic execution via Decisions.
+
+**Dependencies:**
+- None (Foundational architecture)
+
+---
+
+
 #### FEATURE-004: Handler/Applier Autodiscovery
 
 **Status:** ⚪ BACKLOG  
@@ -1486,5 +1525,41 @@ Caller is responsible for providing correct parameters based on context.
 
 ---
 
-**End of Backlog**
+### IDEA-011: Effects System & Temporal Traits
 
+**Status:** 🏗️ DESIGN PHASE
+**Proposed By:** User request, 2025-12-27
+
+**Concept:**
+An **Effect** is a logic unit associated with an entity that modifies its state (Components), stats (Traits), or triggers actions (Commands) over a duration.
+
+**Architecture:**
+1.  **Effective Value System (Pull-based):**
+    *   `IEffectiveValue<T>`: Represents a value that can be modified.
+    *   `Stat<T>` chain: `EffectiveValue = Effects.Aggregate(BaseTrait.Value)`.
+    *   *Pattern:* Decorator or Pipeline over the base Trait value.
+    *   *Usage:* Systems query `Entity.GetEffective<ToHitTrait>()` instead of accessing trait directly.
+
+2.  **Temporal Management (State):**
+    *   `ActiveEffectsComponent`: Attached to `GameEntity`. Stores dynamic list of `ActiveEffect`.
+    *   `ActiveEffect`: Holds `Duration` (Turns/Phases), `SourceId`, and the logic/modifier.
+    *   **FSM Integration:** `EffectExpirationSystem` runs on Turn/Phase boundaries to decrement duration and clean up.
+
+3.  **Command/Workflow Triggers (Push-based):**
+    *   Effects can define a `TriggerAction` (e.g., `QueueCommand(new ExplosionCommand())`).
+    *   Execution: Enqueued to `Orchestrator` to run *after* the current step/command.
+
+**Use Cases to Verify:**
+- **Poison (Component Mod):** Apply `-1 HP` at `OnTurnStart`.
+- **Mage Aura (Trait Mod):** `ToHit` becomes `Base + 1` while active.
+- **Trap (Partial Workflow):** Trigger `Explosion` (Damage logic) without full Combat sequence.
+
+**Work Items:**
+- [ ] Define `ActiveEffect` and `ActiveEffectsComponent`.
+- [ ] Implement `EffectiveValue<T>` logic.
+- [ ] Create `EffectExpirationSystem` (Hook into FSM/Orchestrator).
+- [ ] Integrate into `DiceCheckService` (to use effective values).
+
+---
+
+**End of Backlog**

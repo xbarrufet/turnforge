@@ -34,7 +34,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
 
         private class PassNode : FsmNode
         {
-            public PassNode(Guid id, string name) { Id = new NodeId(id); Name = name; }
+            public PassNode(Guid id, string name) { Id = new NodeId(id.ToString()); Name = name; }
             public override bool IsCommandAllowed(Type commandType) => false;
             public override IReadOnlyList<Type> GetAllowedCommands() => Array.Empty<Type>();
             public override bool IsCompleted(GameState state) => true; // Always pass
@@ -42,7 +42,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
         
         private class StopLeafNode : LeafNode
         {
-            public StopLeafNode(Guid id, string name) { Id = new NodeId(id); Name = name; }
+            public StopLeafNode(Guid id, string name) { Id = new NodeId(id.ToString()); Name = name; }
             public override bool IsCompleted(GameState state) => false; // Always stop
         }
 
@@ -51,7 +51,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             public TurnForge.Engine.Commands.Interfaces.ICommand CommandToLaunch { get; }
             public CommandLaunchNode(Guid id, string name, TurnForge.Engine.Commands.Interfaces.ICommand command) 
             { 
-                Id = new NodeId(id); 
+                Id = new NodeId(id.ToString()); 
                 Name = name; 
                 CommandToLaunch = command;
             }
@@ -148,7 +148,7 @@ namespace TurnForge.Engine.Tests.Core.Fsm
             var result = controller.ProcessFlow(GameState.Empty());
 
             // Assert
-            _loggerMock.Verify(x => x.LogError(It.Is<string>(s => s.Contains("Infinite loop detected")), It.IsAny<Exception>()), Times.Once);
+            _loggerMock.Verify(x => x.LogError(It.Is<string>(s => s.Contains("Infinite loop detected")), It.IsAny<Exception>(), It.IsAny<TurnForge.Engine.Core.Logging.LogContext>()), Times.Once);
 
             // Should have stopped at MaxLoop (100) + start
             // sequence[0] -> sequence[100].

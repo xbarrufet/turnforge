@@ -1,3 +1,4 @@
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Definitions.Descriptors;
@@ -37,4 +38,9 @@ public sealed record SpawnDecision<TDescriptor>(
     /// Origin of this decision (command ID, system, etc.)
     /// </summary>
     public string OriginId { get; init; } = "System";
+
+    public Definitions.GameState Apply(Definitions.GameState state)
+    {
+        throw new NotImplementedException("SpawnDecision<T> requires external factory. Use AgentSpawnDecision or PropSpawnDecision for atomic application.");
+    }
 }

@@ -21,3 +21,4 @@ public record OpposedCheck() : ICheckCondition;
 /// </summary>
 /// <param name="TableName">Name of the table to look up (e.g., "ToWound", "ArmorSave")</param>
 public record TableLookup(string TableName) : ICheckCondition;
+

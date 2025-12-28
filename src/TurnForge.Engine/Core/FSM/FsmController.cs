@@ -10,6 +10,8 @@ using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Core.Orchestrator.Interfaces;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Appliers.Entity.Results.Interfaces;
+using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Workflow.Interfaces;
 
 namespace TurnForge.Engine.Core.Fsm
 {
@@ -86,19 +88,25 @@ namespace TurnForge.Engine.Core.Fsm
                     }
                 }
 
-                // 3. Check for Auto-Command Launch
-                if (execResult.CommandToLaunch != null)
+                if (execResult.CommandToLaunch != null || execResult.WorkflowToLaunch != null)
                 {
                     _orchestrator?.SetState(currentState);
-                    return new FsmStepResult(currentState, false, accumulatedEvents, execResult.CommandToLaunch, execResult.IsGameOver);
+                    return new FsmStepResult(
+                        currentState, 
+                        false, 
+                        accumulatedEvents, 
+                        execResult.CommandToLaunch, 
+                        execResult.WorkflowToLaunch,
+                        execResult.InitialContext,
+                        execResult.IsGameOver);
                 }
                 
                 // 4 Check Game Over
                 if (execResult.IsGameOver || node.IsGameOver(currentState))
                 {
-                     _logger?.Log($"[FsmController] Game Over detected at node {node.Name}");
+                     _logger?.LogInfo($"Game Over detected at node {node.Name}");
                      _orchestrator?.SetState(currentState);
-                     return new FsmStepResult(currentState, false, accumulatedEvents, null, true);
+                     return new FsmStepResult(currentState, false, accumulatedEvents, null, null, null, true);
                 }
 
                 // 5. Check for Completion (Transition)
@@ -172,7 +180,7 @@ namespace TurnForge.Engine.Core.Fsm
                 if (execResult.IsGameOver || node.IsGameOver(state))
                 {
                      // Return immediately with Game Over
-                     return new FsmStepResult(state, false, events, null, true);
+                     return new FsmStepResult(state, false, events, null, null, null, true);
                 }
             
                 // Check flow again (State changed => Node might be completed now)
@@ -185,5 +193,12 @@ namespace TurnForge.Engine.Core.Fsm
         }
     }
     
-    public record FsmStepResult(GameState State, bool TransitionRequested, IReadOnlyList<IGameEvent> GameEvents, ICommand? CommandToLaunch = null, bool IsGameOver = false);
+    public record FsmStepResult(
+        GameState State, 
+        bool TransitionRequested, 
+        IReadOnlyList<IGameEvent> GameEvents, 
+        ICommand? CommandToLaunch = null, 
+        IWorkflow? WorkflowToLaunch = null,
+        WorkflowContext? WorkflowContext = null,
+        bool IsGameOver = false);
 }

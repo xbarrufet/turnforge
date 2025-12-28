@@ -34,10 +34,17 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
         DefinitionId = definitionId;
     }
 
-    private readonly Dictionary<Type, IGameEntityComponent> _components = new()
+    private Dictionary<Type, IGameEntityComponent> _components = new()
     {
         { typeof(ITraitContainerComponent), new TraitContainerComponent() }
     };
+    
+    public virtual GameEntity Clone()
+    {
+        var clone = (GameEntity)this.MemberwiseClone();
+        clone._components = new Dictionary<Type, IGameEntityComponent>(this._components);
+        return clone;
+    }
 
     public IReadOnlyCollection<IGameEntityComponent> Components => _components.Values;
 

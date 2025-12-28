@@ -28,6 +28,9 @@ This documentation is organized into **3 focused sections**:
 - [Architecture](docs/1-understanding/architecture.md)
 - [Entity System](docs/1-understanding/entity-system.md)
 - [Command Pipeline](docs/1-understanding/command-pipeline.md)
+- [**Workflow Engine**](docs/workflow_engine.md)
+- [**Workflow Interrupt Model**](docs/workflow_interrupt_model.md) ← **NEW**
+- [**Traits & Reactions**](docs/traits_and_reactions.md)
 - [FSM System](docs/1-understanding/fsm-system.md)
 - [Spawn System](docs/1-understanding/spawn-system.md)
 - [Orchestrator](docs/1-understanding/orchestrator.md)

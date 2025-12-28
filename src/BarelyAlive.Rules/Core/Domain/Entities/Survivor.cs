@@ -45,6 +45,6 @@ public class SurvivorDefinition : BaseGameEntityDefinition
     {
         // Using int constructor if available or parameterless
         // Default traits can be added here if needed, but Identity is usually external
-        Traits.Add(new TurnForge.Engine.Traits.Standard.VitalityTrait(maxHP: MaxHealth));
+        AddTrait(new TurnForge.Engine.Traits.Standard.VitalityTrait(maxHP: MaxHealth));
     }
 }

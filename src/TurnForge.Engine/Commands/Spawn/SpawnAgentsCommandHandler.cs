@@ -1,90 +1,57 @@
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Commands.Spawn;
-using TurnForge.Engine.Core.Factories;
-using TurnForge.Engine.Definitions;
-using TurnForge.Engine.Definitions.Actors.Descriptors;
+using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Workflow.Interfaces;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
-using TurnForge.Engine.Repositories.Interfaces;
-using TurnForge.Engine.Strategies.Spawn.Interfaces;
+using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Workflows.Spawn;
 
 namespace TurnForge.Engine.Commands.Spawn;
 
 /// <summary>
-/// Handler for spawning agents using the new spawn pipeline.
-/// Pipeline: SpawnRequest → Descriptor (preprocessor) → Strategy → Decision
-/// The FSM will apply the decisions using the registered SpawnApplier.
+/// Handler for spawning agents using the SpawnWorkflow.
+/// Pipeline: SpawnRequest → SpawnWorkflow → Decisions
 /// </summary>
 public sealed class SpawnAgentsCommandHandler : ICommandHandler<SpawnAgentsCommand>
 {
-    private readonly ISpawnStrategy<AgentDescriptor> _strategy;
     private readonly IGameCatalog _catalog;
-    private readonly IGameRepository _repository;
+    private readonly IWorkflowOrchestrator _orchestrator;
 
     public SpawnAgentsCommandHandler(
-        ISpawnStrategy<AgentDescriptor> strategy,
         IGameCatalog catalog,
-        IGameRepository repository)
+        IWorkflowOrchestrator orchestrator)
     {
-        _strategy = strategy ?? throw new ArgumentNullException(nameof(strategy));
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
     }
 
     public CommandResult Handle(SpawnAgentsCommand command)
     {
-        // Load current game state
-        var gameState = _repository.LoadGameState();
+        // Create workflow and context
+        var workflow = new SpawnWorkflow();
+        var context = new SpawnWorkflowContext(command.Requests, _catalog);
 
-        // STEP 1: PREPROCESSOR - Convert SpawnRequests to Descriptors
-        var descriptors = BuildDescriptors(command.Requests);
+        // Execute workflow
+        var result = _orchestrator.Execute(workflow, context);
 
-        // STEP 2: STRATEGY - Process descriptors (filter/modify based on business logic)
-        var processedDescriptors = _strategy.Process(descriptors, gameState);
+        // Handle workflow result
+        if (result.Status == WorkflowStatus.Cancelled)
+        {
+            return CommandResult.Fail("Spawn workflow cancelled");
+        }
 
-        // STEP 3: TO DECISIONS - Wrap descriptors in spawn decisions
-        var spawnDecisions = _strategy.ToDecisions(processedDescriptors);
+        if (result.Status == WorkflowStatus.Suspended)
+        {
+            // Spawn should not require user input
+            return CommandResult.Fail("Spawn workflow suspended unexpectedly");
+        }
 
-        // Convert to IDecision array for FSM
-        var decisions = spawnDecisions.Cast<IDecision>().ToArray();
+        // Extract decisions from context
+        var decisions = context.Decisions.ToArray();
 
-        // STEP 4: Return decisions to FSM
-        // FSM will apply them using AgentSpawnApplier at the appropriate time
-        // (either immediately or at OnCommandExecutionEnd depending on Decision.Timing)
         return CommandResult.Ok(
             decisions: decisions,
             tags: "AgentsSpawned"
         );
-    }
-
-    /// <summary>
-    /// Preprocessor: Converts SpawnRequests to populated AgentDescriptors.
-    /// Applies definition data and property overrides automatically.
-    /// </summary>
-    private List<AgentDescriptor> BuildDescriptors(IReadOnlyList<SpawnRequest> requests)
-    {
-        var descriptors = new List<AgentDescriptor>();
-
-        foreach (var request in requests)
-        {
-            // Get definition from catalog
-            var definition = _catalog.GetDefinition<BaseGameEntityDefinition>(request.DefinitionId);
-            if (definition == null)
-            {
-                // Log warning and skip - definition not found
-                // TODO: Add logging
-                continue;
-            }
-
-            // Expand Count (batch spawn)
-            for (int i = 0; i < request.Count; i++)
-            {
-                // Build descriptor with definition + overrides
-                var descriptor = DescriptorBuilder.Build<AgentDescriptor>(request, definition);
-                descriptors.Add(descriptor);
-            }
-        }
-
-        return descriptors;
     }
 }

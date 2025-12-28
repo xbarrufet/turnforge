@@ -1,6 +1,7 @@
 using BarelyAlive.Rules.Core.Domain.Entities;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
+using TurnForge.Engine.Traits.Standard; // For IdentityTrait
 
 namespace BarelyAlive.Rules.Tests.Infrastructure;
 
@@ -16,23 +17,45 @@ public static class TestHelpers
     public const string DoorId = "Door";
     public const string AreaId = "Area";
 
-    public static readonly SurvivorDefinition MikeDef = new(MikeId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Mike", "Survivor") } };
-    public static readonly SurvivorDefinition DougDef = new(DougId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Doug", "Survivor") } };
+    // Helper to create defs with traits
+    private static SurvivorDefinition CreateSurvivor(string id, string category)
+    {
+        var d = new SurvivorDefinition(id);
+        d.AddTrait(new IdentityTrait(category));
+        return d;
+    }
+    
+    private static BaseGameEntityDefinition CreateBase(string id, string category)
+    {
+        var d = new BaseGameEntityDefinition(id);
+        d.AddTrait(new IdentityTrait(category));
+        return d;
+    }
+    
+    // Definitions
+    public static readonly SurvivorDefinition MikeDef = CreateSurvivor(MikeId, "Survivor");
+    public static readonly SurvivorDefinition DougDef = CreateSurvivor(DougId, "Survivor");
     
     // Zombies
-    public static readonly BaseGameEntityDefinition ZRunnerDef = new(ZRunnerId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Runner", "Zombie") } };
-    public static readonly BaseGameEntityDefinition ZFatDef = new(ZFatId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Fat", "Zombie") } };
-    public static readonly BaseGameEntityDefinition ZNormalDef = new(ZNormalId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Zombie Normal", "Zombie") } };
+    public static readonly BaseGameEntityDefinition ZRunnerDef = CreateBase(ZRunnerId, "Zombie");
+    public static readonly BaseGameEntityDefinition ZFatDef = CreateBase(ZFatId, "Zombie");
+    public static readonly BaseGameEntityDefinition ZNormalDef = CreateBase(ZNormalId, "Zombie");
     
     // Spawn
-    public static readonly BaseGameEntityDefinition SpawnPlayerDef = new(SpawnPlayerId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Player", "Spawn.Player") } };
-    public static readonly BaseGameEntityDefinition SpawnZombieDef = new(SpawnZombieId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Spawn Zombie", "Spawn.Zombie") } };
+    public static readonly BaseGameEntityDefinition SpawnPlayerDef = CreateBase(SpawnPlayerId, "Spawn.Player");
+    public static readonly BaseGameEntityDefinition SpawnZombieDef = CreateBase(SpawnZombieId, "Spawn.Zombie");
 
     // Zones
-    public static readonly BaseGameEntityDefinition AreaDef = new(AreaId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Tile", "Board") } };
+    public static readonly BaseGameEntityDefinition AreaDef = CreateBase(AreaId, "Board");
     
     // Doors
-    public static readonly DoorDefinition DoorDef = new(DoorId) { Traits = { new TurnForge.Engine.Traits.Standard.IdentityTrait("Door", "Connections") } };
+    // DoorDefinition constructor adds "Structure" category to Prop base.
+    // If we want "Connections" category as in legacy, we might overwrite or add extra.
+    // The test expected "Door", "Connections".
+    // I will stick to DoorDefinition constructor default if possible, or add explicit.
+    // DoorDefinition(id) -> PropDefinition(id, "Structure").
+    // We can just instantiate it.
+    public static readonly DoorDefinition DoorDef = new DoorDefinition(DoorId);
 
     public static void RegisterTestEntities(this TurnForge.Engine.APIs.Interfaces.IGameCatalogApi catalog)
     {
@@ -46,7 +69,8 @@ public static class TestHelpers
         catalog.RegisterDefinition(AreaDef);
         catalog.RegisterDefinition(DoorDef);
     }
-
+    
+    // ... Mission JSON (kept as is) ...
     public const string Mission01Json = """
     {
       "missionName": "mission01",
@@ -98,7 +122,7 @@ public static class TestHelpers
           { "id": "78901234-6f60-4182-e904-675390168345", "from": "52aef277-2960-4974-8a29-e9e981d11c1a", "to": "c3e99a3c-0a24-42af-961e-1d8be2352bea", "direction": "South" },
           { "id": "89012345-7071-4293-f015-786401279456", "from": "c3e99a3c-0a24-42af-961e-1d8be2352bea", "to": "52aef277-2960-4974-8a29-e9e981d11c1a", "direction": "North" }
         ],
-
+    
         "zones": [
           {
             "id": "6afac418-e205-4125-839a-48452ec273e2",

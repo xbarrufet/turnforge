@@ -1,7 +1,8 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Definitions.Actors.Definitions;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
@@ -69,5 +70,5 @@ public class DoorDescriptor : PropDescriptor
 }
 
 
-public class DoorDefinition(string definitionId) : PropDefinition(definitionId)
+public class DoorDefinition(string definitionId) : PropDefinition(definitionId, "Structure")
 {}

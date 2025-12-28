@@ -1,3 +1,4 @@
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Core.Orchestrator;
@@ -13,4 +14,9 @@ public record AgentSpawnDecision(Agent Entity) : ISpawnDecision<Agent>, IDecisio
 {
     public DecisionTiming Timing { get; init; } = DecisionTiming.Immediate;
     public string OriginId { get; init; } = "System";
+
+    public GameState Apply(Definitions.GameState state)
+    {
+        return state.WithAgent(Entity);
+    }
 }

@@ -33,12 +33,15 @@ public class CheckerStatTrait : BaseTrait
     /// How to validate the roll result.
     /// </summary>
     public ICheckCondition Condition { get; }
+
+    public ICheckScope CheckScope { get; }
     
-    public CheckerStatTrait(string statName, PotentialRandomValue dicePattern, ICheckCondition condition)
+    public CheckerStatTrait(string statName, PotentialRandomValue dicePattern, ICheckCondition condition, ICheckScope? scope = null)  
     {
         StatName = statName;
         DicePattern = dicePattern;
         Condition = condition;
+        CheckScope = scope ?? new AllOfThem();
     }
     
     // ─────────────────────────────────────────────────────────────

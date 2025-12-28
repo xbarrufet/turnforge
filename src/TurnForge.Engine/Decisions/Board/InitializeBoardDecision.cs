@@ -1,5 +1,6 @@
-using TurnForge.Engine.Core.Orchestrator;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Core.Orchestrator;
 using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Decisions.Board;
@@ -12,4 +13,9 @@ public sealed record InitializeBoardDecision(GameBoard Board) : IDecision
 {
     public DecisionTiming Timing { get; init; } = DecisionTiming.Immediate;
     public string OriginId { get; init; } = "System";
+
+    public GameState Apply(GameState state)
+    {
+        return state.WithBoard(Board);
+    }
 }
