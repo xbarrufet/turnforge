@@ -80,6 +80,44 @@ public abstract class WorkflowContext
 
     public void Remove(string key)
         => _data.Remove(key);
+    
+    // --------------------------------------------------------------------
+    // Typed workflow data (IWorkflowData)
+    // --------------------------------------------------------------------
+    
+    private readonly Dictionary<Type, Interfaces.IWorkflowData> _typedData = new();
+    
+    /// <summary>
+    /// Set typed workflow data. Only one instance per type is stored.
+    /// </summary>
+    public void SetTypedData<T>(T data) where T : Interfaces.IWorkflowData
+    {
+        _typedData[typeof(T)] = data;
+    }
+    
+    /// <summary>
+    /// Get typed workflow data. Throws if not found.
+    /// </summary>
+    public T GetTypedData<T>() where T : Interfaces.IWorkflowData
+    {
+        if (!_typedData.TryGetValue(typeof(T), out var data))
+            throw new KeyNotFoundException($"WorkflowContext typed data '{typeof(T).Name}' not found.");
+        return (T)data;
+    }
+    
+    /// <summary>
+    /// Try to get typed workflow data.
+    /// </summary>
+    public bool TryGetTypedData<T>(out T data) where T : Interfaces.IWorkflowData
+    {
+        if (_typedData.TryGetValue(typeof(T), out var obj))
+        {
+            data = (T)obj;
+            return true;
+        }
+        data = default!;
+        return false;
+    }
 
     // --------------------------------------------------------------------
     // Diagnostics / tracing support
@@ -155,7 +193,7 @@ public abstract class WorkflowContext
     /// <summary>
     /// Initialize the working state from a base state copy.
     /// </summary>
-    internal void InitializeState(GameState baseState)
+    protected internal void InitializeState(GameState baseState)
     {
         _workingState = baseState;
     }

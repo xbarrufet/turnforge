@@ -1,60 +1,37 @@
 using Parchis.Rules.Board;
+using Parchis.Rules.Definitions;
 using TurnForge.Engine.Definitions;
-using TurnForge.Engine.ValueObjects;
 
 namespace Parchis.Rules;
 
 /// <summary>
 /// Bootstrap for initializing a Parchís game.
-/// Creates the initial game state with all pieces at home.
+/// Uses TurnForge patterns: Board via factory.
 /// </summary>
 public static class ParchisBootstrap
 {
     public const int PiecesPerPlayer = 4;
     
     /// <summary>
-    /// Create initial game state for a 2-player Parchís game.
+    /// Create initial game state with board.
+    /// Pieces are managed separately via game API.
     /// </summary>
-    public static GameState CreateInitialState()
+    public static GameState CreateInitialStateWithBoard()
     {
-        var state = GameState.Empty();
+        var board = ParchisBoardFactory.Create();
         
-        // Create pieces for Yellow player
-        for (int i = 0; i < PiecesPerPlayer; i++)
-        {
-            var piece = CreatePiece(PlayerColor.Yellow, i);
-            state = state.WithAgent(piece);
-        }
-        
-        // Create pieces for Blue player
-        for (int i = 0; i < PiecesPerPlayer; i++)
-        {
-            var piece = CreatePiece(PlayerColor.Blue, i);
-            state = state.WithAgent(piece);
-        }
-        
-        // Set initial metadata
-        state = state
+        return GameState.Empty()
+            .WithBoard(board)
             .WithMetadata("CurrentPlayer", PlayerColor.Yellow)
             .WithMetadata("TurnNumber", 1)
             .WithMetadata("ConsecutiveSixes", 0);
-        
-        return state;
     }
     
     /// <summary>
-    /// Create a piece agent for a player.
+    /// Get all piece definitions.
     /// </summary>
-    private static TurnForge.Engine.Definitions.Actors.Agent CreatePiece(PlayerColor color, int pieceNumber)
+    public static IEnumerable<PieceDefinition> GetPieceDefinitions()
     {
-        var id = new EntityId($"{color}_{pieceNumber}");
-        
-        // Using basic Agent structure - will add components later
-        return new TurnForge.Engine.Definitions.Actors.Agent(
-            id,
-            $"{color} Piece {pieceNumber}",
-            Array.Empty<TurnForge.Engine.Components.Interfaces.IGameEntityComponent>(),
-            Array.Empty<TurnForge.Engine.Traits.Interfaces.IBaseTrait>()
-        );
+        return PieceDefinition.CreateAllPieceDefinitions();
     }
 }
