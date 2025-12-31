@@ -6,7 +6,8 @@ public enum WorkflowStatus
     Running    = 1,
     Suspended  = 2,
     Completed  = 3,
-    Cancelled  = 4
+    Cancelled  = 4,
+    Failed     = 5
 }
 
 

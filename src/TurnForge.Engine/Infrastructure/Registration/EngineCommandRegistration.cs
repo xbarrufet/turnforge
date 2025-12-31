@@ -1,15 +1,15 @@
-using TurnForge.Engine.Commands.Board;
-using TurnForge.Engine.Commands.Spawn;
+// LEGACY FILE - Temporarily disabled during workflow refactor
+// TODO: Reimplement with new workflow-based command system
+
+/*
 using TurnForge.Engine.Commands.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Definitions.Actors.Interfaces;
-using TurnForge.Engine.Appliers.Entity;
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Infrastructure;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
-using TurnForge.Engine.Strategies.Spawn.Interfaces;
 
 namespace TurnForge.Engine.Registration;
 
@@ -24,47 +24,23 @@ public static class EngineCommandRegistration
 {
     public static void Register(SimpleServiceProvider services)
     {
-        // =====================================================
-        // LoadGame
-        // =====================================================
+        // TODO: Reimplement board and spawn commands using new workflow architecture
+    }
+}
+*/
 
-        // =====================================================
-        // Board Initialization
-        // =====================================================
-        
-        services.Register<InitializeBoardCommandHandler>(sp =>
-            new InitializeBoardCommandHandler(
-                (IBoardFactory)sp.GetService(typeof(IBoardFactory))!,
-                (IGameRepository)sp.GetService(typeof(IGameRepository))!
-            )
-        );
-        services.Register<ICommandHandler<InitializeBoardCommand>>(sp =>
-            (InitializeBoardCommandHandler)sp.GetService(typeof(InitializeBoardCommandHandler))!
-        );
+namespace TurnForge.Engine.Registration;
 
-        // =====================================================
-        // Spawn Commands
-        // =====================================================
-        
-        services.Register<SpawnPropsCommandHandler>(sp =>
-            new SpawnPropsCommandHandler(
-                (ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>)sp.GetService(typeof(ISpawnStrategy<TurnForge.Engine.Definitions.Actors.Descriptors.PropDescriptor>))!,
-                (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
-                (IGameRepository)sp.GetService(typeof(IGameRepository))!
-            )
-        );
-        services.Register<ICommandHandler<SpawnPropsCommand>>(sp =>
-            (SpawnPropsCommandHandler)sp.GetService(typeof(SpawnPropsCommandHandler))!
-        );
-        
-        services.Register<SpawnAgentsCommandHandler>(sp =>
-            new SpawnAgentsCommandHandler(
-                (IGameCatalog)sp.GetService(typeof(IGameCatalog))!,
-                (TurnForge.Engine.Core.Workflow.Interfaces.IWorkflowOrchestrator)sp.GetService(typeof(TurnForge.Engine.Core.Workflow.Interfaces.IWorkflowOrchestrator))!
-            )
-        );
-        services.Register<ICommandHandler<SpawnAgentsCommand>>(sp =>
-            (SpawnAgentsCommandHandler)sp.GetService(typeof(SpawnAgentsCommandHandler))!
-        );
+using TurnForge.Engine.Infrastructure;
+
+/// <summary>
+/// Placeholder for engine command registration.
+/// Legacy command handlers have been removed during workflow refactor.
+/// </summary>
+public static class EngineCommandRegistration
+{
+    public static void Register(SimpleServiceProvider services)
+    {
+        // No-op: Command handlers will be reimplemented using workflow architecture
     }
 }

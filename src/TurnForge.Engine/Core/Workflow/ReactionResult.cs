@@ -23,7 +23,7 @@ namespace TurnForge.Engine.Core.Workflow
         /// Optional modified input produced by the reaction.
         /// Used for rerolls, replacements or adjustments.
         /// </summary>
-        public IInputActionResult? ModifiedInput { get; }
+        public IWorkflowInput? ModifiedInput { get; }
 
         /// <summary>
         /// Optional nested workflow to be executed immediately.
@@ -60,7 +60,7 @@ namespace TurnForge.Engine.Core.Workflow
 
         private ReactionResult(
             WorkflowContext context,
-            IInputActionResult? modifiedInput,
+            IWorkflowInput? modifiedInput,
             IWorkflow? nestedWorkflow,
             bool requiresInput = false,
             bool executeNestedWorkflow = false)
@@ -88,7 +88,7 @@ namespace TurnForge.Engine.Core.Workflow
         /// </summary>
         public static ReactionResult WithModifiedInput(
             WorkflowContext context,
-            IInputActionResult modifiedInput)
+            IWorkflowInput modifiedInput)
             => new(context, modifiedInput, null);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace TurnForge.Engine.Core.Workflow
         /// </summary>
         public static ReactionResult WithModifiedInputAndNestedWorkflow(
             WorkflowContext context,
-            IInputActionResult modifiedInput,
+            IWorkflowInput modifiedInput,
             IWorkflow nestedWorkflow,
             bool executeImmediately = true)
             => new(context, modifiedInput, nestedWorkflow, executeNestedWorkflow: executeImmediately);

@@ -2,7 +2,7 @@ using TurnForge.Engine.Traits;
 
 namespace TurnForge.Engine.Traits.Standard;
 
-public class WeaponRangeTrait : BaseTrait
+public class WeaponRangeTrait : BaseDataTrait
 {
     public Dictionary<string, EffectiveRange> Ranges { get; set; } = new();
     

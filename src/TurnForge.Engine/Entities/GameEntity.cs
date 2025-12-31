@@ -85,6 +85,11 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
         else
             _components[type] = component;
     }
+
+    public virtual bool RemoveComponent<T>() where T : IGameEntityComponent
+    {
+        return _components.Remove(typeof(T));
+    }
     
     public bool HasComponent<T>() where T : class, IGameEntityComponent
     {

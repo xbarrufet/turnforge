@@ -5,13 +5,6 @@ namespace TurnForge.Engine.Core.Workflow.Interfaces;
 
 public interface IWorkflowOrchestrator
 {
-    WorkflowExecutionResult Execute(
-        IWorkflow workflow,
-        WorkflowContext context);
-
-    WorkflowExecutionResult Resume(
-        IWorkflow workflow,
-        WorkflowContext context,
-        IInputActionResult input,
-        Func<WorkflowId, IWorkflow>? workflowResolver = null);
+    void StartWorkflow(IWorkflow workflow, WorkflowContext context);
+    void SubmitInput(Guid workflowId, IWorkflowInput input);
 }

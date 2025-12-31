@@ -1,10 +1,16 @@
+using TurnForge.Engine.Definitions;
+
 namespace TurnForge.Engine.Traits.Interfaces;
 
 /// <summary>
-/// Marker interface for traits that contain only data.
-/// These traits do not react to events.
-/// Examples: HealthTrait, MovementTrait, IdentityTrait
+/// Base interface for all traits.
+/// Traits are data containers attached to entities.
 /// </summary>
-public interface IDataTrait : IBaseTrait
+public interface IDataTrait 
 {
+    /// <summary>
+    /// The entity that owns this trait.
+    /// </summary>
+    GameEntity Owner { get; }
 }
+

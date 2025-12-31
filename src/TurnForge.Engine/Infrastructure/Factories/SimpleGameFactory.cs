@@ -3,6 +3,8 @@ using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Board;
 
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
+using TurnForge.Engine.Entities.Board;
+
 namespace TurnForge.Engine.Infrastructure.Factories;
 
 public class SimpleGameFactory : IGameFactory

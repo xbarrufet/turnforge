@@ -1,7 +1,8 @@
 using TurnForge.Engine.Core.Workflow.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Decisions.Entity.Interfaces;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Decisions;
 
 namespace TurnForge.Engine.Core.Workflow;
 
@@ -120,6 +121,50 @@ public abstract class WorkflowContext
     }
 
     // --------------------------------------------------------------------
+    // Input Management
+    // --------------------------------------------------------------------
+    
+    private readonly Queue<IWorkflowInput> _inputQueue = new();
+    private readonly List<IWorkflowInput> _history = new();
+
+    public void EnqueueInput(IWorkflowInput input)
+    {
+        _inputQueue.Enqueue(input);
+        _history.Add(input);
+    }
+
+    public bool HasInput<T>() where T : IWorkflowInput
+    {
+        return _inputQueue.Any(i => i is T);
+    }
+
+    public T? ConsumeInput<T>() where T : IWorkflowInput
+    {
+        // We look for the first matching input in the queue
+        // Note: This is a simplified queue. In complex interactions, we might need random access removal.
+        // For now, let's assume strict sequential processing or peek.
+        
+        // To properly consume from a Queue in order is tricky if we skip types.
+        // Let's iterate and extract.
+        
+        int count = _inputQueue.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var item = _inputQueue.Dequeue();
+            if (item is T typedItem)
+            {
+                return typedItem;
+            }
+            _inputQueue.Enqueue(item); // Rotate back if not matching
+        }
+        return default;
+    }
+
+    public IEnumerable<IWorkflowInput> GetAllInputs() => _history;
+    
+    public abstract object? GetResult();
+
+    // --------------------------------------------------------------------
     // Diagnostics / tracing support
     // --------------------------------------------------------------------
 
@@ -178,6 +223,13 @@ public abstract class WorkflowContext
     
     private GameState? _workingState;
     private readonly List<IDecision> _appliedDecisions = new();
+    private GameStateOverlay? _overlay;
+
+    /// <summary>
+    /// The overlay for recording state mutations during workflow execution.
+    /// All operations should be recorded to this overlay.
+    /// </summary>
+    public GameStateOverlay Overlay => _overlay ?? throw new InvalidOperationException("Overlay not initialized.");
 
     /// <summary>
     /// The current working state. Decisions are applied immediately to this.
@@ -196,6 +248,7 @@ public abstract class WorkflowContext
     protected internal void InitializeState(GameState baseState)
     {
         _workingState = baseState;
+        _overlay = new GameStateOverlay();
     }
 
     /// <summary>
@@ -205,14 +258,20 @@ public abstract class WorkflowContext
     {
         ArgumentNullException.ThrowIfNull(decision);
         
-        // Log the decision
+        // Log the decision for later application by Orchestrator
         _appliedDecisions.Add(decision);
         
-        // Apply immediately to working state
-        if (_workingState != null)
-        {
-            _workingState = decision.Apply(_workingState);
-        }
+        // NOTE: Decisions are now data-only objects.
+        // They will be applied by the Orchestrator when the workflow completes.
+        // This ensures transactional integrity and allows for undo/replay.
+    }
+
+    /// <summary>
+    /// Update the working state (called by orchestrator after overlay commit).
+    /// </summary>
+    internal void UpdateState(GameState newState)
+    {
+        _workingState = newState;
     }
 
     /// <summary>

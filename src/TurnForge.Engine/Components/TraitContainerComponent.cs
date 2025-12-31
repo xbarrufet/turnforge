@@ -7,16 +7,16 @@ namespace TurnForge.Engine.Components;
 
 public class TraitContainerComponent : ITraitContainerComponent
 {
-    private List<BaseTrait> _traits = new();
+    private List<BaseDataTrait> _traits = new();
     
     // AutoMapper needs a setter to inject definitions
-    public IReadOnlyList<BaseTrait> Traits 
+    public IReadOnlyList<BaseDataTrait> Traits 
     { 
         get => _traits; 
         set => _traits = value.ToList(); 
     }
 
-    public TraitContainerComponent(IEnumerable< BaseTrait> traits)
+    public TraitContainerComponent(IEnumerable< BaseDataTrait> traits)
     {
         _traits = traits.ToList();
     }
@@ -26,39 +26,39 @@ public class TraitContainerComponent : ITraitContainerComponent
         _traits = [];
     }
 
-    public T? GetTrait<T>() where T : IBaseTrait
+    public T? GetTrait<T>() where T : IDataTrait
     {
         return _traits.OfType<T>().FirstOrDefault();
     }
 
-    public bool HasTrait<T>() where T : IBaseTrait
+    public bool HasTrait<T>() where T : IDataTrait
     {
         return _traits.Any(b => b is T);
     }
 
-    public T GetRequiredTrait<T>() where T : IBaseTrait
+    public T GetRequiredTrait<T>() where T : IDataTrait
     {
         return _traits.OfType<T>().FirstOrDefault() ?? throw new InvalidOperationException($"Missed required trait {typeof(T).Name}");
     }
 
-    public bool TryGetTrait<T>(out T? trait) where T : IBaseTrait
+    public bool TryGetTrait<T>(out T? trait) where T : IDataTrait
     {
         trait = GetTrait<T>();
         return trait != null;
     }
     
-    public void AddTrait(IBaseTrait trait)
+    public void AddTrait(IDataTrait trait)
     {
         if (trait == null)
             throw new ArgumentNullException(nameof(trait));
         
-        _traits.Add((BaseTrait)trait);
+        _traits.Add((BaseDataTrait)trait);
     }
     
-    public bool RemoveTrait<T>() where T : IBaseTrait
+    public bool RemoveTrait<T>() where T : IDataTrait
     {
         var trait = _traits.OfType<T>().FirstOrDefault();
-        if (trait is not BaseTrait baseTrait) return false;
+        if (trait is not BaseDataTrait baseTrait) return false;
         
         return _traits.Remove(baseTrait);
     }

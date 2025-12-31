@@ -4,7 +4,7 @@ namespace TurnForge.Engine.Traits.Standard;
 /// Stores a list of special rules or capabilities as strings.
 /// Useful for rules that don't have a specific logic implementation yet.
 /// </summary>
-public class SpecialRulesTrait : BaseTrait
+public class SpecialRulesTrait : BaseDataTrait
 {
     public List<string> Rules { get; } = new();
 

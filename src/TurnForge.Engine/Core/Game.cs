@@ -2,6 +2,7 @@ using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Definitions.Interfaces;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core;
@@ -10,22 +11,22 @@ public class Game : IGame
 {
     public GameId Id { get;  }
     
-    public GameBoard GameBoard { get; }
-    public Game(GameBoard gameBoard)
+    public IGameBoard GameBoard { get; }
+    public Game(IGameBoard gameBoard)
     {
         Id = new GameId();
         GameBoard = gameBoard;
     }
     public Game(
         GameId id,
-        GameBoard gameBoard)
+        IGameBoard gameBoard)
     {
         Id = id;
         GameBoard = gameBoard;
     }
     
     public Game(  IReadOnlyList<Actor> actor,
-        GameBoard gameBoard)
+        IGameBoard gameBoard)
     {
         Id = new GameId();
         GameBoard = gameBoard;

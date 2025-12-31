@@ -11,7 +11,7 @@ namespace TurnForge.Engine.Traits.Interfaces;
 /// 
 /// Example: ExplosiveTrait triggers on MovedToEvent and deals damage.
 /// </summary>
-public interface IReactiveTrait : IBaseTrait, IReaction
+public interface IReactiveTrait : IDataTrait, IReaction
 {
     /// <summary>
     /// The event type that triggers this trait's reaction.

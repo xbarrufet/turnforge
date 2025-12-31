@@ -3,6 +3,8 @@ using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
+using TurnForge.Engine.Entities;
+
 namespace TurnForge.Engine.Infrastructure.Persistence;
 
 public class InMemoryGameRepository : IGameRepository

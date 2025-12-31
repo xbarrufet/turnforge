@@ -1,20 +1,26 @@
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace TurnForge.Engine.Definitions.Board;
 
-
-public sealed class Zone
+public sealed class Zone : GameEntity
 {
-    public ZoneId Id => _definition.Id;
-    public string Name => _definition.Name;
-    private readonly ZoneDefinition _definition;
-
-    public Zone(ZoneDefinition definition)
+    public Zone(EntityId id, string definitionId, string name, string category) 
+        : base(id, definitionId, name, category)
     {
-        _definition = definition;
     }
 
-    public bool Contains(Position position)
-        => _definition.Bound.Contains(position);
+    // Logic relying on definition/bound refactored to use Component.
+    public bool Contains(IBoardPosition position)
+    {
+        var boundComponent = GetComponent<TurnForge.Engine.Components.Board.IZoneBoundComponent>();
+        if (boundComponent == null)
+        {
+            // Fallback or throw. A Zone MUST have a bound.
+            throw new InvalidOperationException($"Zone {Id} has no Bound component.");
+        }
+        return boundComponent.Bound.Contains(position);
+    }
 }

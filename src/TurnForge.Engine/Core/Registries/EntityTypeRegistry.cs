@@ -5,6 +5,7 @@ using System.Reflection;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Entities.Definitions;
 
 namespace TurnForge.Engine.Core.Registries;
 

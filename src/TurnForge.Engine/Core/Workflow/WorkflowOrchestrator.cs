@@ -1,6 +1,7 @@
+using System;
+using System.Collections.Generic;
 using TurnForge.Engine.Core.Workflow.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Decisions.Entity.Interfaces;
 
 namespace TurnForge.Engine.Core.Workflow;
 
@@ -10,276 +11,140 @@ namespace TurnForge.Engine.Core.Workflow;
 /// </summary>
 public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
 {
+    private class WorkflowSession
+    {
+        public IWorkflow Workflow { get; }
+        public WorkflowContext Context { get; }
+        public INode? CurrentNode { get; set; }
+
+        public WorkflowSession(IWorkflow workflow, WorkflowContext context)
+        {
+            Workflow = workflow;
+            Context = context;
+            CurrentNode = workflow.StartNode;
+        }
+
+        public void Advance()
+        {
+            CurrentNode = CurrentNode?.NextNode;
+        }
+    }
+
+    // Use string keys to support both GUID and named workflows
+    private readonly Dictionary<string, WorkflowSession> _activeWorkflows = new();
     private const int MAX_STEPS_SAFETY_LIMIT = 1000;
 
-    public WorkflowExecutionResult Execute(
-        IWorkflow workflow,
-        WorkflowContext context)
+    /// <summary>
+    /// Start a new workflow.
+    /// </summary>
+    public void StartWorkflow(IWorkflow workflow, WorkflowContext context)
     {
-        ArgumentNullException.ThrowIfNull(workflow);
-        ArgumentNullException.ThrowIfNull(context);
-
-        context.Status = WorkflowStatus.Running;
-        context.PushFrame(workflow.Id, workflow.StartNode.Id);
-
-        var result = RunLoop(workflow.StartNode, context, workflow);
-
-        if (result.Status == WorkflowStatus.Completed)
-        {
-            context.PopFrame();
-        }
-
-        return result;
+        var session = new WorkflowSession(workflow, context);
+        var workflowKey = workflow.Id.Value;
+        _activeWorkflows[workflowKey] = session;
+        ExecuteWorkflow(workflowKey);
     }
 
-    public WorkflowExecutionResult Resume(
-        IWorkflow workflow,
-        WorkflowContext context,
-        IInputActionResult input,
-        Func<WorkflowId, IWorkflow>? workflowResolver = null)
+    /// <summary>
+    /// Execute workflow by its string ID.
+    /// </summary>
+    public WorkflowStatus ExecuteWorkflow(string workflowId)
     {
-        ArgumentNullException.ThrowIfNull(workflow);
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(input);
-
-        if (context.Status != WorkflowStatus.Suspended)
-            throw new InvalidOperationException($"Cannot resume workflow in state {context.Status}");
-
-        if (context.CurrentNodeId is null)
-            throw new InvalidOperationException("Cannot resume without CurrentNodeId.");
-
-        bool resumedFromChild = false;
-
-        if (context.NavigationStack.Count > 0)
+        if (!_activeWorkflows.TryGetValue(workflowId, out var session))
         {
-            var topFrame = context.PeekFrame();
-            if (topFrame.WorkflowId != workflow.Id)
-            {
-                if (workflowResolver is null)
-                    throw new InvalidOperationException("Nested workflow resolver required.");
-
-                var childWorkflow = workflowResolver(topFrame.WorkflowId);
-                var childResult = Resume(childWorkflow, context, input, workflowResolver);
-
-                if (childResult.Status != WorkflowStatus.Completed)
-                    return childResult;
-
-                resumedFromChild = true;
-            }
+            throw new ArgumentException($"Workflow {workflowId} not found");
         }
 
-        context.Status = WorkflowStatus.Running;
-        var node = workflow.GetNode(context.CurrentNodeId.Value);
-
-        if (!resumedFromChild)
-        {
-            if (node is not IAcceptsInput)
-                throw new InvalidOperationException($"Node {node.Id} does not accept input.");
-
-            ProcessInput(node, context, input);
-        }
-
-        var result = RunLoop(node.NextNode, context, workflow);
-
-        if (result.Status == WorkflowStatus.Completed)
-        {
-            context.PopFrame();
-        }
-
-        return result;
-    }
-
-    private WorkflowExecutionResult RunLoop(
-        INode? startNode,
-        WorkflowContext context,
-        IWorkflow workflow)
-    {
         int steps = 0;
-        INode? currentNode = startNode;
-
-        try
+        while (session.CurrentNode != null)
         {
-            while (currentNode != null)
+            if (++steps > MAX_STEPS_SAFETY_LIMIT)
             {
-                if (++steps > MAX_STEPS_SAFETY_LIMIT)
-                    throw new InvalidOperationException($"Workflow {workflow.Id} exceeded step limit.");
+                throw new InvalidOperationException($"Workflow {workflowId} exceeded step limit.");
+            }
 
-                context.UpdateCurrentNode(currentNode.Id);
+            // Execute the current node
+            WorkflowStepResult result;
+            try 
+            {
+                result = session.CurrentNode.Execute(session.Context);
+            }
+            catch (Exception)
+            {
+                session.Context.Status = WorkflowStatus.Failed;
+                _activeWorkflows.Remove(workflowId);
+                return WorkflowStatus.Failed;
+            }
 
-                // 1. Validation
-                var validation = currentNode.Validate(context);
-                if (validation is ValidationResult.Cancel)
-                {
-                    context.Status = WorkflowStatus.Cancelled;
-                    return WorkflowExecutionResult.Cancelled();
-                }
-
-                if (validation is ValidationResult.Suspend)
-                {
-                    context.Status = WorkflowStatus.Suspended;
-                    return WorkflowExecutionResult.Suspended();
-                }
-
-                if (validation is ValidationResult.Redirect)
-                    throw new NotImplementedException("Redirect not supported yet.");
-
-                bool nodeAlreadyProcessed = false;
-
-                // 2. Reactions
-                if (currentNode is IAcceptsReactions reactor)
-                {
-                    foreach (var reaction in reactor.AllowedReactions)
+            switch (result.Status)
+            {
+                case WorkflowStatus.Completed:
+                    session.Advance();
+                    if (session.CurrentNode == null)
                     {
-                        if (!reaction.CanReact(context))
-                            continue;
-
-                        var reactionResult = reaction.React(context, null);
-
-                        // a) Reaction requires player decision (or any other input requirement)
-                        if (reactionResult.RequiresInput)
-                        {
-                            context.Status = WorkflowStatus.Suspended;
-                            return WorkflowExecutionResult.Suspended();
-                        }
-
-                        // b) Reaction auto-provides input
-                        if (reactionResult.ModifiedInput != null)
-                        {
-                            ProcessInput(currentNode, context, reactionResult.ModifiedInput);
-                            nodeAlreadyProcessed = true;
-                        }
-
-                        // c) Nested workflow execution
-                        if (reactionResult.NestedWorkflow != null &&
-                            reactionResult.ExecuteNestedWorkflow)
-                        {
-                            context.PushFrame(
-                                reactionResult.NestedWorkflow.Id,
-                                reactionResult.NestedWorkflow.StartNode.Id,
-                                reaction.Id);
-
-                            var nestedResult = RunLoop(
-                                reactionResult.NestedWorkflow.StartNode,
-                                context,
-                                reactionResult.NestedWorkflow);
-
-                            if (nestedResult.Status != WorkflowStatus.Completed)
-                                return nestedResult;
-
-                            context.PopFrame();
-                        }
+                        // Workflow completed - commit overlay to get new state
+                        var newState = session.Context.Overlay.Commit(session.Context.State);
+                        session.Context.UpdateState(newState);
+                        
+                        session.Context.Status = WorkflowStatus.Completed;
+                        _activeWorkflows.Remove(workflowId);
+                        return WorkflowStatus.Completed;
                     }
-                }
-
-                // 3. Input detection
-                if (currentNode is IAcceptsInput && !nodeAlreadyProcessed)
-                {
-                    context.Status = WorkflowStatus.Suspended;
-                    return WorkflowExecutionResult.Suspended();
-                }
-
-                // 4. Collect Decisions (Phase 5)
-                if (currentNode is IProducesDecisions producer)
-                {
-                    var decisions = producer.BuildDecisions(context);
-                    foreach (var d in decisions)
-                    {
-                        context.RecordDecision(d);
-                    }
-                }
-
-                // 5. Event Processing (Phase 5 Refactor: Intermediate Events)
-                // Process pending events immediately after the node executes (and produces decisions/events)
-                var eventResult = ProcessPendingEvents(workflow, context);
-                if (eventResult != null) return eventResult;
-
-                // 6. Advance
-                if (currentNode.NextNode != null)
-                {
-                    context.RecordTransition(currentNode.Id, currentNode.NextNode.Id);
-                    currentNode = currentNode.NextNode;
-                }
-                else
-                {
-                    // End of workflow
                     break;
-                }
-            }
 
-            context.Status = WorkflowStatus.Completed;
-            return WorkflowExecutionResult.Completed();
+                case WorkflowStatus.Suspended:
+                    // Don't commit - overlay will be reused when workflow resumes
+                    session.Context.Status = WorkflowStatus.Suspended;
+                    return WorkflowStatus.Suspended;
+
+                case WorkflowStatus.Failed:
+                   // Don't commit - discard overlay changes
+                   session.Context.Status = WorkflowStatus.Failed;
+                   _activeWorkflows.Remove(workflowId);
+                   return WorkflowStatus.Failed;
+            }
         }
-        catch
-        {
-            context.Status = WorkflowStatus.Cancelled;
-            throw;
-        }
+
+        // All nodes executed - commit and complete
+        var finalState = session.Context.Overlay.Commit(session.Context.State);
+        session.Context.UpdateState(finalState);
+        
+        session.Context.Status = WorkflowStatus.Completed;
+        _activeWorkflows.Remove(workflowId);
+        return WorkflowStatus.Completed;
     }
 
-    private WorkflowExecutionResult? ProcessPendingEvents(IWorkflow workflow, WorkflowContext context)
+    /// <summary>
+    /// Execute workflow by GUID (for backward compatibility).
+    /// </summary>
+    public WorkflowStatus ExecuteWorkflow(Guid workflowId)
     {
-        while (context.HasPendingEvents)
-        {
-            bool reactionTriggered = false;
-            foreach (var reaction in workflow.GlobalReactions)
-            {
-                if (reaction.CanReact(context))
-                {
-                    reactionTriggered = true;
-                    var result = reaction.React(context, null);
-
-                    if (result.RequiresInput)
-                    {
-                        context.Status = WorkflowStatus.Suspended;
-                        return WorkflowExecutionResult.Suspended();
-                    }
-
-                    if (result.NestedWorkflow != null && result.ExecuteNestedWorkflow)
-                    {
-                        context.PushFrame(
-                            result.NestedWorkflow.Id,
-                            result.NestedWorkflow.StartNode.Id,
-                            reaction.Id);
-
-                        var nestedResult = RunLoop(
-                            result.NestedWorkflow.StartNode,
-                            context,
-                            result.NestedWorkflow);
-
-                        if (nestedResult.Status != WorkflowStatus.Completed)
-                            return nestedResult;
-
-                        context.PopFrame();
-                    }
-                }
-            }
-
-            // Safety: If events exist but no reaction matched, we must discard them to avoid infinite loop
-            if (!reactionTriggered && context.HasPendingEvents)
-            {
-                context.ClearEvents();
-            }
-        }
-        return null;
+        return ExecuteWorkflow(workflowId.ToString());
     }
 
-    private void ProcessInput(
-        INode node,
-        WorkflowContext context,
-        IInputActionResult input)
+    /// <summary>
+    /// Submit input to workflow by string ID.
+    /// </summary>
+    public void SubmitInput(string workflowId, IWorkflowInput input)
     {
-        var method = node.GetType().GetMethod("MoveForward");
-        if (method == null)
-            throw new InvalidOperationException(
-                $"Node {node.GetType().Name} accepts input but has no MoveForward.");
+        if (!_activeWorkflows.TryGetValue(workflowId, out var session))
+        {
+             throw new ArgumentException($"Workflow {workflowId} not found or not active.");
+        }
+        
+        // 1. Inject input into context
+        session.Context.EnqueueInput(input);
+        
+        // 2. Resume execution (re-run the current node loop)
+        session.Context.Status = WorkflowStatus.Running;
+        ExecuteWorkflow(workflowId);
+    }
 
-        try
-        {
-            method.Invoke(node, new object[] { context, input });
-        }
-        catch (System.Reflection.TargetInvocationException ex)
-        {
-            throw ex.InnerException ?? ex;
-        }
+    /// <summary>
+    /// Submit input to workflow by GUID (for backward compatibility).
+    /// </summary>
+    public void SubmitInput(Guid workflowId, IWorkflowInput input)
+    {
+        SubmitInput(workflowId.ToString(), input);
     }
 }

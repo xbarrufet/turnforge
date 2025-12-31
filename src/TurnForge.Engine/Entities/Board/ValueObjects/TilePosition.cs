@@ -1,0 +1,15 @@
+using TurnForge.Engine.Entities.Board.Enums;
+using TurnForge.Engine.Entities.Board.Interfaces;
+
+namespace TurnForge.Engine.ValueObjects;
+
+public readonly record  struct TilePosition(TileId tileId) : IBoardPosition
+{
+    public TileId TileId => tileId;
+    public BoardPositionKind Kind => BoardPositionKind.Tile;
+
+    public override string ToString() => $"TilePosition({TileId})";
+
+    public static TilePosition FromTileId(TileId tileId) => new(tileId);
+    public static TilePosition Empty => new(TileId.Empty);
+}

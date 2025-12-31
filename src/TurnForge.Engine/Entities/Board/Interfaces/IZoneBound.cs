@@ -1,5 +1,6 @@
 
 
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Definitions.Board.Interfaces;
@@ -7,5 +8,5 @@ namespace TurnForge.Engine.Definitions.Board.Interfaces;
 
 public interface IZoneBound
 {
-    bool Contains(Position position);
+    bool Contains(IBoardPosition position);
 }

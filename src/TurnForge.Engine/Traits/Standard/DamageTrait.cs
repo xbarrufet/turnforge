@@ -27,7 +27,7 @@ public record DamageProfile(
 ///     .AddProfile("GrenadeLauncher", "3d8", "Explosive");
 /// </code>
 /// </remarks>
-public class DamageTrait : BaseTrait
+public class DamageTrait : BaseDataTrait
 {
     private readonly List<DamageProfile> _profiles = new();
     

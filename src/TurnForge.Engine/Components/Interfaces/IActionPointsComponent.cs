@@ -11,5 +11,5 @@ public interface IActionPointsComponent : IGameEntityComponent
     bool IsEmpty();
     bool CanAfford(int amount);
     
-    public static IActionPointsComponent Empty() => new BaseActionPointsComponent(0);
+    public static IActionPointsComponent Empty() => new ActionPoolComponent(0);
 }

@@ -6,5 +6,5 @@ public interface IGameEntityBuildDescriptor
 {
     public    string DefinitionId { get; }
     List<IGameEntityComponent> ExtraComponents { get; }
-    List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> RequestedTraits { get; }
+    List<TurnForge.Engine.Traits.Interfaces.IDataTrait> RequestedTraits { get; }
 }

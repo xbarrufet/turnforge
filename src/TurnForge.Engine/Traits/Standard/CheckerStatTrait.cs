@@ -17,7 +17,7 @@ namespace TurnForge.Engine.Traits.Standard;
 /// var morale = new CheckerStatTrait("Morale", "2d6", new OpposedCheck());
 /// </code>
 /// </remarks>
-public class CheckerStatTrait : BaseTrait
+public class CheckerStatTrait : BaseDataTrait
 {
     /// <summary>
     /// Name of this stat (e.g., "ToHit", "ToWound", "Morale").

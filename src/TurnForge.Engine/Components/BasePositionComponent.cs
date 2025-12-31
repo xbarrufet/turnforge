@@ -1,18 +1,20 @@
 using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Entities.Board.Enums;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Components
 {
     public sealed class BasePositionComponent : IPositionComponent
     {
-        public Position CurrentPosition { get; set; } = Position.Empty;
+        public IBoardPosition CurrentPosition { get; set; } = TilePosition.Empty;
 
-        public bool IsDiscrete => CurrentPosition.IsTile;
-        public bool IsContinuous => CurrentPosition.IsVector;
+        public bool IsDiscrete => CurrentPosition.Kind == BoardPositionKind.Tile;
+        public bool IsContinuous => CurrentPosition.Kind == BoardPositionKind.Vector;
 
         public BasePositionComponent() { }
 
-        public BasePositionComponent(Position position)
+        public BasePositionComponent(IBoardPosition position)
         {
             CurrentPosition = position;
         }
@@ -22,6 +24,6 @@ namespace TurnForge.Engine.Components
             CurrentPosition = trait.InitialPosition;
         }
 
-        public static BasePositionComponent Empty => new BasePositionComponent(Position.Empty);
+        public static BasePositionComponent Empty => new BasePositionComponent();
     }
 }

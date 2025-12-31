@@ -73,12 +73,11 @@ public class TraitBuildersTests
     }
     
     [Test]
-    public void IdentityTrait_Builder_CreatesCorrectTrait()
+    public void IdentityTrait_Constructor_CreatesCorrectTrait()
     {
-        var trait = new IdentityTrait.Builder()
-            .Category("Hero")
-            .Build();
+        var trait = new IdentityTrait("Hero");
             
         Assert.That(trait.Category, Is.EqualTo("Hero"));
     }
 }
+

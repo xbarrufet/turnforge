@@ -10,18 +10,18 @@ namespace TurnForge.Engine.Components.Interfaces;
 public interface ITraitContainerComponent : IGameEntityComponent
 {
 
-    IReadOnlyList<BaseTrait> Traits {get;}
+    IReadOnlyList<BaseDataTrait> Traits {get;}
     // Query methods
-    bool HasTrait<T>() where T : IBaseTrait;
-    T? GetTrait<T>() where T : IBaseTrait;
-    T GetRequiredTrait<T>() where T : IBaseTrait;
-    bool TryGetTrait<T>(out T? trait) where T : IBaseTrait;
+    bool HasTrait<T>() where T : IDataTrait;
+    T? GetTrait<T>() where T : IDataTrait;
+    T GetRequiredTrait<T>() where T : IDataTrait;
+    bool TryGetTrait<T>(out T? trait) where T : IDataTrait;
     
 
 
     // Mutation methods for runtime trait management
-    void AddTrait(IBaseTrait trait);
-    bool RemoveTrait<T>() where T : IBaseTrait;
+    void AddTrait(IDataTrait trait);
+    bool RemoveTrait<T>() where T : IDataTrait;
 
     public static ITraitContainerComponent Empty()
     {

@@ -1,4 +1,4 @@
-using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities.Definitions;
 using TurnForge.Engine.Registration;
 
 namespace TurnForge.Engine.Infrastructure.Catalog.Interfaces;

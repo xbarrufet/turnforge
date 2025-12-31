@@ -103,11 +103,11 @@ public interface ILinkableNode : INode
 public abstract class LinkableNode : ILinkableNode
 {
     public abstract NodeId Id { get; }
-    public INode? NextNode { get; private set; }
+    public INode? NextNode { get; set; }
     
     public void SetNextNode(INode? next) => NextNode = next;
     
-    public abstract ValidationResult Validate(WorkflowContext context);
+    public abstract WorkflowStepResult Execute(WorkflowContext context);
 }
 
 /// <summary>

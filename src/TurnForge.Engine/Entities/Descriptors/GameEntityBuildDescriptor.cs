@@ -17,6 +17,6 @@ public class GameEntityBuildDescriptor(string definitionId) : IGameEntityBuildDe
     /// Traits requested for this spawn override. 
     /// These will be added to the entity, potentially overriding definition traits.
     /// </summary>
-    public List<TurnForge.Engine.Traits.Interfaces.IBaseTrait> RequestedTraits { get; } = new();
+    public List<TurnForge.Engine.Traits.Interfaces.IDataTrait> RequestedTraits { get; } = new();
 }
 

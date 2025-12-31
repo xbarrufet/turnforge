@@ -1,5 +1,6 @@
 using System;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities.Definitions;
 
 namespace TurnForge.Engine.Core.Attributes;
 

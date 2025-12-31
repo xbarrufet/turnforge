@@ -50,6 +50,6 @@ namespace TurnForge.Engine.Core.Workflow.Interfaces
         /// </summary>
         ReactionResult React(
             WorkflowContext context,
-            IInputActionResult? input);
+            IWorkflowInput? input);
     }
 }

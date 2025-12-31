@@ -1,6 +1,7 @@
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Entities;
 
 namespace TurnForge.Engine.Repositories.Interfaces;
 

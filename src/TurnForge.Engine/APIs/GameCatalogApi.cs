@@ -1,6 +1,7 @@
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.APIs.Interfaces;
+using TurnForge.Engine.Entities.Definitions;
 
 namespace TurnForge.Engine.APIs;
 

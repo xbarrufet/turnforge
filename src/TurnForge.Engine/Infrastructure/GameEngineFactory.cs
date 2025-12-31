@@ -1,108 +1,166 @@
 using TurnForge.Engine.APIs;
-using TurnForge.Engine.Appliers.Spawn;
 using TurnForge.Engine.Core;
+using TurnForge.Engine.Core.Fsm;
+using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.Core.Metrics;
 using TurnForge.Engine.Core.Registries;
-using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Definitions.Actors.Interfaces;
-using TurnForge.Engine.Appliers.Entity;
-using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Workflow.Interfaces;
 using TurnForge.Engine.Definitions.Board.Interfaces;
-using TurnForge.Engine.Definitions.Factories.Interfaces;
-using TurnForge.Engine.Definitions.Interfaces;
+using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.Infrastructure.Factories;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
-using TurnForge.Engine.Core.Orchestrator;
-using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Infrastructure.Persistence;
 using TurnForge.Engine.Registration;
-using TurnForge.Engine.Strategies.Spawn.Interfaces;
+using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Services;
+using TurnForge.Engine.Definitions.Factories.Interfaces;
 
 namespace TurnForge.Engine.Infrastructure;
 
 /// <summary>
-/// Factory oficial del engine.
-/// Ensambla TODA la infraestructura estándar del engine,
-/// pero NO decide implementaciones concretas del juego.
+/// Builder for creating the TurnForge engine.
+/// FSM root node is required; everything else has sensible defaults.
 /// </summary>
-public static class GameEngineFactory
+/// <example>
+/// var engine = GameEngineFactory.Create(myRootNode)
+///     .WithLogger(myLogger)
+///     .WithRepository(myRepo)
+///     .Build();
+/// </example>
+public class GameEngineFactory
 {
-    public static Core.TurnForge Build(
-        GameEngineContext gameEngineContext)
+    private readonly IFsmNode _rootNode;
+    private IGameRepository? _repository;
+    private IGameLogger? _logger;
+    private IEngineMetrics? _metrics;
+    private IServiceProvider? _services;
+    
+    private GameEngineFactory(IFsmNode rootNode)
     {
-        // 0️⃣ Initialize global registries
-        // Centralized initialization ensures all type mappings are available
-        // before any component needs them. This eliminates lazy initialization
-        // overhead and makes the initialization flow explicit and predictable.
+        _rootNode = rootNode;
+    }
+    
+    /// <summary>
+    /// Start building with the required FSM root node.
+    /// </summary>
+    public static GameEngineFactory Create(IFsmNode rootNode)
+    {
+        return new GameEngineFactory(rootNode);
+    }
+    
+    public GameEngineFactory WithRepository(IGameRepository repository)
+    {
+        _repository = repository;
+        return this;
+    }
+    
+    public GameEngineFactory WithLogger(IGameLogger logger)
+    {
+        _logger = logger;
+        return this;
+    }
+    
+    public GameEngineFactory WithMetrics(IEngineMetrics metrics)
+    {
+        _metrics = metrics;
+        return this;
+    }
+    
+    public GameEngineFactory WithServices(IServiceProvider services)
+    {
+        _services = services;
+        return this;
+    }
+    
+    /// <summary>
+    /// Build the TurnForge engine with configured options.
+    /// </summary>
+    public Core.TurnForge Build()
+    {
+        // Apply defaults
+        var repository = _repository ?? new InMemoryGameRepository();
+        var logger = _logger ?? new ConsoleLogger();
+        var metrics = _metrics ?? NullMetrics.Instance;
+        
+        // Initialize registries
         EntityTypeRegistry.Initialize();
 
-        // 1️⃣ ServiceProvider del engine
+        // Internal services
         var services = new SimpleServiceProvider();
-
         services.RegisterSingleton<TraitInitializationService>(new TraitInitializationService());
-
-        // 1️⃣ Servicios internos del engine
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
-        services.RegisterSingleton<IBoardFactory>(new BoardFactory());
 
         var gameCatalog = new InMemoryGameCatalog();
         services.RegisterSingleton<IGameCatalog>(gameCatalog);
-        services.RegisterSingleton<IActorFactory>(
-            new GenericActorFactory(
+
+        services.RegisterSingleton<IGameEntityFactory>(
+            new GenericEntityFactory(
                 services.Resolve<IGameCatalog>(),
                 services.Resolve<TraitInitializationService>()
             ));
-
-
-        // 2️⃣ Dependencias externas (decididas por el host/juego)
-        services.RegisterSingleton(gameEngineContext.GameRepository);
-        services.RegisterSingleton(gameEngineContext.PropSpawnStrategy);
-        services.RegisterSingleton(gameEngineContext.AgentSpawnStrategy);
-
-        // 3️⃣ Registro de comandos y handlers propios del engine
-        var interactionRegistry = new TurnForge.Engine.Strategies.Pipelines.InteractionRegistry();
-        services.RegisterSingleton(interactionRegistry);
         
+        // Board infrastructure
+        var topologyFactory = new BoardTopologyFactory();
+        var spatialIndexFactory = new SpatialIndexFactory();
+        services.RegisterSingleton<IBoardFactory>(new BoardFactory(topologyFactory, spatialIndexFactory));
+
+        services.RegisterSingleton(repository);
         EngineCommandRegistration.Register(services);
 
-        // 4️⃣ Resolver de handlers (engine infra)
-        var resolver =
-            new ServiceProviderCommandHandlerResolver(services);
-
-        // 7️⃣ CommandBus (engine infra)
-        // Command validation now handled by FSM
+        var resolver = new ServiceProviderCommandHandlerResolver(services);
         var commandBus = new CommandBus(resolver);
-
-        // 7.5 Orchestrator & Appliers
-        var orchestrator = new TurnForgeOrchestrator();
-
-        // Resolve factories for appliers
-        var actorFactory = services.Resolve<IActorFactory>();
-        if (actorFactory is not GenericActorFactory genericActorFactory)
-        {
-            throw new InvalidOperationException($"Expected implementation {nameof(GenericActorFactory)} for IActorFactory");
-        }
+        IOrchestrator orchestrator = new SimpleOrchestrator();
         var boardFactory = services.Resolve<IBoardFactory>();
-
-        // Register New Spawn Appliers (using new spawn pipeline)
-        orchestrator.RegisterApplier(new TurnForge.Engine.Appliers.Board.InitializeBoardApplier());
-        orchestrator.RegisterApplier(new AgentSpawnApplier(genericActorFactory));
-        orchestrator.RegisterApplier(new PropSpawnApplier(genericActorFactory));
-
-        // 7.6 Workflow Orchestrator
         var workflowOrchestrator = new WorkflowOrchestrator();
 
-        // 8️⃣ TurnForge (fachada pública)
+        // Build runtime
         var runtime = new GameEngineRuntime(
             commandBus, 
-            gameEngineContext.GameRepository, 
+            repository, 
             orchestrator, 
             workflowOrchestrator,
-            gameEngineContext.Logger,
-            boardFactory); // Inject BoardFactory
+            logger,
+            boardFactory);
+        
+        // Create and set FSM graph
+        var fsmGraph = new FsmGraph(_rootNode, _services ?? services, logger);
+        runtime.SetFsmGraph(fsmGraph);
+        
         var catalogApi = new GameCatalogApi(gameCatalog);
         return new Core.TurnForge(runtime, catalogApi);
+    }
+}
+
+/// <summary>
+/// Placeholder orchestrator until decision system is reimplemented.
+/// </summary>
+internal class SimpleOrchestrator : IOrchestrator
+{
+    private Entities.GameState _state = Entities.GameState.Empty();
+
+    public Entities.GameState CurrentState => _state;
+
+    public void SetState(Entities.GameState state) => _state = state;
+
+    public void Enqueue(IEnumerable<Entities.Decisions.IDecision> decisions)
+    {
+        // TODO: Implement decision queue
+    }
+
+    public IEnumerable<IGameEvent> Apply(Entities.Decisions.IDecision decision)
+    {
+        // TODO: Implement decision application
+        return Array.Empty<IGameEvent>();
+    }
+
+    public IEnumerable<IGameEvent> ExecuteScheduled(object? context, string hook)
+    {
+        // TODO: Implement scheduled execution
+        return Array.Empty<IGameEvent>();
     }
 }

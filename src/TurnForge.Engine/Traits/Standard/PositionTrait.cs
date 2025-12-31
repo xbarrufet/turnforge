@@ -1,17 +1,18 @@
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Components; // (Assegura't de tenir PositionComponent accessible)
+using TurnForge.Engine.Components;
+using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace TurnForge.Engine.Traits.Standard;
 
 public class PositionTrait : BaseComponentTrait<BasePositionComponent>
 {
-    public Position InitialPosition { get; }
+    public IBoardPosition InitialPosition { get; }
 
-    public PositionTrait(Position position)
+    public PositionTrait(IBoardPosition position)
     {
         InitialPosition = position;
     }
     
     // Constructor buit per defecte (posició desconeguda/spawner)
-    public PositionTrait() : this(Position.Empty) { }
+    public PositionTrait() : this(TilePosition.Empty) { }
 }

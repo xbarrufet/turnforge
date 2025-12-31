@@ -1,6 +1,7 @@
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Entities.Board;
 
 namespace TurnForge.Engine.Infrastructure.Factories.Interfaces;
 

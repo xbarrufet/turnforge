@@ -4,6 +4,6 @@ using TurnForge.Engine.Traits;
 
 namespace TurnForge.Engine.Definitions.Actors;
 
-public abstract class ActorTrait : BaseTrait, IActorTrait
+public abstract class ActorTrait : BaseDataTrait, IActorTrait
 {
 }
