@@ -1,4 +1,4 @@
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 
 namespace TurnForge.Engine.Traits.Interfaces;
 

@@ -1,42 +1,31 @@
 using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Commands.ValueObjects;
 
 namespace Parchis.Rules.Commands;
 
-
-
-
-
-
-/// <summary>
-/// Command to roll the dice.
-/// </summary>
 public class RollDiceCommand : ICommand
 {
-    public Type CommandType => typeof(RollDiceCommand);
+    public static readonly CommandType Type = new("RollDice");
+    public CommandType CommandType => Type;
 }
 
-/// <summary>
-/// Command to move a piece.
-/// </summary>
 public class MovePieceCommand : ICommand
 {
     public int PieceNumber { get; init; }
     public int Steps { get; init; }
-    public Type CommandType => typeof(MovePieceCommand);
+    
+    public static readonly CommandType Type = new("MovePiece");
+    public CommandType CommandType => Type;
 }
 
-/// <summary>
-/// Command to pass the turn (when no valid moves available).
-/// </summary>
 public class PassTurnCommand : ICommand
 {
-    public Type CommandType => typeof(PassTurnCommand);
+    public static readonly CommandType Type = new("PassTurn");
+    public CommandType CommandType => Type;
 }
 
-/// <summary>
-/// Command to end the current turn and switch to next player.
-/// </summary>
 public class EndTurnCommand : ICommand
 {
-    public Type CommandType => typeof(EndTurnCommand);
+    public static readonly CommandType Type = new("EndTurn");
+    public CommandType CommandType => Type;
 }

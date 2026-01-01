@@ -1,31 +1,31 @@
-# Interactive Workflows (Opportunity Window Pattern)
+# Interactive Actions (Opportunity Window Pattern)
 
-TurnForge uses a robust workflow engine to handle complex, multi-step game logic that requires user interaction (e.g., selecting a target, confirming an action, rolling dice).
+TurnForge uses a robust action engine to handle complex, multi-step game logic that requires user interaction (e.g., selecting a target, confirming an action, rolling dice).
 
 This system is built around the **Opportunity Window Pattern**: logic runs until it needs input, then it **suspends** execution and opens a typed "window" for external interaction.
 
 ## Core Concepts
 
-### 1. Workflow vs FSM
+### 1. Action vs FSM
 - **FSM (Finite State Machine)**: Controls the high-level game flow (Whose turn is it? What phase involved?). It defines *allowed commands*.
-- **Workflow**: Encapsulates a specific process (e.g., "Attack Sequence", "Start Game Setup"). When a workflow is running, it **takes over** the engine's focus.
+- **Action**: Encapsulates a specific process (e.g., "Attack Sequence", "Start Game Setup"). When a action is running, it **takes over** the engine's focus.
 
 ### 2. The Interaction Loop
 
-1.  **Execute Node**: The engine runs a workflow node (e.g., `SelectTargetNode`).
-2.  **Suspend**: If the node needs input, it returns `WorkflowStatus.Suspended` with a list of `AllowedInputTypes`.
-3.  **Wait**: The engine pauses the workflow and waits for a command.
-4.  **Submit Input**: The UI/Client sends a `WorkflowInputCommand` with the required `IWorkflowInput`.
-5.  **Resume**: The Orchestrator injects the input into the workflow context and re-runs the node logic.
+1.  **Execute Node**: The engine runs a action node (e.g., `SelectTargetNode`).
+2.  **Suspend**: If the node needs input, it returns `ActionStatus.Suspended` with a list of `AllowedInputTypes`.
+3.  **Wait**: The engine pauses the action and waits for a command.
+4.  **Submit Input**: The UI/Client sends a `ActionInputCommand` with the required `IActionInput`.
+5.  **Resume**: The Orchestrator injects the input into the action context and re-runs the node logic.
 
 ## Architecture Components
 
-### `IWorkflowInput`
+### `IActionInput`
 A marker interface for typed data payloads sent from the client to the engine.
 
 ```csharp
-public record SelectCellInput(int X, int Y) : IWorkflowInput;
-public record ConfirmActionInput() : IWorkflowInput;
+public record SelectCellInput(int X, int Y) : IActionInput;
+public record ConfirmActionInput() : IActionInput;
 ```
 
 ### `InteractionNode<TContext>`
@@ -57,50 +57,50 @@ public class MyNode : InteractionNode<MyContext>
 }
 ```
 
-### `WorkflowContext`
-The shared memory for a workflow instance. It holds:
+### `ActionContext`
+The shared memory for a action instance. It holds:
 - **Game State**: A read/write view of the game state (transactional).
 - **Input Queue**: Inputs buffered for the current node.
-- **Custom Data**: Workflow-specific data (e.g., `TargetCell`, `DamageCalculated`).
+- **Custom Data**: Action-specific data (e.g., `TargetCell`, `DamageCalculated`).
 
-### `WorkflowOrchestrator`
-Manages the lifecycle of workflows.
-- `StartWorkflow(workflow, context)`: Initiates a new session.
-- `SubmitInput(workflowId, input)`: Resumes a suspended session.
-- `ExecuteWorkflow(workflowId)`: Runs the logic loop until completion or suspension.
+### `ActionOrchestrator`
+Manages the lifecycle of actions.
+- `StartAction(action, context)`: Initiates a new session.
+- `SubmitInput(actionId, input)`: Resumes a suspended session.
+- `ExecuteAction(actionId)`: Runs the logic loop until completion or suspension.
 
 ## Integration with Game Engine
 
 The `GameEngineRuntime` acts as the gatekeeper:
 
-- **Interception**: If a workflow is `Suspended`, the engine **blocks** normal game commands (e.g., "EndTurn") and only accepts `WorkflowInputCommand`.
+- **Interception**: If a action is `Suspended`, the engine **blocks** normal game commands (e.g., "EndTurn") and only accepts `ActionInputCommand`.
 - **Focus**: This ensures the player completes the active sequence (or cancels it) before doing anything else.
 
-## Example: Start Game Workflow
+## Example: Start Game Action
 
-1.  **Start**: FSM triggers `StartGameWorkflow`.
+1.  **Start**: FSM triggers `StartGameAction`.
 2.  **Node 1 (Players)**: Suspends. UI shows "Add Players".
     - User sends `AddPlayerInput("P1")` -> Node processes -> Suspends again.
     - User sends `ConfirmPlayersInput()` -> Node completes.
 3.  **Node 2 (Map)**: Suspends. UI shows "Select Map".
     - User sends `SelectMapInput("Map_01")` -> Node completes.
 4.  **Node 3 (Build)**: Runs synchronously, creates the GameState, and finishes.
-5.  **End**: Workflow completes, FSM resumes control.
+5.  **End**: Action completes, FSM resumes control.
 
-## State-Overlay-Workflow Transaction
+## State-Overlay-Action Transaction
 
-Workflows operate on **GameState** using a transactional overlay pattern to ensure atomicity and consistency.
+Actions operate on **GameState** using a transactional overlay pattern to ensure atomicity and consistency.
 
 ### The Transaction Lifecycle
 
 ```
-WorkflowOrchestrator.StartWorkflow()
+ActionOrchestrator.StartAction()
 ├─ 1. InitializeState(baseState) → Creates GameStateOverlay
 ├─ 2. Execute nodes (all use context.Overlay)
 │  ├─ Node 1 records operations to overlay
 │  ├─ Node 2 records more operations (same overlay)
 │  └─ Node N continues using shared overlay
-└─ 3. Workflow completes
+└─ 3. Action completes
    ├─ Success → overlay.Commit(baseState) → New GameState
    ├─ Suspend → Keep overlay (resume will continue)
    └─ Fail → Discard overlay (rollback)
@@ -112,13 +112,13 @@ WorkflowOrchestrator.StartWorkflow()
 |-----------|----------------|
 | **GameState** | Immutable game state snapshot |
 | **GameStateOverlay** | Mutable transaction log of operations |
-| **WorkflowContext** | Holds both State + Overlay |
-| **WorkflowOrchestrator** | Manages overlay lifecycle (create/commit) |
+| **ActionContext** | Holds both State + Overlay |
+| **ActionOrchestrator** | Manages overlay lifecycle (create/commit) |
 
 ### How Nodes Use Overlay
 
 ```csharp
-public WorkflowStepResult Execute(WorkflowContext context)
+public ActionStepResult Execute(ActionContext context)
 {
     // 1. Read current state
     var state = context.State;
@@ -131,7 +131,7 @@ public WorkflowStepResult Execute(WorkflowContext context)
     context.Overlay.Record(moveOp);
     
     // 4. Continue to next node (overlay persists!)
-    return WorkflowStepResult.Success();
+    return ActionStepResult.Success();
     
     // NOTE: Do NOT commit here! Orchestrator does it at the end.
 }
@@ -139,15 +139,15 @@ public WorkflowStepResult Execute(WorkflowContext context)
 
 ### Why This Matters
 
-**Atomicity**: All operations in a workflow succeed or fail together. If a workflow suspends or fails, the overlay is discarded—no partial state mutations.
+**Atomicity**: All operations in a action succeed or fail together. If a action suspends or fails, the overlay is discarded—no partial state mutations.
 
-**Consistency**: `GameStateView` shows the "projected" state (base + overlay), so nodes see pending changes from previous nodes in the same workflow.
+**Consistency**: `GameStateView` shows the "projected" state (base + overlay), so nodes see pending changes from previous nodes in the same action.
 
-**Isolation**: Each workflow has its own overlay. Multiple concurrent workflows don't interfere.
+**Isolation**: Each action has its own overlay. Multiple concurrent actions don't interfere.
 
 **Multi-Node Operations**: All nodes share the same overlay, building up a complete transaction that commits at the end.
 
-### Example: Attack Workflow
+### Example: Attack Action
 
 ```csharp
 // Node 1: Select Target (records selection)
@@ -161,27 +161,27 @@ context.Overlay.Record(new DamageOperation(targetId, damage));
 // Node 3: Apply Effects
 context.Overlay.Record(new EffectOperation(...));
 
-// Orchestrator commits ALL operations when workflow completes
+// Orchestrator commits ALL operations when action completes
 var newState = context.Overlay.Commit(context.State);
 ```
 
 ## Batch Input Preloading
 
-The workflow system supports **preloading all inputs** before starting or submitting. This allows the client to control the flow and skip interactive steps when all data is already known.
+The action system supports **preloading all inputs** before starting or submitting. This allows the client to control the flow and skip interactive steps when all data is already known.
 
 ### How It Works
 
-Inputs are stored in a **queue** inside `WorkflowContext`. Each node consumes only the inputs it needs, leaving the rest for subsequent nodes.
+Inputs are stored in a **queue** inside `ActionContext`. Each node consumes only the inputs it needs, leaving the rest for subsequent nodes.
 
 ```csharp
-// Pre-load all inputs BEFORE starting the workflow
+// Pre-load all inputs BEFORE starting the action
 context.EnqueueInput(new AddPlayerInput("Player1"));
 context.EnqueueInput(new AddPlayerInput("Player2"));
 context.EnqueueInput(new ConfirmPlayersInput());
 context.EnqueueInput(new SelectMapInput("Map_01"));
 
-// Start workflow - it will complete immediately without suspending
-orchestrator.StartWorkflow(startGameWorkflow, context);
+// Start action - it will complete immediately without suspending
+orchestrator.StartAction(startGameAction, context);
 
 // Status: Completed (no interactive pauses!)
 ```
@@ -190,7 +190,7 @@ orchestrator.StartWorkflow(startGameWorkflow, context);
 
 | Scenario | Benefit |
 |----------|---------|
-| **Automated tests** | Run full workflows without mocking UI interactions |
+| **Automated tests** | Run full actions without mocking UI interactions |
 | **AI players** | Pre-calculate all moves and submit at once |
 | **Replay/Undo** | Reconstruct game state by replaying all inputs |
 | **Batch initialization** | Start game with all players and map in one call |

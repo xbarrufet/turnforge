@@ -38,7 +38,7 @@ public class ParchisBoard
     
 
 /// <summary>
-/// Player colors in 2-player Parchís.
+/// Player colors in 4-player Parchís.
 /// </summary>
 public enum PlayerColor
 {

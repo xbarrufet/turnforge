@@ -9,4 +9,5 @@ public  abstract class ZoneDefinition(
         string category,
         IZoneBound Bound) : BaseGameEntityDefinition(definitionId, category)
     {
-}
+        public IZoneBound ZoneBound { get; } = Bound;
+    }

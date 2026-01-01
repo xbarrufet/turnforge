@@ -26,7 +26,7 @@ The only class allowed to modify internal state.
 
 ## Transaction Flow
 
-The workflow for modifying game state is strictly functional:
+The action for modifying game state is strictly functional:
 
 ```
 (CurrentState) + (Overlay/Operations) => (NewState)

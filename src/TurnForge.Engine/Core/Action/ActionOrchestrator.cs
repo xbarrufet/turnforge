@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow;
+namespace TurnForge.Engine.Core.Action;
 
 /// <summary>
 /// Core engine component responsible for executing workflows.
 /// Manages execution, suspension, resumption and nested workflows.
 /// </summary>
-public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
+public sealed class ActionOrchestrator : IActionOrchestrator
 {
-    private class WorkflowSession
+    private class ActionSession
     {
-        public IWorkflow Workflow { get; }
-        public WorkflowContext Context { get; }
+        public IAction Action { get; }
+        public ActionContext Context { get; }
         public INode? CurrentNode { get; set; }
 
-        public WorkflowSession(IWorkflow workflow, WorkflowContext context)
+        public ActionSession(IAction workflow, ActionContext context)
         {
-            Workflow = workflow;
+            Action = workflow;
             Context = context;
             CurrentNode = workflow.StartNode;
         }
@@ -31,28 +31,34 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
     }
 
     // Use string keys to support both GUID and named workflows
-    private readonly Dictionary<string, WorkflowSession> _activeWorkflows = new();
+    private readonly Dictionary<string, ActionSession> _activeActions = new();
     private const int MAX_STEPS_SAFETY_LIMIT = 1000;
+    private readonly Microsoft.Extensions.Logging.ILogger<ActionOrchestrator>? _logger;
+
+    public ActionOrchestrator(Microsoft.Extensions.Logging.ILogger<ActionOrchestrator>? logger = null)
+    {
+        _logger = logger;
+    }
 
     /// <summary>
     /// Start a new workflow.
     /// </summary>
-    public void StartWorkflow(IWorkflow workflow, WorkflowContext context)
+    public void StartAction(IAction workflow, ActionContext context)
     {
-        var session = new WorkflowSession(workflow, context);
+        var session = new ActionSession(workflow, context);
         var workflowKey = workflow.Id.Value;
-        _activeWorkflows[workflowKey] = session;
-        ExecuteWorkflow(workflowKey);
+        _activeActions[workflowKey] = session;
+        ExecuteAction(workflowKey);
     }
 
     /// <summary>
     /// Execute workflow by its string ID.
     /// </summary>
-    public WorkflowStatus ExecuteWorkflow(string workflowId)
+    public ActionStatus ExecuteAction(string workflowId)
     {
-        if (!_activeWorkflows.TryGetValue(workflowId, out var session))
+        if (!_activeActions.TryGetValue(workflowId, out var session))
         {
-            throw new ArgumentException($"Workflow {workflowId} not found");
+            throw new ArgumentException($"Action {workflowId} not found");
         }
 
         int steps = 0;
@@ -60,90 +66,90 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
         {
             if (++steps > MAX_STEPS_SAFETY_LIMIT)
             {
-                throw new InvalidOperationException($"Workflow {workflowId} exceeded step limit.");
+                throw new InvalidOperationException($"Action {workflowId} exceeded step limit.");
             }
 
             // Execute the current node
-            WorkflowStepResult result;
+            ActionStepResult result;
             try 
             {
                 result = session.CurrentNode.Execute(session.Context);
             }
             catch (Exception)
             {
-                session.Context.Status = WorkflowStatus.Failed;
-                _activeWorkflows.Remove(workflowId);
-                return WorkflowStatus.Failed;
+                session.Context.Status = ActionStatus.Failed;
+                _activeActions.Remove(workflowId);
+                return ActionStatus.Failed;
             }
 
             switch (result.Status)
             {
-                case WorkflowStatus.Completed:
+                case ActionStatus.Completed:
                     session.Advance();
                     if (session.CurrentNode == null)
                     {
-                        // Workflow completed - commit overlay to get new state
-                        var newState = session.Context.Overlay.Commit(session.Context.State);
+                        // Action completed - commit overlay to get new state
+                        var newState = session.Context.Overlay.Commit();
                         session.Context.UpdateState(newState);
                         
-                        session.Context.Status = WorkflowStatus.Completed;
-                        _activeWorkflows.Remove(workflowId);
-                        return WorkflowStatus.Completed;
+                        session.Context.Status = ActionStatus.Completed;
+                        _activeActions.Remove(workflowId);
+                        return ActionStatus.Completed;
                     }
                     break;
 
-                case WorkflowStatus.Suspended:
+                case ActionStatus.Suspended:
                     // Don't commit - overlay will be reused when workflow resumes
-                    session.Context.Status = WorkflowStatus.Suspended;
-                    return WorkflowStatus.Suspended;
+                    session.Context.Status = ActionStatus.Suspended;
+                    return ActionStatus.Suspended;
 
-                case WorkflowStatus.Failed:
+                case ActionStatus.Failed:
                    // Don't commit - discard overlay changes
-                   session.Context.Status = WorkflowStatus.Failed;
-                   _activeWorkflows.Remove(workflowId);
-                   return WorkflowStatus.Failed;
+                   session.Context.Status = ActionStatus.Failed;
+                   _activeActions.Remove(workflowId);
+                   return ActionStatus.Failed;
             }
         }
 
         // All nodes executed - commit and complete
-        var finalState = session.Context.Overlay.Commit(session.Context.State);
+        var finalState = session.Context.Overlay.Commit();
         session.Context.UpdateState(finalState);
         
-        session.Context.Status = WorkflowStatus.Completed;
-        _activeWorkflows.Remove(workflowId);
-        return WorkflowStatus.Completed;
+        session.Context.Status = ActionStatus.Completed;
+        _activeActions.Remove(workflowId);
+        return ActionStatus.Completed;
     }
 
     /// <summary>
     /// Execute workflow by GUID (for backward compatibility).
     /// </summary>
-    public WorkflowStatus ExecuteWorkflow(Guid workflowId)
+    public ActionStatus ExecuteAction(Guid workflowId)
     {
-        return ExecuteWorkflow(workflowId.ToString());
+        return ExecuteAction(workflowId.ToString());
     }
 
     /// <summary>
     /// Submit input to workflow by string ID.
     /// </summary>
-    public void SubmitInput(string workflowId, IWorkflowInput input)
+    public void SubmitInput(string workflowId, IActionInput input)
     {
-        if (!_activeWorkflows.TryGetValue(workflowId, out var session))
+        if (!_activeActions.TryGetValue(workflowId, out var session))
         {
-             throw new ArgumentException($"Workflow {workflowId} not found or not active.");
+             throw new ArgumentException($"Action {workflowId} not found or not active.");
         }
         
         // 1. Inject input into context
         session.Context.EnqueueInput(input);
         
         // 2. Resume execution (re-run the current node loop)
-        session.Context.Status = WorkflowStatus.Running;
-        ExecuteWorkflow(workflowId);
+        session.Context.Status = ActionStatus.Running;
+        ExecuteAction(workflowId);
     }
 
     /// <summary>
     /// Submit input to workflow by GUID (for backward compatibility).
     /// </summary>
-    public void SubmitInput(Guid workflowId, IWorkflowInput input)
+    public void SubmitInput(Guid workflowId, IActionInput input)
     {
         SubmitInput(workflowId.ToString(), input);
     }

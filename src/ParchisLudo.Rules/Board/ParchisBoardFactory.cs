@@ -1,5 +1,6 @@
-using TurnForge.Engine.Commands.LoadGame.Descriptors;
 using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Entities.Board.Definitions; // Correct namespace for DiscretBoardDefinition
+using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace Parchis.Rules.Board;
 
@@ -9,30 +10,30 @@ namespace Parchis.Rules.Board;
 /// </summary>
 public static class ParchisBoardFactory
 {
-    // ...
     
     /// <summary>
-    /// Create a Board Descriptor for Parchís.
+    /// Create a Board Definition for Parchís.
     /// </summary>
-    public static DiscreteSpatialDescriptor CreateDescriptor()
+    public static DiscretBoardDefinition CreateDescriptor(string id = "parchis_board")
     {
-        // ... (connection logic remains) ...
-        // Create all connections
-        var connections = new List<(TileId, TileId)>();
+        var boardDef = new DiscretBoardDefinition(id);
+        
+        // Connections list for helper methods
+        var connections = new List<(string From, string To)>();
         
         // Main circuit: 0-67 connected sequentially
         for (int i = 1; i < ParchisBoard.MainCircuitSize-1; i++)
         {
-            connections.Add((new TileId($"track_{i}"), new TileId($"track_{i + 1}")));
+            connections.Add(($"track_{i}", $"track_{i + 1}"));
             if(i>1)
             {
-                connections.Add((new TileId($"track_{i}"), new TileId($"track_{i - 1}")));
+                connections.Add(($"track_{i}", $"track_{i - 1}"));
             }
         }
         // Close the circuit
-        connections.Add((new TileId($"track_{ParchisBoard.MainCircuitSize}"), new TileId("track_1")));
-        connections.Add((new TileId($"track_{ParchisBoard.MainCircuitSize}"), new TileId($"track_{ParchisBoard.MainCircuitSize-1}")));
-        connections.Add((new TileId("track_1"), new TileId($"track_{ParchisBoard.MainCircuitSize}")));
+        connections.Add(($"track_{ParchisBoard.MainCircuitSize}", "track_1"));
+        connections.Add(($"track_{ParchisBoard.MainCircuitSize}", $"track_{ParchisBoard.MainCircuitSize-1}"));
+        connections.Add(("track_1", $"track_{ParchisBoard.MainCircuitSize}"));
         
         // Finish lanes for Yellow
         AddFinishLaneConnections(connections, "yellow", ParchisBoard.YellowFinishEntry);
@@ -45,47 +46,45 @@ public static class ParchisBoardFactory
 
         AddSpawnAreas(connections);
         
-        // Create descriptor
-        var connectionDescriptors = connections.Select(c => 
-            new DiscreteConnectionDescriptor(ConnectionId.New(), c.Item1, c.Item2))
-            .ToList();
+        // Add connections to board definition
+        foreach(var conn in connections)
+        {
+            boardDef.AddTileFromStringConnection(conn.From, conn.To);
+        }
 
-        var nodes = connections.SelectMany(c => new[] { c.Item1, c.Item2 })
-            .Distinct()
-            .ToList();
-        
-        return new DiscreteSpatialDescriptor(nodes, connectionDescriptors);
+        return boardDef;
     }
     
-    private static void AddFinishLaneConnections(List<(TileId, TileId)> connections, string color, string entryTrackPosition)
+    private static void AddFinishLaneConnections(List<(string, string)> connections, string color, string entryTrackPosition)
     {
         // Connect from track to first finish lane tile
-        connections.Add((new TileId($"track_{entryTrackPosition}"),new TileId($"{color}_finish_1")));
+        connections.Add(($"track_{entryTrackPosition}", $"{color}_finish_1"));
         
         // Connect finish lane tiles sequentially
         for (int i = 1; i < ParchisBoard.FinishLaneSize - 1; i++)
         {
-            connections.Add((new TileId($"{color}_finish_{i}"), new TileId($"{color}_finish_{i + 1}")));
+            connections.Add(($"{color}_finish_{i}", $"{color}_finish_{i + 1}"));
             if(i>1)
             {
-                connections.Add((new TileId($"{color}_finish_{i}"), new TileId($"{color}_finish_{i - 1}")));
+                connections.Add(($"{color}_finish_{i}", $"{color}_finish_{i - 1}"));
             }
             // add center connection
-            connections.Add((new TileId($"{color}_finish_{i}"), new TileId($"center_{color}")));
+            connections.Add(($"{color}_finish_{i}", $"center_{color}"));
         }
         
         // Connect last finish lane to center
-        connections.Add((new TileId($"{color}_finish_{ParchisBoard.FinishLaneSize - 1}"), new TileId("center")));
+        connections.Add(($"{color}_finish_{ParchisBoard.FinishLaneSize - 1}", "center"));
     }
 
-    private static void AddSpawnAreas(List<(TileId, TileId)> connections)
+    private static void AddSpawnAreas(List<(string, string)> connections)
     {
-        connections.Add((new TileId("spawn_red"), new TileId(ParchisBoard.RedEntry)));
-        connections.Add((new TileId("spawn_blue"), new TileId(ParchisBoard.BlueEntry)));
-        connections.Add((new TileId("spawn_green"), new TileId(ParchisBoard.GreenEntry)));
-        connections.Add((new TileId("spawn_yellow"), new TileId(ParchisBoard.YellowEntry)));
+        connections.Add(("spawn_red", ParchisBoard.RedEntry));
+        connections.Add(("spawn_blue", ParchisBoard.BlueEntry));
+        connections.Add(("spawn_green", ParchisBoard.GreenEntry));
+        connections.Add(("spawn_yellow", ParchisBoard.YellowEntry));
         
     }
+
 
 
 }

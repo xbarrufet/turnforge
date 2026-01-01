@@ -1,7 +1,7 @@
-using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Actors.Descriptors;
+namespace TurnForge.Engine.Entities.Actors.Descriptors;
 
 /// <summary>
 /// Descriptor for spawning Player entities.

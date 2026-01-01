@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 
-namespace TurnForge.Engine.Core.Workflow;
+namespace TurnForge.Engine.Core.Action;
 
 /// <summary>
-/// Rich result object returned by Workflow Nodes.
+/// Rich result object returned by Action Nodes.
 /// Handles flow control (Next, Suspend) and carries interaction data.
 /// </summary>
-public sealed class WorkflowStepResult
+public sealed class ActionStepResult
 {
-    public WorkflowStatus Status { get; }
+    public ActionStatus Status { get; }
     
     // For Suspended state
     public string? Reason { get; private set; }
@@ -20,7 +20,7 @@ public sealed class WorkflowStepResult
     // For Failed state
     public string? ErrorMessage { get; private set; }
 
-    private WorkflowStepResult(WorkflowStatus status)
+    private ActionStepResult(ActionStatus status)
     {
         Status = status;
     }
@@ -28,17 +28,17 @@ public sealed class WorkflowStepResult
     /// <summary>
     /// Node execution finished. Orchestrator should move to NextNode.
     /// </summary>
-    public static WorkflowStepResult Success() 
-        => new(WorkflowStatus.Completed);
+    public static ActionStepResult Success() 
+        => new(ActionStatus.Completed);
 
     /// <summary>
     /// Node execution blocked. Needs external input.
     /// </summary>
     /// <param name="reason">Human-readable reason for UI ("Waiting for Player Selection")</param>
-    /// <param name="allowedInputs">List of expected IWorkflowInput types</param>
-    public static WorkflowStepResult Suspend(string reason, params Type[] allowedInputs)
+    /// <param name="allowedInputs">List of expected IActionInput types</param>
+    public static ActionStepResult Suspend(string reason, params Type[] allowedInputs)
     {
-        return new WorkflowStepResult(WorkflowStatus.Suspended)
+        return new ActionStepResult(ActionStatus.Suspended)
         {
             Reason = reason,
             AllowedInputTypes = allowedInputs
@@ -48,6 +48,6 @@ public sealed class WorkflowStepResult
     /// <summary>
     /// Node execution encountered a blocking error.
     /// </summary>
-    public static WorkflowStepResult Fail(string error) 
-        => new(WorkflowStatus.Failed) { ErrorMessage = error };
+    public static ActionStepResult Fail(string error) 
+        => new(ActionStatus.Failed) { ErrorMessage = error };
 }

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using TurnForge.Engine.Core.Workflow.Nodes;
-using TurnForge.Engine.Commands.StartGame.Workflow.Inputs;
+using TurnForge.Engine.Core.Action.Nodes;
+using TurnForge.Engine.Commands.StartGame.Action.Inputs;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow;
+namespace TurnForge.Engine.Commands.StartGame.Action;
 
-public class ProcessPlayerDataNode : InteractionNode<StartGameWorkflowContext>
+public class ProcessPlayerDataNode : InteractionNode<StartGameActionContext>
 {
     public ProcessPlayerDataNode() : base("StartGame.ProcessPlayerData") { }
 
-    protected override void ProcessNewInputs(StartGameWorkflowContext context)
+    protected override void ProcessNewInputs(StartGameActionContext context)
     {
         while (context.HasInput<AddPlayerInput>())
         {
@@ -45,12 +45,12 @@ public class ProcessPlayerDataNode : InteractionNode<StartGameWorkflowContext>
         }
     }
 
-    protected override bool IsReadyToComplete(StartGameWorkflowContext context)
+    protected override bool IsReadyToComplete(StartGameActionContext context)
     {
         return context.PlayersConfirmed;
     }
 
-    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(StartGameWorkflowContext context)
+    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(StartGameActionContext context)
     {
         if (context.PlayerNames.Count == 0)
         {

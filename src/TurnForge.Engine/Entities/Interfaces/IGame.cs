@@ -3,7 +3,6 @@ using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace TurnForge.Engine.Definitions.Interfaces;
 

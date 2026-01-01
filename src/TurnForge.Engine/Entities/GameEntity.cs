@@ -5,7 +5,7 @@ using TurnForge.Engine.ValueObjects;
 
 using TurnForge.Engine.Definitions.Interfaces;
 
-namespace TurnForge.Engine.Definitions;
+namespace TurnForge.Engine.Entities;
 
 public abstract class GameEntity : IGameEntity, IComponentContainer
 {
@@ -155,7 +155,7 @@ public abstract class GameEntity : IGameEntity, IComponentContainer
         return _components.ContainsKey(typeof(ITraitContainerComponent));
     }
 
-    public bool HasTrait<T>() where T : IBaseTrait
+    public bool HasTrait<T>() where T : IDataTrait
     {
         return GetTraitComponent().HasTrait<T>();
     }

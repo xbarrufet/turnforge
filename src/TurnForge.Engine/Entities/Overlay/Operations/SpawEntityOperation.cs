@@ -11,10 +11,10 @@ namespace TurnForge.Engine.Entities.Overlay;
 public sealed class SpawnEntityOperation : IGameStateOperation
 {
     public EntityId Target { get; }
-    public GameEntity NewEntity { get; }
+    public Entities.GameEntity NewEntity { get; }
     public IBoardPosition? Position { get; }
     
-    public SpawnEntityOperation(GameEntity entity) 
+    public SpawnEntityOperation(Entities.GameEntity entity) 
         : this(entity.Id, entity, null) { }
     
     public SpawnEntityOperation(EntityId id, GameEntity entity, IBoardPosition? position)

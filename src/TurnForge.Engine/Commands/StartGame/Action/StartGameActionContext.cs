@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Action;
 using TurnForge.Engine.Entities;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow;
+namespace TurnForge.Engine.Commands.StartGame.Action;
 
-public class StartGameWorkflowContext : WorkflowContext
+public class StartGameActionContext : ActionContext
 {
     public List<string> PlayerNames { get; set; } = new();
     public bool PlayersConfirmed { get; set; }
@@ -15,7 +15,7 @@ public class StartGameWorkflowContext : WorkflowContext
     public List<AgentDeployment> PendingAgentDeployments { get; } = new();
     public List<PropDeployment> PendingPropDeployments { get; } = new();
 
-    public StartGameWorkflowContext(Guid id, GameState gameState) : base()
+    public StartGameActionContext(Guid id, GameState gameState) : base()
     {
         InitializeState(gameState);
     }

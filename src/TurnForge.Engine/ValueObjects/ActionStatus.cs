@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.ValueObjects;
 
-public enum WorkflowStatus
+public enum ActionStatus
 {
     NotStarted = 0,
     Running    = 1,

@@ -1,17 +1,17 @@
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Decisions;
 
-namespace TurnForge.Engine.Core.Workflow;
+namespace TurnForge.Engine.Core.Action;
 
 // ============================================================================
-// TurnForge.Engine – WorkflowContext
+// TurnForge.Engine – ActionContext
 // ============================================================================
 
 /// <summary>
-/// WorkflowContext is a temporary, mutable container that exists
+/// ActionContext is a temporary, mutable container that exists
 /// only during the execution of a workflow.
 ///
 /// It is NOT the game state.
@@ -24,25 +24,25 @@ namespace TurnForge.Engine.Core.Workflow;
 /// - support suspension and resumption
 /// - maintain a WORKING COPY of the state that decisions apply to immediately
 /// </summary>
-public abstract class WorkflowContext
+public abstract class ActionContext
 {
     // --------------------------------------------------------------------
     // Execution metadata
     // --------------------------------------------------------------------
 
-    public WorkflowExecutionId ExecutionId { get; }
+    public ActionExecutionId ExecutionId { get; }
 
-    public WorkflowStatus Status { get; internal set; }
+    public ActionStatus Status { get; internal set; }
 
     /// <summary>
     /// The ID of the node currently being executed (or where suspension occurred).
     /// </summary>
     public NodeId? CurrentNodeId { get; internal set; }
 
-    protected WorkflowContext()
+    protected ActionContext()
     {
-        ExecutionId = WorkflowExecutionId.New();
-        Status = WorkflowStatus.NotStarted;
+        ExecutionId = ActionExecutionId.New();
+        Status = ActionStatus.NotStarted;
     }
 
     // --------------------------------------------------------------------
@@ -57,7 +57,7 @@ public abstract class WorkflowContext
     public T Get<T>(string key)
     {
         if (!_data.TryGetValue(key, out var value))
-            throw new KeyNotFoundException($"WorkflowContext key '{key}' not found.");
+            throw new KeyNotFoundException($"ActionContext key '{key}' not found.");
 
         return (T)value;
     }
@@ -83,15 +83,15 @@ public abstract class WorkflowContext
         => _data.Remove(key);
     
     // --------------------------------------------------------------------
-    // Typed workflow data (IWorkflowData)
+    // Typed workflow data (IActionData)
     // --------------------------------------------------------------------
     
-    private readonly Dictionary<Type, Interfaces.IWorkflowData> _typedData = new();
+    private readonly Dictionary<Type, Interfaces.IActionData> _typedData = new();
     
     /// <summary>
     /// Set typed workflow data. Only one instance per type is stored.
     /// </summary>
-    public void SetTypedData<T>(T data) where T : Interfaces.IWorkflowData
+    public void SetTypedData<T>(T data) where T : Interfaces.IActionData
     {
         _typedData[typeof(T)] = data;
     }
@@ -99,17 +99,17 @@ public abstract class WorkflowContext
     /// <summary>
     /// Get typed workflow data. Throws if not found.
     /// </summary>
-    public T GetTypedData<T>() where T : Interfaces.IWorkflowData
+    public T GetTypedData<T>() where T : Interfaces.IActionData
     {
         if (!_typedData.TryGetValue(typeof(T), out var data))
-            throw new KeyNotFoundException($"WorkflowContext typed data '{typeof(T).Name}' not found.");
+            throw new KeyNotFoundException($"ActionContext typed data '{typeof(T).Name}' not found.");
         return (T)data;
     }
     
     /// <summary>
     /// Try to get typed workflow data.
     /// </summary>
-    public bool TryGetTypedData<T>(out T data) where T : Interfaces.IWorkflowData
+    public bool TryGetTypedData<T>(out T data) where T : Interfaces.IActionData
     {
         if (_typedData.TryGetValue(typeof(T), out var obj))
         {
@@ -124,21 +124,21 @@ public abstract class WorkflowContext
     // Input Management
     // --------------------------------------------------------------------
     
-    private readonly Queue<IWorkflowInput> _inputQueue = new();
-    private readonly List<IWorkflowInput> _history = new();
+    private readonly Queue<IActionInput> _inputQueue = new();
+    private readonly List<IActionInput> _history = new();
 
-    public void EnqueueInput(IWorkflowInput input)
+    public void EnqueueInput(IActionInput input)
     {
         _inputQueue.Enqueue(input);
         _history.Add(input);
     }
 
-    public bool HasInput<T>() where T : IWorkflowInput
+    public bool HasInput<T>() where T : IActionInput
     {
         return _inputQueue.Any(i => i is T);
     }
 
-    public T? ConsumeInput<T>() where T : IWorkflowInput
+    public T? ConsumeInput<T>() where T : IActionInput
     {
         // We look for the first matching input in the queue
         // Note: This is a simplified queue. In complex interactions, we might need random access removal.
@@ -160,7 +160,7 @@ public abstract class WorkflowContext
         return default;
     }
 
-    public IEnumerable<IWorkflowInput> GetAllInputs() => _history;
+    public IEnumerable<IActionInput> GetAllInputs() => _history;
     
     public abstract object? GetResult();
 
@@ -176,20 +176,20 @@ public abstract class WorkflowContext
         => _transitions.Add(new NodeTransition(from, to));
 
     // --------------------------------------------------------------------
-    // Navigation Stack (Nested Workflows)
+    // Navigation Stack (Nested Actions)
     // --------------------------------------------------------------------
 
-    private readonly Stack<WorkflowFrame> _navigationStack = new();
+    private readonly Stack<ActionFrame> _navigationStack = new();
 
-    public IReadOnlyCollection<WorkflowFrame> NavigationStack => _navigationStack;
+    public IReadOnlyCollection<ActionFrame> NavigationStack => _navigationStack;
 
-    internal void PushFrame(WorkflowId workflowId, NodeId startNodeId, ReactionId? causingReactionId = null)
+    internal void PushFrame(ActionId workflowId, NodeId startNodeId, ReactionId? causingReactionId = null)
     {
-        _navigationStack.Push(new WorkflowFrame(workflowId, startNodeId, causingReactionId));
+        _navigationStack.Push(new ActionFrame(workflowId, startNodeId, causingReactionId));
         CurrentNodeId = startNodeId;
     }
 
-    public WorkflowFrame PeekFrame() => _navigationStack.Peek();
+    public ActionFrame PeekFrame() => _navigationStack.Peek();
 
     internal void PopFrame()
     {
@@ -248,7 +248,7 @@ public abstract class WorkflowContext
     protected internal void InitializeState(GameState baseState)
     {
         _workingState = baseState;
-        _overlay = new GameStateOverlay();
+        _overlay = new GameStateOverlay(baseState);
     }
 
     /// <summary>
@@ -284,18 +284,18 @@ public abstract class WorkflowContext
     // Events
     // --------------------------------------------------------------------
     
-    private readonly Queue<IWorkflowEvent> _pendingEvents = new();
+    private readonly Queue<IActionEvent> _pendingEvents = new();
 
     public bool HasPendingEvents => _pendingEvents.Count > 0;
-    public IEnumerable<IWorkflowEvent> PendingEvents => _pendingEvents;
+    public IEnumerable<IActionEvent> PendingEvents => _pendingEvents;
     
-    public void AddEvent(IWorkflowEvent domainEvent)
+    public void AddEvent(IActionEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
         _pendingEvents.Enqueue(domainEvent);
     }
 
-    public IWorkflowEvent DequeueEvent()
+    public IActionEvent DequeueEvent()
     {
         return _pendingEvents.Dequeue();
     }
@@ -309,4 +309,4 @@ public abstract class WorkflowContext
 /// <summary>
 /// Represents a snapshot of execution pointer within a specific workflow.
 /// </summary>
-public readonly record struct WorkflowFrame(WorkflowId WorkflowId, NodeId CurrentNodeId, ReactionId? CausingReactionId = null);
+public readonly record struct ActionFrame(ActionId ActionId, NodeId CurrentNodeId, ReactionId? CausingReactionId = null);

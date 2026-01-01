@@ -1,5 +1,8 @@
 using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
+using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Commands;
+using TurnForge.Engine.Commands.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
@@ -15,4 +18,19 @@ public sealed class TurnForge
         Runtime = runtime;
         GameCatalog = gameCatalog;
     }
+
+    // Facade Methods for convenience
+    public ActionTransaction ExecuteAction(ActionId workflowId, Dictionary<string, object>? parameters = null)
+    {
+        parameters ??= new Dictionary<string, object>();
+        parameters["System.GameCatalogApi"] = GameCatalog;
+        return Runtime.ExecuteAction(workflowId, parameters);
+    }
+
+    public CommandTransaction ExecuteCommand(ICommand command)
+        => Runtime.ExecuteCommand(command);
+
+    public GameStatus GetStatus() => Runtime.GetStatus();
+
+    public void ResetGame() => Runtime.ResetGame();
 }

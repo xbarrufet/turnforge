@@ -1,26 +1,26 @@
-using TurnForge.Engine.Core.Workflow.Interfaces;
-using TurnForge.Engine.Core.Workflow.Nodes;
+using TurnForge.Engine.Core.Action.Interfaces;
+using TurnForge.Engine.Core.Action.Nodes;
 using TurnForge.Engine.Entities.Spawn;
 using TurnForge.Engine.Entities.Overlay;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Core.Fsm;
 
-namespace TurnForge.Engine.Core.Workflow.System;
+namespace TurnForge.Engine.Core.Action.System;
 
 /// <summary>
 /// System workflow to evaluate spawn rules and generate entities automatically.
 /// Uses SpawnOrchestrator to check rules against current game state.
 /// </summary>
-public class EvaluateSpawnRulesWorkflow : IWorkflow
+public class EvaluateSpawnRulesAction : IAction
 {
     private readonly SpawnOrchestrator _spawnOrchestrator;
     private readonly NodeId _startNodeId = new("Start");
     
-    public WorkflowId Id => new("EvaluateSpawnRules");
+    public ActionId Id => new("EvaluateSpawnRules");
     public INode StartNode { get; }
     public IReadOnlyCollection<IReaction> GlobalReactions => Array.Empty<IReaction>();
     
-    public EvaluateSpawnRulesWorkflow(SpawnOrchestrator spawnOrchestrator)
+    public EvaluateSpawnRulesAction(SpawnOrchestrator spawnOrchestrator)
     {
         _spawnOrchestrator = spawnOrchestrator;
         
@@ -30,7 +30,7 @@ public class EvaluateSpawnRulesWorkflow : IWorkflow
     public INode GetNode(NodeId nodeId)
     {
         if (nodeId == _startNodeId) return StartNode;
-        throw new KeyNotFoundException($"Node {nodeId.Value} not found in EvaluateSpawnRulesWorkflow");
+        throw new KeyNotFoundException($"Node {nodeId.Value} not found in EvaluateSpawnRulesAction");
     }
 }
 
@@ -50,7 +50,7 @@ internal class SpawnEvaluationNode : INode
         _spawnOrchestrator = spawnOrchestrator;
     }
     
-    public WorkflowStepResult Execute(WorkflowContext context)
+    public ActionStepResult Execute(ActionContext context)
     {
         // Get state from context
         var state = context.State;
@@ -62,6 +62,6 @@ internal class SpawnEvaluationNode : INode
         // The orchestrator will commit this overlay when the workflow completes
         _spawnOrchestrator.ExecuteSpawns(view, context.Overlay);
         
-        return WorkflowStepResult.Success();
+        return ActionStepResult.Success();
     }
 }

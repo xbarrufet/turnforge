@@ -28,42 +28,42 @@ The base class now focuses on:
 *   **Completion Logic**: `IsCompleted(GameState)` checks pure data in `GameState` to determine if transition is needed.
 *   **Next Node Logic**: `GetNextNode(GameState)` returns the next node to transition to, is a funcion -> allows to have complex 
 logic to determine the next node.
-*   **OnEntry Workflows**: System workflows that execute automatically on node entry (preferred).
-*   **Resolvers** [Deprecated]: Legacy resolver calls, use OnEntry workflows instead.
+*   **OnEntry Actions**: System actions that execute automatically on node entry (preferred).
+*   **Resolvers** [Deprecated]: Legacy resolver calls, use OnEntry actions instead.
 
-### System Workflows (OnEntry)
+### System Actions (OnEntry)
 
-System workflows execute automatically when entering a node. Unlike interactive workflows, they don't suspend for user input.
+System actions execute automatically when entering a node. Unlike interactive actions, they don't suspend for user input.
 
 ```csharp
 var endRoundNode = new FsmNode("EndRound")
-    .OnEntry(new ResetActionPointsWorkflow())      // Executes first
-    .OnEntry(new EvaluateSpawnRulesWorkflow())     // Executes second
+    .OnEntry(new ResetActionPointsAction())      // Executes first
+    .OnEntry(new EvaluateSpawnRulesAction())     // Executes second
     .WithCompletionCondition(_ => true);
 ```
 
-**Workflow Types:**
+**Action Types:**
 | Type | Input | Example |
 |------|-------|---------|
 | **Interactive** | Waits for user | StartGame, SelectTarget |
 | **System** | Automatic | Spawn, ResetAP, DrawCards |
 
 **Execution Order on Node Entry:**
-1. OnEntry Workflows execute (in order)
+1. OnEntry Actions execute (in order)
 2. Legacy Resolvers execute (for backward compatibility)
 3. Check completion condition
 
-### System Workflows & Overlay Transaction
+### System Actions & Overlay Transaction
 
-System workflows use the same transactional overlay mechanism as interactive workflows, but **complete immediately** without suspending.
+System actions use the same transactional overlay mechanism as interactive actions, but **complete immediately** without suspending.
 
-#### How FsmGraph Executes System Workflows
+#### How FsmGraph Executes System Actions
 
 ```csharp
 FsmGraph.ExecuteNodeEntry()
-├─ For each OnEntryWorkflow:
-│  ├─ Create SystemWorkflowContext(currentState)
-│  ├─ WorkflowOrchestrator.StartWorkflow(workflow, context)
+├─ For each OnEntryAction:
+│  ├─ Create SystemActionContext(currentState)
+│  ├─ ActionOrchestrator.StartAction(action, context)
 │  │  ├─ InitializeState() → Creates GameStateOverlay
 │  │  ├─ Execute all nodes (use context.Overlay)
 │  │  └─ Commit overlay → New GameState
@@ -73,30 +73,30 @@ FsmGraph.ExecuteNodeEntry()
 
 #### Key Differences: System vs Interactive
 
-| Aspect | System Workflows | Interactive Workflows |
+| Aspect | System Actions | Interactive Actions |
 |--------|-----------------|----------------------|
 | **Suspension** | Never suspends | May suspend for input |
 | **Completion** | Immediate | Asynchronous |
 | **Overlay** | Created, used, committed in one call | May span multiple resume cycles |
-| **Context** | `SystemWorkflowContext` | Custom `WorkflowContext` |
+| **Context** | `SystemActionContext` | Custom `ActionContext` |
 
-#### Example: Spawn System Workflow
+#### Example: Spawn System Action
 
 ```csharp
-public class EvaluateSpawnRulesWorkflow : IWorkflow
+public class EvaluateSpawnRulesAction : IAction
 {
-    public WorkflowStepResult Execute(WorkflowContext context)
+    public ActionStepResult Execute(ActionContext context)
     {
         // Get state from context
         var state = context.State;
         
-        // Use context's overlay (shared across workflow)
+        // Use context's overlay (shared across action)
         var view = new GameStateView(state, context.Overlay);
         
         // Evaluate spawn rules and record operations
         spawnOrchestrator.ExecuteSpawns(view, context.Overlay);
         
-        return WorkflowStepResult.Success();
+        return ActionStepResult.Success();
         // Orchestrator commits overlay after this returns
     }
 }
@@ -123,22 +123,157 @@ internal sealed class RootNode : BaseFsmNode
 }
 ```
 
-### 3 Topology
-The topology of the tree is the following
+### 3. Turn Management
 
+TurnForge provides generic nodes for turn-based games in `TurnForge.Engine.Core.Fsm.Nodes`.
+
+#### TurnOrderState
+
+Tracks turn order in `GameState`:
+
+```csharp
+public record TurnOrderState(
+    ImmutableList<PlayerId> PlayerOrder,
+    int CurrentPlayerIndex,
+    int RoundNumber
+) {
+    public PlayerId CurrentPlayer => PlayerOrder[CurrentPlayerIndex];
+    public bool IsRoundComplete => CurrentPlayerIndex >= PlayerOrder.Count;
+    public TurnOrderState NextPlayer() => this with { CurrentPlayerIndex = CurrentPlayerIndex + 1 };
+    public TurnOrderState NextRound() => this with { CurrentPlayerIndex = 0, RoundNumber = RoundNumber + 1 };
+}
+```
+
+#### StartRoundNode
+
+Controls turn order. Decides who plays next or if round is over.
+
+```csharp
+public class StartRoundNode : BaseFsmNode
+{
+    public override bool IsCompleted(GameState state) => true; // Immediate
+    
+    public override BaseFsmNode? GetNextNode(GameState state)
+    {
+        if (state.TurnOrder.IsRoundComplete)
+            return _endRoundNode;  // All players done
+        return _turnNode;           // Next player's turn
+    }
+}
+```
+
+**OnEntry Actions**: Reset AP, spawn enemies, draw cards, etc.
+
+#### TurnNode
+
+Executes a single player's turn. **Always returns to StartRoundNode**.
+
+```csharp
+public class TurnNode : BaseFsmNode
+{
+    public override BaseFsmNode? GetNextNode(GameState state)
+    {
+        return _startRoundNode; // Always back to StartRound
+    }
+}
+```
+
+#### Flow Pattern
+
+```
+StartRound → Turn → EndRound
+                      ↓ (if not IsRoundComplete)
+                   StartRound
+                      ↓ (if IsRoundComplete + winner)  
+                   EndGame
+```
+
+**Responsibilities:**
+- **StartRound**: Prepares turn, selects current player, transitions to Turn
+- **Turn**: Executes player actions, transitions to EndRound when done
+- **EndRound**: Checks IsRoundComplete, decides continue or end game
+
+#### Usage Example
+
+```csharp
+// Create turn order
+var turnOrder = TurnOrderState.Create(new[] { player1, player2, player3 });
+var state = stateBuilder.SetTurnOrder(turnOrder).Build();
+
+// Create FSM nodes
+var startRound = new StartRoundNode()
+    .OnEntry(new AdvanceTurnAction())  // Advances to next player
+    .WithTurnNode(turn);
+
+var turn = new TurnNode()
+    .WithEndRound(endRound);
+
+var endRound = new EndRoundNode()
+    .OnEntry(new StartNewRoundAction())  // Resets turn order when round complete
+    .WithStartRound(startRound)
+    .WithEndGame(endGame);
+```
+
+#### Updating TurnOrderState
+
+TurnOrderState is updated via OnEntry actions:
+
+| Action | Location | Action |
+|----------|----------|--------|
+| `AdvanceTurnAction` | StartRoundNode.OnEntry | `NextPlayer()` (skip if index=0) |
+| `StartNewRoundAction` | EndRoundNode.OnEntry | `NextRound()` (reset to player 0) |
+
+```csharp
+// Wiring example
+var startRound = new StartRoundNode()
+    .OnEntry(AdvanceTurnActionFactory.Create())
+    .WithTurnNode(turn);
+
+var endRound = new EndRoundNode()
+    .OnEntry(StartNewRoundActionFactory.Create())
+    .WithStartRound(startRound);
+```
+
+Both actions use `SetTurnOrderOperation` which commits via the overlay transactionally.
+
+#### Extending for Game-Specific Logic
+
+```csharp
+// Parchís example: AP management
+public class ParchisTurnNode : TurnNode
+{
+    private int _actionPoints = 1;
+    
+    public override bool IsCompleted(GameState state) => _actionPoints <= 0;
+    
+    public void ConsumeAction(bool rolledSix)
+    {
+        if (!rolledSix) _actionPoints--;
+        // Rolled 6 = bonus action, AP stays same
+    }
+}
+```
+
+### 4. Topology
+
+```
 RootNode (StartGameCommand)
-|
-v
-StartRoundNode (no commands) until games is over
-|
-v
-TurnNodes (no commands) until all players have played
-|
-v
-EndRoundNode (no commands) until all rounds are over
-|
-v
-EndGameNode (no commands) until game is over
+    ↓
+StartRoundNode ←→ TurnNode
+    ↓ (when IsRoundComplete)
+EndRoundNode
+    ↓ (if winner) or ↺ (back to StartRound)
+EndGameNode
+```
 
-### 4 Builder
-Builder().WithRound(new Round<RoundNode>().withTurnNode<TurNode>()..withTurnNode<TurNode>().withEndRoundNode<EndRoundNode>().withEndGameNode<EndGameNode>())
+### 5. Builder
+
+```csharp
+var fsm = FsmBuilder.Create()
+    .WithRoot(startRound)
+    .WithNode(turn)
+    .WithNode(endRound)
+    .WithNode(endGame)
+    .Build();
+```
+

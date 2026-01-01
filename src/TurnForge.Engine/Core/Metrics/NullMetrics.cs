@@ -10,7 +10,7 @@ public sealed class NullMetrics : IEngineMetrics
     public static readonly NullMetrics Instance = new();
 
     public void RecordCommandDuration(string commandType, TimeSpan duration) { }
-    public void RecordWorkflowDuration(WorkflowId workflowId, TimeSpan duration) { }
+    public void RecordActionDuration(ActionId workflowId, TimeSpan duration) { }
     public void IncrementEventCount(string eventType) { }
     public void IncrementDecisionCount(string decisionType) { }
 }

@@ -9,8 +9,8 @@ using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Definitions;
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.ValueObjects;
@@ -26,21 +26,31 @@ public sealed class GameEngineRuntime : IGameEngine
     private readonly CommandBus _commandBus;
     private readonly IGameRepository _repository;
     private readonly IGameLogger _logger;
+    private readonly IActionRegistry _workflowRegistry;
     private FsmGraph? _fsmGraph;
-    private readonly IWorkflowOrchestrator _workflowOrchestrator;
-    private IWorkflow? _activeWorkflow;
-    private WorkflowContext? _activeWorkflowContext;
+    private readonly IActionOrchestrator _workflowOrchestrator;
+    private IAction? _activeAction;
+    private ActionContext? _activeActionContext;
+    private GameStatus _gameStatus = GameStatus.WaitingForStart;
 
     private bool _waitingForAck;
     private readonly IOrchestrator _orchestrator;
     private readonly IBoardFactory _boardFactory;
 
-    public GameEngineRuntime(CommandBus commandBus, IGameRepository repository, IOrchestrator orchestrator, IWorkflowOrchestrator workflowOrchestrator, IGameLogger logger, IBoardFactory boardFactory)
+    public GameEngineRuntime(
+        CommandBus commandBus, 
+        IGameRepository repository, 
+        IOrchestrator orchestrator, 
+        IActionOrchestrator workflowOrchestrator, 
+        IActionRegistry workflowRegistry,
+        IGameLogger logger, 
+        IBoardFactory boardFactory)
     {
         _commandBus = commandBus;
         _repository = repository;
         _orchestrator = orchestrator;
         _workflowOrchestrator = workflowOrchestrator;
+        _workflowRegistry = workflowRegistry;
         _logger = logger;
         _boardFactory = boardFactory;
     }
@@ -51,6 +61,138 @@ public sealed class GameEngineRuntime : IGameEngine
     }
 
     /// <summary>
+    /// Execute a workflow by its registered ID.
+    /// This is the primary API for external systems (UI) to trigger game actions.
+    /// </summary>
+    public ActionTransaction ExecuteAction(ActionId workflowId, Dictionary<string, object>? parameters = null)
+    {
+        // 0. Check Game Status
+        if (_gameStatus == GameStatus.GameOver)
+        {
+            return ActionTransaction.Fail(workflowId, "Game is over. Call ResetGame() to start a new game.");
+        }
+        
+        try
+        {
+            // Update status if starting
+            if (_gameStatus == GameStatus.WaitingForStart)
+            {
+                _gameStatus = GameStatus.InProgress;
+            }
+
+            // 1. Get workflow from registry
+            var workflow = _workflowRegistry.GetAction(workflowId);
+            if (workflow == null)
+            {
+                return ActionTransaction.Fail(workflowId, $"Action '{workflowId.Value}' not registered.");
+            }
+            
+            // 2. Create context with current state
+            var state = _repository.LoadGameState();
+            var context = new GenericActionContext();
+            context.InitializeState(state);
+            
+            // 3. Inject parameters into context
+            if (parameters != null)
+            {
+                foreach (var kvp in parameters)
+                {
+                    context.Set(kvp.Key, kvp.Value);
+                }
+            }
+            
+            // Inject Internal Services
+            context.Set("System.BoardFactory", _boardFactory);
+            
+            // 4. Execute workflow
+            _workflowOrchestrator.StartAction(workflow, context);
+            
+            // 5. Handle result based on status
+            if (context.Status == ActionStatus.Completed)
+            {
+                // Get events from overlay
+                var events = context.Overlay.GetEvents()
+                    .Select(op => new ActionOperationEvent(op))
+                    .Cast<IGameEvent>()
+                    .ToList();
+                
+                // Commit overlay to state
+                var newState = context.Overlay.Commit();
+                _repository.SaveGameState(newState);
+                
+                // Process FSM if active
+                if (_fsmGraph != null)
+                {
+                    var fsmResult = _fsmGraph.ProcessFlow(newState);
+                    events.AddRange(fsmResult.Events);
+                    
+                    if (fsmResult.IsGameOver)
+                    {
+                        _gameStatus = GameStatus.GameOver;
+                        return new ActionTransaction(workflowId) 
+                        { 
+                            Status = ActionStatus.Completed, 
+                            Events = events, 
+                            IsGameOver = true 
+                        };
+                    }
+                }
+                
+                return ActionTransaction.Success(workflowId, events);
+            }
+            else if (context.Status == ActionStatus.Suspended)
+            {
+                _activeAction = workflow;
+                _activeActionContext = context;
+                return ActionTransaction.Suspended(workflowId);
+            }
+            else
+            {
+                return ActionTransaction.Fail(workflowId, "Action failed or was cancelled.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error executing workflow {workflowId.Value}", ex);
+            return ActionTransaction.Fail(workflowId, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Get current game status.
+    /// </summary>
+    public GameStatus GetStatus() => _gameStatus;
+
+    /// <summary>
+    /// Reset the game. Clears state, resets FSM to root, and returns to WaitingForStart.
+    /// </summary>
+    public void ResetGame()
+    {
+        _logger.LogInfo("Resetting game engine...");
+        
+        // 1. Clear Active Actions
+        _activeAction = null;
+        _activeActionContext = null;
+        _waitingForAck = false;
+        
+        // 2. Reset Status
+        _gameStatus = GameStatus.WaitingForStart;
+        
+        // 3. Reset FSM
+        if (_fsmGraph != null)
+        {
+            _fsmGraph.Reset();
+        }
+        
+        // 4. Reset State (Empty)
+        var emptyState = Entities.GameState.Empty();
+        _repository.SaveGameState(emptyState);
+        _orchestrator.SetState(emptyState);
+        
+        _logger.LogInfo("Game engine reset complete.");
+    }
+
+    /// <summary>
     /// Main method of the Engine. Orchestrates command execution and FSM transitions.
     /// </summary>
     public CommandTransaction ExecuteCommand(ICommand command)
@@ -58,14 +200,14 @@ public sealed class GameEngineRuntime : IGameEngine
         var transaction = new CommandTransaction(command);
         try
         {
-            // 0 - Intercept Workflow Input (if active)
-            if (_activeWorkflow != null && _activeWorkflowContext != null)
+            // 0 - Intercept Action Input (if active)
+            if (_activeAction != null && _activeActionContext != null)
             {
-                if (_activeWorkflowContext.Status == WorkflowStatus.Suspended)
+                if (_activeActionContext.Status == ActionStatus.Suspended)
                 {
-                    if (command is WorkflowInputCommand inputCommand)
+                    if (command is ActionInputCommand inputCommand)
                     {
-                        return ResumeWorkflow(inputCommand, transaction);
+                        return ResumeAction(inputCommand, transaction);
                     }
                     else
                     {
@@ -189,24 +331,24 @@ public sealed class GameEngineRuntime : IGameEngine
         return command is ACKCommand;
     }
 
-    private CommandTransaction StartWorkflow(IWorkflow workflow, WorkflowContext? context, CommandTransaction transaction, List<IGameEvent> priorEvents)
+    private CommandTransaction StartAction(IAction workflow, ActionContext? context, CommandTransaction transaction, List<IGameEvent> priorEvents)
     {
-        _activeWorkflow = workflow;
-        _activeWorkflowContext = context ?? new GenericWorkflowContext(); 
-        _activeWorkflowContext.InitializeState(_orchestrator.CurrentState);
+        _activeAction = workflow;
+        _activeActionContext = context ?? new GenericActionContext(); 
+        _activeActionContext.InitializeState(_orchestrator.CurrentState);
 
         if (!Guid.TryParse(workflow.Id.Value, out var guid))
         {
             guid = Guid.NewGuid(); 
         }
 
-        _workflowOrchestrator.StartWorkflow(workflow, _activeWorkflowContext);
+        _workflowOrchestrator.StartAction(workflow, _activeActionContext);
 
-        if (_activeWorkflowContext.Status == WorkflowStatus.Completed)
+        if (_activeActionContext.Status == ActionStatus.Completed)
         {
-            return CompleteWorkflow(transaction, priorEvents);
+            return CompleteAction(transaction, priorEvents);
         }
-        else if (_activeWorkflowContext.Status == WorkflowStatus.Suspended)
+        else if (_activeActionContext.Status == ActionStatus.Suspended)
         {
             transaction.Result = CommandResult.Ok(Array.Empty<IDecision>(), "WORKFLOW_STARTED", "SUSPENDED");
             transaction.Events = priorEvents.ToArray();
@@ -214,25 +356,25 @@ public sealed class GameEngineRuntime : IGameEngine
         }
         else 
         {
-            throw new Exception("Workflow Cancelled or Failed on Start");
+            throw new Exception("Action Cancelled or Failed on Start");
         }
     }
 
-    private CommandTransaction ResumeWorkflow(WorkflowInputCommand command, CommandTransaction transaction)
+    private CommandTransaction ResumeAction(ActionInputCommand command, CommandTransaction transaction)
     {
-        if (_activeWorkflow == null || _activeWorkflowContext == null) 
+        if (_activeAction == null || _activeActionContext == null) 
             throw new InvalidOperationException("No active workflow");
 
-        if (!Guid.TryParse(_activeWorkflow.Id.Value, out var guid))
+        if (!Guid.TryParse(_activeAction.Id.Value, out var guid))
         {
             guid = Guid.NewGuid();
         }
 
         _workflowOrchestrator.SubmitInput(guid, command.Input);
 
-        if (_activeWorkflowContext.Status == WorkflowStatus.Completed)
+        if (_activeActionContext.Status == ActionStatus.Completed)
         {
-            return CompleteWorkflow(transaction, new List<IGameEvent>());
+            return CompleteAction(transaction, new List<IGameEvent>());
         }
         else
         {
@@ -242,24 +384,24 @@ public sealed class GameEngineRuntime : IGameEngine
         }
     }
 
-    private CommandTransaction CompleteWorkflow(CommandTransaction transaction, List<IGameEvent> priorEvents)
+    private CommandTransaction CompleteAction(CommandTransaction transaction, List<IGameEvent> priorEvents)
     {
         var events = new List<IGameEvent>(priorEvents);
         
-        if (_activeWorkflowContext != null)
+        if (_activeActionContext != null)
         {
-            foreach(var decision in _activeWorkflowContext.Decisions)
+            foreach(var decision in _activeActionContext.Decisions)
             {
                events.AddRange(_orchestrator.Apply(decision));
             }
             
-            events.AddRange(_activeWorkflowContext.PendingEvents.OfType<IGameEvent>());
+            events.AddRange(_activeActionContext.PendingEvents.OfType<IGameEvent>());
         }
         
         _repository.SaveGameState(_orchestrator.CurrentState);
         
-        _activeWorkflow = null;
-        _activeWorkflowContext = null;
+        _activeAction = null;
+        _activeActionContext = null;
         
         // Trigger FSM Update
         if (_fsmGraph != null)
@@ -274,7 +416,7 @@ public sealed class GameEngineRuntime : IGameEngine
         return transaction;
     }
 
-    private class GenericWorkflowContext : WorkflowContext 
+    private class GenericActionContext : ActionContext 
     {
         public override object? GetResult() => null;
     }

@@ -5,7 +5,7 @@ using TurnForge.Engine.Registration;
 
     namespace TurnForge.Engine.Infrastructure.Catalog;
 
-    internal sealed class InMemoryGameCatalog : IGameCatalog
+    public sealed class InMemoryGameCatalog : IGameCatalog
     {
         public IDefinitionRegistry<string, BaseGameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, BaseGameEntityDefinition>();
 
@@ -13,7 +13,7 @@ using TurnForge.Engine.Registration;
 
         public T GetDefinition<T>(string definitionId) where T : BaseGameEntityDefinition
         {
-            return Entities.Get(definitionId) as T;
+            return (Entities.Get(definitionId) as T)!;
         }
 
         public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition

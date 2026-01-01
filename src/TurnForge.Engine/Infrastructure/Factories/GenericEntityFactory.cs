@@ -4,22 +4,24 @@ using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Definitions.Descriptors;
-using TurnForge.Engine.Definitions.Descriptors.Interfaces;
 using TurnForge.Engine.Definitions.Factories.Interfaces;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Definitions.Board.Descriptors;
-using TurnForge.Engine.Definitions.Actors.Descriptors;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Core.Registries;
 using System.Reflection;
 using TurnForge.Engine.Values;
 using TurnForge.Engine.Services;
-using TurnForge.Engine.Definitions.Board.Descriptors;
 using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Board; // For Zone
+using TurnForge.Engine.Entities.Actors.Descriptors;
+using TurnForge.Engine.Entities.Board.Descriptors;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
 
 namespace TurnForge.Engine.Infrastructure.Factories;
 

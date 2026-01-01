@@ -1,10 +1,10 @@
 using System;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Interfaces;
+namespace TurnForge.Engine.Core.Action.Interfaces;
 
-public interface IWorkflowOrchestrator
+public interface IActionOrchestrator
 {
-    void StartWorkflow(IWorkflow workflow, WorkflowContext context);
-    void SubmitInput(Guid workflowId, IWorkflowInput input);
+    void StartAction(IAction workflow, ActionContext context);
+    void SubmitInput(Guid workflowId, IActionInput input);
 }

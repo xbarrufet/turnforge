@@ -16,7 +16,7 @@ public interface IEngineMetrics
     /// <summary>
     /// Records the duration of a workflow execution (from start to completion).
     /// </summary>
-    void RecordWorkflowDuration(WorkflowId workflowId, TimeSpan duration);
+    void RecordActionDuration(ActionId workflowId, TimeSpan duration);
 
     /// <summary>
     /// Increments the counter for a specific event type.

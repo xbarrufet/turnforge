@@ -1,9 +1,9 @@
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow;
+namespace TurnForge.Engine.Commands.StartGame.Action;
 
 /// <summary>
 /// Final node in StartGame workflow that deploys all pending entities to the board.
@@ -22,9 +22,9 @@ public class DeployEntitiesNode : INode
         _applier = applier;
     }
     
-    public WorkflowStepResult Execute(WorkflowContext context)
+    public ActionStepResult Execute(ActionContext context)
     {
-        var ctx = (StartGameWorkflowContext)context;
+        var ctx = (StartGameActionContext)context;
         
         // 1. Deploy Props (Definition + Fixed Position)
         foreach (var prop in ctx.PendingPropDeployments)
@@ -50,6 +50,6 @@ public class DeployEntitiesNode : INode
             context.Overlay.Record(op);
         }
         
-        return WorkflowStepResult.Success();
+        return ActionStepResult.Success();
     }
 }

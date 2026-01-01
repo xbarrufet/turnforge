@@ -1,4 +1,4 @@
-namespace TurnForge.Engine.Core.Workflow.Interfaces;
+namespace TurnForge.Engine.Core.Action.Interfaces;
 
  public interface IAcceptsReactions
     {

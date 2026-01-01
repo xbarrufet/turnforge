@@ -1,19 +1,19 @@
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Builders;
+namespace TurnForge.Engine.Core.Action.Builders;
 
 /// <summary>
 /// Fluent builder for creating workflows.
 /// Simplifies workflow construction by chaining nodes and reactions.
 /// </summary>
-public class WorkflowBuilder
+public class ActionBuilder
 {
     private readonly string _id;
     private readonly List<INode> _nodes = new();
     private readonly List<IReaction> _reactions = new();
     
-    private WorkflowBuilder(string id)
+    private ActionBuilder(string id)
     {
         _id = id;
     }
@@ -21,16 +21,16 @@ public class WorkflowBuilder
     /// <summary>
     /// Start building a new workflow.
     /// </summary>
-    public static WorkflowBuilder Create(string workflowId)
+    public static ActionBuilder Create(string workflowId)
     {
-        return new WorkflowBuilder(workflowId);
+        return new ActionBuilder(workflowId);
     }
     
     /// <summary>
     /// Add a node to the workflow chain.
     /// Nodes are linked in the order they are added.
     /// </summary>
-    public WorkflowBuilder AddNode<TNode>() where TNode : INode, new()
+    public ActionBuilder AddNode<TNode>() where TNode : INode, new()
     {
         _nodes.Add(new TNode());
         return this;
@@ -39,7 +39,7 @@ public class WorkflowBuilder
     /// <summary>
     /// Add a node instance to the workflow chain.
     /// </summary>
-    public WorkflowBuilder AddNode(INode node)
+    public ActionBuilder AddNode(INode node)
     {
         _nodes.Add(node);
         return this;
@@ -48,7 +48,7 @@ public class WorkflowBuilder
     /// <summary>
     /// Add a global reaction to the workflow.
     /// </summary>
-    public WorkflowBuilder WithReaction<TReaction>() where TReaction : IReaction, new()
+    public ActionBuilder WithReaction<TReaction>() where TReaction : IReaction, new()
     {
         _reactions.Add(new TReaction());
         return this;
@@ -57,7 +57,7 @@ public class WorkflowBuilder
     /// <summary>
     /// Add a reaction instance to the workflow.
     /// </summary>
-    public WorkflowBuilder WithReaction(IReaction reaction)
+    public ActionBuilder WithReaction(IReaction reaction)
     {
         _reactions.Add(reaction);
         return this;
@@ -66,10 +66,10 @@ public class WorkflowBuilder
     /// <summary>
     /// Build the workflow.
     /// </summary>
-    public IWorkflow Build()
+    public IAction Build()
     {
         if (_nodes.Count == 0)
-            throw new InvalidOperationException("Workflow must have at least one node");
+            throw new InvalidOperationException("Action must have at least one node");
         
         // Link nodes in sequence
         for (int i = 0; i < _nodes.Count - 1; i++)
@@ -80,8 +80,8 @@ public class WorkflowBuilder
             }
         }
         
-        return new BuiltWorkflow(
-            new WorkflowId(_id),
+        return new BuiltAction(
+            new ActionId(_id),
             _nodes[0],
             _nodes.ToDictionary(n => n.Id, n => n),
             _reactions.AsReadOnly()
@@ -107,22 +107,22 @@ public abstract class LinkableNode : ILinkableNode
     
     public void SetNextNode(INode? next) => NextNode = next;
     
-    public abstract WorkflowStepResult Execute(WorkflowContext context);
+    public abstract ActionStepResult Execute(ActionContext context);
 }
 
 /// <summary>
-/// Workflow created by the builder.
+/// Action created by the builder.
 /// </summary>
-internal sealed class BuiltWorkflow : IWorkflow
+internal sealed class BuiltAction : IAction
 {
-    public WorkflowId Id { get; }
+    public ActionId Id { get; }
     public INode StartNode { get; }
     public IReadOnlyCollection<IReaction> GlobalReactions { get; }
     
     private readonly Dictionary<NodeId, INode> _nodes;
     
-    public BuiltWorkflow(
-        WorkflowId id,
+    public BuiltAction(
+        ActionId id,
         INode startNode,
         Dictionary<NodeId, INode> nodes,
         IReadOnlyCollection<IReaction> reactions)

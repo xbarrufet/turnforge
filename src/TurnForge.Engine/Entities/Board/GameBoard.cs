@@ -80,7 +80,7 @@ namespace TurnForge.Engine.Entities.Board;
             foreach (var connectionId in connections)
             {
                 // El Board NO conoce entidades.
-                // El Workflow / Reaction resolverá esto usando el GameState.
+                // El Action / Reaction resolverá esto usando el GameState.
                 var result = context.ConnectionResolver.Evaluate(
                     connectionId,
                     from,

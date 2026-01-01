@@ -1,23 +1,23 @@
 using System;
 using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 
 using TurnForge.Engine.Commands.ValueObjects;
 
 namespace TurnForge.Engine.Commands;
 
-public class WorkflowInputCommand : ICommand
+public class ActionInputCommand : ICommand
 {
-    public IWorkflowInput Input { get; }
+    public IActionInput Input { get; }
     
     // Commands typically need to identify the related entity/context, 
     // but for active workflow resumption, the context is implied by the engine state.
-    // We might add WorkflowId for safety later.
+    // We might add ActionId for safety later.
     
-    public WorkflowInputCommand(IWorkflowInput input)
+    public ActionInputCommand(IActionInput input)
     {
         Input = input;
     }
 
-    public CommandType CommandType => new CommandType("WorkflowInput");
+    public CommandType CommandType => new CommandType("ActionInput");
 }

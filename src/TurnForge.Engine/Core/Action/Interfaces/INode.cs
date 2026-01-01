@@ -1,11 +1,11 @@
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Interfaces;
+namespace TurnForge.Engine.Core.Action.Interfaces;
 
 public interface INode
 {
     NodeId Id { get; }
     INode? NextNode { get; set; }
     
-    WorkflowStepResult Execute(WorkflowContext context);
+    ActionStepResult Execute(ActionContext context);
 }

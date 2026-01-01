@@ -1,189 +1,182 @@
 using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm;
 
 /// <summary>
-/// FSM 2.0 Graph Controller.
-/// Manages game flow using a graph of IFsmNode.
-/// Executes system workflows and resolvers on node entry and handles transitions.
+/// FSM Graph that holds nodes and manages transitions (FSM 2.0).
+/// 
+/// Execution flow:
+/// 1. ProcessFlow() runs OnEntry workflows and auto-transitions
+/// 2. Check IsCompleted() on current node
+/// 3. If completed, transition to GetNextNode()
 /// </summary>
 public class FsmGraph
 {
-    private readonly IFsmNode _rootNode;
-    private readonly IServiceProvider _services;
+    private readonly Dictionary<NodeId, BaseFsmNode> _nodes = new();
+    private readonly IServiceProvider? _services;
     private readonly IGameLogger? _logger;
-    private readonly WorkflowOrchestrator _workflowOrchestrator;
     
-    private IFsmNode _currentNode;
+    public BaseFsmNode? CurrentNode { get; private set; }
+    public BaseFsmNode? RootNode { get; private set; }
     
-    public IFsmNode CurrentNode => _currentNode;
-    public bool IsGameOver { get; private set; }
-    
-    public FsmGraph(IFsmNode rootNode, IServiceProvider services, IGameLogger? logger = null)
+    /// <summary>
+    /// Constructor accepting IFsmNode for backward compatibility with GameEngineFactory.
+    /// </summary>
+    public FsmGraph(IFsmNode? rootNode, IServiceProvider? services, IGameLogger? logger)
     {
-        _rootNode = rootNode;
         _services = services;
         _logger = logger;
-        _currentNode = rootNode;
-        _workflowOrchestrator = new WorkflowOrchestrator();
+        
+        if (rootNode is BaseFsmNode baseNode)
+        {
+            SetRoot(baseNode);
+        }
     }
     
     /// <summary>
-    /// Enter the initial node and execute its entry logic.
-    /// Call this once when starting the game.
+    /// Simple constructor for tests.
     /// </summary>
-    public FsmGraphResult Initialize(GameState state)
+    public FsmGraph() : this(null, null, null) { }
+    
+    /// <summary>
+    /// Register a node in the graph.
+    /// </summary>
+    public void AddNode(BaseFsmNode node)
     {
-        _logger?.LogInfo($"[FsmGraph] Initializing at node: {_currentNode.Name}");
-        return ExecuteNodeEntry(state);
+        _nodes[node.Id] = node;
     }
     
     /// <summary>
-    /// Process the FSM flow. Transitions nodes as needed.
-    /// Returns updated state and events from resolvers.
+    /// Set the root node (entry point).
     /// </summary>
-    public FsmGraphResult ProcessFlow(GameState state)
+    public void SetRoot(BaseFsmNode node)
+    {
+        AddNode(node);
+        RootNode = node;
+        CurrentNode = node;
+    }
+
+    /// <summary>
+    /// Retrieve a node by ID. Useful for graph introspection.
+    /// </summary>
+    public BaseFsmNode? GetNode(NodeId id)
+    {
+        return _nodes.TryGetValue(id, out var node) ? node : null;
+    }
+
+    /// <summary>
+    /// Reset the FSM to the initial state (RootNode).
+    /// </summary>
+    public void Reset()
+    {
+        if (RootNode != null)
+        {
+            CurrentNode = RootNode;
+        }
+    }
+    
+    /// <summary>
+    /// Process FSM flow: execute OnEntry workflows and auto-transitions.
+    /// This is the main entry point called by GameEngineRuntime.
+    /// </summary>
+    public FsmFlowResult ProcessFlow(GameState state)
+    {
+        if (CurrentNode == null)
+        {
+            return FsmFlowResult.NoChange(state);
+        }
+        
+        var currentState = state;
+        var events = new List<IGameEvent>();
+        var isGameOver = false;
+        
+        // Execute OnEntry system workflows for current node
+        currentState = ExecuteOnEntryActions(CurrentNode, currentState, events);
+        
+        // Check for auto-transitions
+        while (CurrentNode != null && CurrentNode.IsCompleted(currentState))
+        {
+            var nextNode = CurrentNode.GetNextNode(currentState);
+            
+            if (nextNode == null)
+            {
+                // No next node = end of game
+                isGameOver = true;
+                _logger?.LogInfo($"FSM: No next node from {CurrentNode.Name}, game over.");
+                break;
+            }
+            
+            _logger?.LogInfo($"FSM: Transition {CurrentNode.Name} → {nextNode.Name}");
+            CurrentNode = nextNode;
+            
+            // Execute OnEntry for new node
+            currentState = ExecuteOnEntryActions(CurrentNode, currentState, events);
+        }
+        
+        return new FsmFlowResult(currentState, events.AsReadOnly(), isGameOver);
+    }
+    
+    private GameState ExecuteOnEntryActions(BaseFsmNode node, GameState state, List<IGameEvent> events)
     {
         var currentState = state;
-        var allEvents = new List<IGameEvent>();
         
-        int loopGuard = 0;
-        const int MaxIterations = 100;
-        
-        while (loopGuard++ < MaxIterations)
+        foreach (var workflow in node.OnEntryActions)
         {
-            // Check if current node is completed
-            if (_currentNode.IsCompleted(currentState))
+            var context = new SystemActionContext(currentState);
+            
+            // Execute workflow nodes directly (system workflows don't suspend)
+            var currentNode = workflow.StartNode;
+            while (currentNode != null)
             {
-                // Get next node
-                var nextNode = _currentNode.GetNextNode(currentState);
+                var result = currentNode.Execute(context);
                 
-                if (nextNode == null)
+                if (result.Status == ActionStatus.Failed)
                 {
-                    // Terminal node - game over
-                    IsGameOver = true;
-                    _logger?.LogInfo("[FsmGraph] Game Over - no next node");
-                    return new FsmGraphResult(currentState, allEvents, true);
+                    _logger?.LogError($"FSM OnEntry workflow failed: {result.ErrorMessage}");
+                    break;
                 }
                 
-                // Transition to next node
-                _currentNode = nextNode;
-                _logger?.LogInfo($"[FsmGraph] Transition to: {_currentNode.Name}");
-                
-                // Execute entry logic (workflows + resolvers)
-                var entryResult = ExecuteNodeEntry(currentState);
-                currentState = entryResult.State;
-                allEvents.AddRange(entryResult.Events);
-                
-                // Continue processing (next node might also auto-complete)
-                continue;
+                // Move to next node
+                if (currentNode is Action.Builders.ILinkableNode linkable)
+                {
+                    currentNode = linkable.NextNode;
+                }
+                else
+                {
+                    break;
+                }
             }
-            else
-            {
-                // Node not completed - waiting for player action
-                return new FsmGraphResult(currentState, allEvents, false);
-            }
+            
+            // Commit overlay changes
+            currentState = context.Overlay.Commit();
         }
         
-        _logger?.LogError("[FsmGraph] Infinite loop detected");
-        return new FsmGraphResult(currentState, allEvents, false);
+        return currentState;
     }
     
     /// <summary>
-    /// Execute system workflows and resolvers when entering a node.
-    /// Workflows execute first, then legacy resolvers.
-    /// </summary>
-    private FsmGraphResult ExecuteNodeEntry(GameState state)
-    {
-        var currentState = state;
-        var allEvents = new List<IGameEvent>();
-        
-        // 1. Execute OnEntry Workflows (System Workflows - no user input)
-        foreach (var workflow in _currentNode.OnEntryWorkflows)
-        {
-            _logger?.LogInfo($"[FsmGraph] Executing OnEntry workflow: {workflow.Id.Value}");
-            
-            // Create a system context for this workflow
-            var context = new SystemWorkflowContext(currentState);
-            
-            _workflowOrchestrator.StartWorkflow(workflow, context);
-            
-            // System workflows should complete immediately
-            // If suspended, that's an error - system workflows don't wait for input
-            if (context.Status == ValueObjects.WorkflowStatus.Suspended)
-            {
-                _logger?.LogError($"[FsmGraph] System workflow {workflow.Id.Value} suspended - this is not allowed");
-            }
-            
-            // Update state from workflow context
-            currentState = context.State ?? currentState;
-        }
-        
-        // 2. Execute legacy Resolvers (for backward compatibility)
-        var resolverContext = new ResolverContext(currentState, _services);
-        
-        foreach (var resolver in _currentNode.Resolvers)
-        {
-            _logger?.LogInfo($"[FsmGraph] Executing resolver: {resolver.Name}");
-            
-            var result = resolver.Resolve(resolverContext);
-            currentState = result.State;
-            allEvents.AddRange(result.Events);
-            
-            // Update context with new state for next resolver
-            resolverContext = resolverContext with { State = currentState };
-        }
-        
-        return new FsmGraphResult(currentState, allEvents, false);
-    }
-    
-    /// <summary>
-    /// Check if a command is allowed in the current node.
+    /// Check if a command is allowed in current node.
     /// </summary>
     public bool IsCommandAllowed(Type commandType)
     {
-        return _currentNode.IsCommandAllowed(commandType);
-    }
-    
-    /// <summary>
-    /// Get list of allowed commands for current node.
-    /// </summary>
-    public IReadOnlyList<Type> GetAllowedCommands()
-    {
-        return _currentNode.AllowedCommands;
+        return CurrentNode?.IsCommandAllowed(commandType) ?? false;
     }
 }
 
 /// <summary>
-/// Result of FSM graph processing.
+/// Simple context for system workflows (immediate completion).
 /// </summary>
-public record FsmGraphResult(
-    GameState State,
-    IReadOnlyList<IGameEvent> Events,
-    bool IsGameOver
-);
-
-/// <summary>
-/// Simple workflow context for system workflows.
-/// System workflows update GameState directly.
-/// </summary>
-internal class SystemWorkflowContext : WorkflowContext
+public sealed class SystemActionContext : ActionContext
 {
-    public new GameState? State { get; private set; }
-    
-    public SystemWorkflowContext(GameState state)
+    public SystemActionContext(GameState initialState)
     {
-        State = state;
+        InitializeState(initialState);
     }
     
-    public override object? GetResult() => State;
-    
-    public new void UpdateState(GameState state)
-    {
-        State = state;
-    }
+    public override object? GetResult() => null;
 }

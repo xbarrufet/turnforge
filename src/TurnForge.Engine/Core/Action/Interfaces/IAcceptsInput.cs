@@ -1,11 +1,11 @@
-namespace TurnForge.Engine.Core.Workflow.Interfaces;
+namespace TurnForge.Engine.Core.Action.Interfaces;
 
 public interface IAcceptsInput { }
 
 public interface IAcceptsInput<in TInput> : IAcceptsInput
-        where TInput : IWorkflowInput
+        where TInput : IActionInput
     {
         void MoveForward(
-            WorkflowContext context,
+            ActionContext context,
             TInput input);
     }

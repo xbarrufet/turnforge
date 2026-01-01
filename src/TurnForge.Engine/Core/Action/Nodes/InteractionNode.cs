@@ -1,16 +1,16 @@
 using System;
-using TurnForge.Engine.Core.Workflow.Builders;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Builders;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Nodes;
+namespace TurnForge.Engine.Core.Action.Nodes;
 
 /// <summary>
 /// Base class for nodes that require external interaction/input.
 /// Implements the suspend/resume loop pattern.
 /// </summary>
 public abstract class InteractionNode<TContext> : ILinkableNode 
-    where TContext : WorkflowContext
+    where TContext : ActionContext
 {
     public NodeId Id { get; }
     public INode? NextNode { get; set; }
@@ -19,12 +19,12 @@ public abstract class InteractionNode<TContext> : ILinkableNode
     
     public void SetNextNode(INode? next) => NextNode = next;
 
-    public WorkflowStepResult Execute(WorkflowContext baseContext)
+    public ActionStepResult Execute(ActionContext baseContext)
     {
         // Safety cast
         if (baseContext is not TContext context)
         {
-            return WorkflowStepResult.Fail($"Invalid context type. Expected {typeof(TContext).Name}, got {baseContext.GetType().Name}");
+            return ActionStepResult.Fail($"Invalid context type. Expected {typeof(TContext).Name}, got {baseContext.GetType().Name}");
         }
 
         // 1. Hook to process new inputs received since last pause
@@ -34,12 +34,12 @@ public abstract class InteractionNode<TContext> : ILinkableNode
         if (IsReadyToComplete(context))
         {
             OnComplete(context);
-            return WorkflowStepResult.Success();
+            return ActionStepResult.Success();
         }
 
         // 3. If not, generate options and suspend
         var (reason, allowedInputs) = GetRequiredInteractions(context);
-        return WorkflowStepResult.Suspend(reason, allowedInputs);
+        return ActionStepResult.Suspend(reason, allowedInputs);
     }
 
     /// <summary>

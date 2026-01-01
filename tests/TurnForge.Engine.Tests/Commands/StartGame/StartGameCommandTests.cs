@@ -1,24 +1,24 @@
 using NUnit.Framework;
 using Moq;
-using TurnForge.Engine.Commands.StartGame.Workflow;
-using TurnForge.Engine.Commands.StartGame.Workflow.Inputs;
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Builders;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Commands.StartGame.Action;
+using TurnForge.Engine.Commands.StartGame.Action.Inputs;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Builders;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.Entities.Appliers;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Definitions.Descriptors;
 using System.Collections.Generic;
-using TurnForge.Engine.Core.Workflow.Nodes;
+using TurnForge.Engine.Core.Action.Nodes;
 
 namespace TurnForge.Engine.Tests.Commands.StartGame;
 
 [TestFixture]
 public class StartGameCommandTests
 {
-    private WorkflowOrchestrator _orchestrator = null!;
+    private ActionOrchestrator _orchestrator = null!;
     private Mock<IBoardFactory> _boardFactoryMock = null!;
     private Mock<IEntityApplier> _entityApplierMock = null!;
     private Mock<IGameBoard> _gameBoardMock = null!;
@@ -27,7 +27,7 @@ public class StartGameCommandTests
     [SetUp]
     public void SetUp()
     {
-        _orchestrator = new WorkflowOrchestrator();
+        _orchestrator = new ActionOrchestrator();
         _boardFactoryMock = new Mock<IBoardFactory>();
         _entityApplierMock = new Mock<IEntityApplier>();
         _gameBoardMock = new Mock<IGameBoard>();
@@ -40,14 +40,14 @@ public class StartGameCommandTests
         _gameBoardMock.Setup(b => b.Clone()).Returns(_gameBoardMock.Object);
     }
     
-    private IWorkflow CreateTestWorkflow()
+    private IAction CreateTestAction()
     {
          var processPlayer = new ProcessPlayerDataNode();
          var processBoard = new ProcessBoardDataNode(_boardFactoryMock.Object);
          var deployEntities = new DeployEntitiesNode(new NodeId("StartGame.DeployEntities"), _entityApplierMock.Object);
          var buildGame = new BuildGameNode();
 
-         return WorkflowBuilder.Create("StartGame")
+         return ActionBuilder.Create("StartGame")
                  .AddNode(processPlayer)
                  .AddNode(processBoard)
                  .AddNode(deployEntities)
@@ -61,17 +61,17 @@ public class StartGameCommandTests
     }
 
     [Test]
-    public void StartGameWorkflow_FullFlow_CompletesSuccessfully()
+    public void StartGameAction_FullFlow_CompletesSuccessfully()
     {
         // Arrange
-        var workflow = CreateTestWorkflow();
-        var context = new StartGameWorkflowContext(Guid.NewGuid(), GameState.Empty());
+        var workflow = CreateTestAction();
+        var context = new StartGameActionContext(Guid.NewGuid(), GameState.Empty());
         
         // Act - Start workflow
-        _orchestrator.StartWorkflow(workflow, context);
+        _orchestrator.StartAction(workflow, context);
         
         // Assert - Waiting for player input
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended), "Should wait for player data");
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended), "Should wait for player data");
         
         var workflowId = workflow.Id.Value;
         
@@ -79,7 +79,7 @@ public class StartGameCommandTests
         _orchestrator.SubmitInput(workflowId, CreateAddPlayer("Player1"));
         
         // Still suspended
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended));
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended));
         Assert.That(context.PlayerNames, Contains.Item("Player1"));
         
         // Add second player
@@ -90,7 +90,7 @@ public class StartGameCommandTests
         _orchestrator.SubmitInput(workflowId, new ConfirmPlayersInput());
         
         // Waiting for map selection
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended), "Should wait for map selection");
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended), "Should wait for map selection");
         Assert.That(context.PlayersConfirmed, Is.True);
         
         // Select map
@@ -104,36 +104,36 @@ public class StartGameCommandTests
         
         _orchestrator.SubmitInput(workflowId, new SelectMapInput("map-001", _boardDefinitionMock.Object, missionData));
         
-        // Workflow should complete
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Completed), "Workflow should complete");
+        // Action should complete
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Completed), "Action should complete");
         Assert.That(context.MapId, Is.EqualTo("map-001"));
     }
     
     [Test]
-    public void StartGameWorkflow_ConfirmWithNoPlayers_StaysSuspended()
+    public void StartGameAction_ConfirmWithNoPlayers_StaysSuspended()
     {
         // Arrange
-        var workflow = CreateTestWorkflow();
-        var context = new StartGameWorkflowContext(Guid.NewGuid(), GameState.Empty());
+        var workflow = CreateTestAction();
+        var context = new StartGameActionContext(Guid.NewGuid(), GameState.Empty());
         
         // Act
-        _orchestrator.StartWorkflow(workflow, context);
+        _orchestrator.StartAction(workflow, context);
         _orchestrator.SubmitInput(workflow.Id.Value, new ConfirmPlayersInput());
         
         // Assert
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended));
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended));
         Assert.That(context.PlayersConfirmed, Is.False, "Should not confirm with no players");
     }
     
     [Test]
-    public void StartGameWorkflow_DuplicatePlayerName_IsIgnored()
+    public void StartGameAction_DuplicatePlayerName_IsIgnored()
     {
         // Arrange
-        var workflow = CreateTestWorkflow();
-        var context = new StartGameWorkflowContext(Guid.NewGuid(), GameState.Empty());
+        var workflow = CreateTestAction();
+        var context = new StartGameActionContext(Guid.NewGuid(), GameState.Empty());
         
         // Act
-        _orchestrator.StartWorkflow(workflow, context);
+        _orchestrator.StartAction(workflow, context);
         var workflowId = workflow.Id.Value;
         
         _orchestrator.SubmitInput(workflowId, CreateAddPlayer("Player1"));
@@ -146,14 +146,14 @@ public class StartGameCommandTests
     }
     
     [Test]
-    public void StartGameWorkflow_EmptyPlayerName_IsIgnored()
+    public void StartGameAction_EmptyPlayerName_IsIgnored()
     {
         // Arrange
-        var workflow = CreateTestWorkflow();
-        var context = new StartGameWorkflowContext(Guid.NewGuid(), GameState.Empty());
+        var workflow = CreateTestAction();
+        var context = new StartGameActionContext(Guid.NewGuid(), GameState.Empty());
         
         // Act
-        _orchestrator.StartWorkflow(workflow, context);
+        _orchestrator.StartAction(workflow, context);
         var workflowId = workflow.Id.Value;
         
         _orchestrator.SubmitInput(workflowId, CreateAddPlayer(""));

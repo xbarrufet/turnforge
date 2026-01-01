@@ -1,9 +1,10 @@
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Entities; // For GameEntity
 using TurnForge.Engine.Entities.Board.Interfaces;
 
-namespace TurnForge.Engine.Definitions.Board;
+namespace TurnForge.Engine.Entities.Board;
 
 public sealed class Zone : GameEntity
 {

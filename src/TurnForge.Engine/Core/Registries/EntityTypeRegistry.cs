@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TurnForge.Engine.Core.Attributes;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
 using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Entities.Definitions;
 

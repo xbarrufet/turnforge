@@ -1,6 +1,7 @@
-using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Entities.Overlay;
 
 namespace TurnForge.Engine.Entities.Appliers;

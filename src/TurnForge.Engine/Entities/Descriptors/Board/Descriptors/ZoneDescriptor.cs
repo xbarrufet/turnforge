@@ -4,7 +4,10 @@ using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Traits.Interfaces;
 
-namespace TurnForge.Engine.Definitions.Board.Descriptors;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+
+namespace TurnForge.Engine.Entities.Board.Descriptors;
 
 public record ZoneDescriptor : IGameEntityBuildDescriptor
 {

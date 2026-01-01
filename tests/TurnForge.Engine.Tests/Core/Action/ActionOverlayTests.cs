@@ -1,21 +1,21 @@
 using NUnit.Framework;
-using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Action;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
 using System.Collections.Immutable;
 
-namespace TurnForge.Engine.Tests.Core.Workflow;
+namespace TurnForge.Engine.Tests.Core.Action;
 
 /// <summary>
 /// Tests for workflow overlay lifecycle - verify overlay is created, shared, and committed properly
 /// </summary>
 [TestFixture]
-public class WorkflowOverlayLifecycleTests
+public class ActionOverlayLifecycleTests
 {
     [Test]
-    public void WorkflowContext_InitializeState_CreatesOverlay()
+    public void ActionContext_InitializeState_CreatesOverlay()
     {
         // Arrange
         var context = new TestContext();
@@ -29,7 +29,7 @@ public class WorkflowOverlayLifecycleTests
     }
     
     [Test]
-    public void WorkflowContext_AfterInitialize_OverlayIsAccessible()
+    public void ActionContext_AfterInitialize_OverlayIsAccessible()
     {
         // Arrange
         var context = new TestContext();
@@ -42,7 +42,7 @@ public class WorkflowOverlayLifecycleTests
     }
     
     [Test]
-    public void WorkflowContext_UpdateState_ChangesState()
+    public void ActionContext_UpdateState_ChangesState()
     {
         // Arrange
         var context = new TestContext();
@@ -69,7 +69,7 @@ public class WorkflowOverlayLifecycleTests
         );
     }
     
-    private class TestContext : WorkflowContext
+    private class TestContext : ActionContext
     {
         public override object? GetResult() => State;
     }

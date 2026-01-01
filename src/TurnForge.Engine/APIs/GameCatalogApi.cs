@@ -26,7 +26,7 @@ public class GameCatalogApi : IGameCatalogApi
     }
 
 
-    public bool TryGetDefinition<T>(string definitionId, out T definition) where T : BaseGameEntityDefinition
+    public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition
     {
         return _catalog.TryGetDefinition(definitionId, out definition);
     }

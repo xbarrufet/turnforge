@@ -1,5 +1,7 @@
-using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
+using TurnForge.Engine.Entities; // For GameEntity
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Definitions; // For MissionDefinition
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Overlay;
@@ -35,7 +37,7 @@ public interface IGameStateMutator
     // ─────────────────────────────
     // Mission / Board
     // ─────────────────────────────
-    void SetMission(MissionData mission);
+    void SetMission(MissionDefinition mission);
     void SetBoard(IGameBoard board);
 
     // ─────────────────────────────
@@ -44,4 +46,10 @@ public interface IGameStateMutator
     // ─────────────────────────────
 
     void MarkDestroyed(EntityId entityId);
+    
+    // ─────────────────────────────
+    // Turn Order
+    // ─────────────────────────────
+    void SetTurnOrder(TurnOrderState turnOrder);
 }
+

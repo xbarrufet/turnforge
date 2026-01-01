@@ -1,9 +1,10 @@
-using TurnForge.Engine.Definitions.Descriptors;
+using TurnForge.Engine.Definitions.Board.Interfaces;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Definitions;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow;
+namespace TurnForge.Engine.Commands.StartGame.Action;
 
 /// <summary>
 /// Represents a pending agent deployment with descriptor and optional position.

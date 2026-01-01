@@ -1,7 +1,7 @@
-using TurnForge.Engine.Core.Workflow;
+using TurnForge.Engine.Core.Action;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Interfaces
+namespace TurnForge.Engine.Core.Action.Interfaces
 {
     /// <summary>
     /// A Reaction represents a game rule that may respond
@@ -33,7 +33,7 @@ namespace TurnForge.Engine.Core.Workflow.Interfaces
         /// - side-effect free
         /// - deterministic
         /// </summary>
-        bool CanReact(WorkflowContext context);
+        bool CanReact(ActionContext context);
 
         /// <summary>
         /// Executes the reaction.
@@ -49,7 +49,7 @@ namespace TurnForge.Engine.Core.Workflow.Interfaces
         /// All consequences are expressed via ReactionResult.
         /// </summary>
         ReactionResult React(
-            WorkflowContext context,
-            IWorkflowInput? input);
+            ActionContext context,
+            IActionInput? input);
     }
 }

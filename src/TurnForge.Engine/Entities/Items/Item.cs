@@ -1,8 +1,9 @@
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Entities; // For GameEntity
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Items;
+namespace TurnForge.Engine.Entities.Items;
 
 /// <summary>
 /// Represents an item in the game (weapon, armor, key, etc.).

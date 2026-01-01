@@ -1,15 +1,15 @@
 // ============================================================================
-// TurnForge.Engine – Workflow Contract
+// TurnForge.Engine – Action Contract
 // ============================================================================
 
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Core.Workflow.Interfaces;
+namespace TurnForge.Engine.Core.Action.Interfaces;
 
-public interface IWorkflow
+public interface IAction
 {
     /// <summary>
-    /// A Workflow represents the transactional resolution of a single command.
+    /// A Action represents the transactional resolution of a single command.
     ///
     /// Characteristics:
     /// - Closed and finite sequence of nodes
@@ -22,7 +22,7 @@ public interface IWorkflow
         /// Identifier of the workflow type.
         /// Stable across executions.
         /// </summary>
-        WorkflowId Id { get; }
+        ActionId Id { get; }
 
         /// <summary>
         /// Entry point of the workflow execution.

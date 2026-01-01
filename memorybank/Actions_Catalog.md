@@ -1,18 +1,18 @@
-# Workflow Catalog
+# Action Catalog
 
-This document details the core workflows in TurnForge, distinguishing between **System Workflows** (automatic, background) and **Interactive Workflows** (user-driven, commands).
+This document details the core actions in TurnForge, distinguishing between **System Actions** (automatic, background) and **Interactive Actions** (user-driven, commands).
 
-## System Workflows
+## System Actions
 
-System workflows execute automatically on FSM node entry or other triggers. They are non-blocking and modify state atomically via the Overlay system.
+System actions execute automatically on FSM node entry or other triggers. They are non-blocking and modify state atomically via the Overlay system.
 
-### 1. EvaluateSpawnRulesWorkflow
+### 1. EvaluateSpawnRulesAction
 
 **Trigger:** `TurnPhases.Spawn` (OnEntry)
 **Purpose:** Evaluates mission rules to spawn entities (NPCs, items) dynamically based on the current game state.
 
 **Context Data:**
-- `SpawnWorkflowContext`: Access to `ISpawnRule` list and `GameStateView`.
+- `SpawnActionContext`: Access to `ISpawnRule` list and `GameStateView`.
 
 **Nodes:**
 1.  **EvaluateRulesNode**:
@@ -28,17 +28,17 @@ System workflows execute automatically on FSM node entry or other triggers. They
 
 ---
 
-## Interactive Workflows
+## Interactive Actions
 
-Interactive workflows are initiated by USER commands (e.g., `StartGameCommand`, `MoveCommand`). They may suspend execution to wait for further inputs.
+Interactive actions are initiated by USER commands (e.g., `StartGameCommand`, `MoveCommand`). They may suspend execution to wait for further inputs.
 
-### 2. StartGameWorkflow
+### 2. StartGameAction
 
 **Command:** `StartGameCommand`
 **Purpose:** Initializes the game session, including players, board, mission data, and initial entity deployment.
 
 **Context Data:**
--   `StartGameWorkflowContext`: Tracks player names, map selection, pending deployments.
+-   `StartGameActionContext`: Tracks player names, map selection, pending deployments.
 
 **Nodes:**
 1.  **ProcessPlayerDataNode**:

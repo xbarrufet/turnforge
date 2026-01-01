@@ -1,5 +1,5 @@
 using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Definitions.Actors.Descriptors;
+using TurnForge.Engine.Entities.Actors.Descriptors;
 using TurnForge.Engine.Infrastructure.Factories.Interfaces;
 using TurnForge.Engine.ValueObjects;
 

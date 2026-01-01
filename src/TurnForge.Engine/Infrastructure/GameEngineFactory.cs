@@ -5,8 +5,8 @@ using TurnForge.Engine.Core.Fsm.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.Core.Metrics;
 using TurnForge.Engine.Core.Registries;
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
@@ -19,6 +19,13 @@ using TurnForge.Engine.Registration;
 using TurnForge.Engine.Repositories.Interfaces;
 using TurnForge.Engine.Services;
 using TurnForge.Engine.Definitions.Factories.Interfaces;
+
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Overlay;
+using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities.Appliers; // ADDED
 
 namespace TurnForge.Engine.Infrastructure;
 
@@ -39,6 +46,13 @@ public class GameEngineFactory
     private IGameLogger? _logger;
     private IEngineMetrics? _metrics;
     private IServiceProvider? _services;
+    private IActionRegistry? _workflowRegistry;
+    
+    // Definition-based setup
+    private IBoardDefinition? _boardDefinition;
+    private List<SpawnEntityOperation>? _initialEntities;
+    private TurnOrderState? _turnOrder;
+    private IEnumerable<BaseGameEntityDefinition>? _definitions;
     
     private GameEngineFactory(IFsmNode rootNode)
     {
@@ -76,6 +90,39 @@ public class GameEngineFactory
         _services = services;
         return this;
     }
+
+    public GameEngineFactory WithActionRegistry(IActionRegistry registry)
+    {
+        _workflowRegistry = registry;
+        return this;
+    }
+
+    [Obsolete("Use WithDefinitions to register descriptors and a GameStart workflow to initialize the board.")]
+    public GameEngineFactory WithBoardDefinition(IBoardDefinition validBoardDefinition)
+    {
+        _boardDefinition = validBoardDefinition;
+        return this;
+    }
+
+    [Obsolete("Use a GameStart workflow to spawn initial entities.")]
+    public GameEngineFactory WithInitialEntities(List<SpawnEntityOperation> entities)
+    {
+        _initialEntities = entities;
+        return this;
+    }
+
+    [Obsolete("Use a GameStart workflow to set turn order.")]
+    public GameEngineFactory WithTurnOrder(TurnOrderState turnOrder)
+    {
+        _turnOrder = turnOrder;
+        return this;
+    }
+
+    public GameEngineFactory WithDefinitions(IEnumerable<BaseGameEntityDefinition> definitions)
+    {
+        _definitions = definitions;
+        return this;
+    }
     
     /// <summary>
     /// Build the TurnForge engine with configured options.
@@ -96,7 +143,20 @@ public class GameEngineFactory
         services.RegisterSingleton<IGameFactory>(new SimpleGameFactory());
 
         var gameCatalog = new InMemoryGameCatalog();
+        
+        // Register definitions if provided
+        if (_definitions != null)
+        {
+            foreach (var def in _definitions)
+            {
+                gameCatalog.RegisterDefinition(def);
+            }
+        }
+        
         services.RegisterSingleton<IGameCatalog>(gameCatalog);
+
+// ... (This replace is tricky with existing content, let's use multi_replace or just target the bad block and then add import at top separately)
+// Actually, let's just fix the bad block first to remove the misplaced using, then add using at top.
 
         services.RegisterSingleton<IGameEntityFactory>(
             new GenericEntityFactory(
@@ -104,6 +164,13 @@ public class GameEngineFactory
                 services.Resolve<TraitInitializationService>()
             ));
         
+        // Register EntityApplier
+        services.RegisterSingleton<IEntityApplier>(new EntityApplier(
+            services.Resolve<IGameCatalog>(),
+            services.Resolve<TraitInitializationService>(),
+            services.Resolve<IGameEntityFactory>()
+        ));
+
         // Board infrastructure
         var topologyFactory = new BoardTopologyFactory();
         var spatialIndexFactory = new SpatialIndexFactory();
@@ -116,7 +183,16 @@ public class GameEngineFactory
         var commandBus = new CommandBus(resolver);
         IOrchestrator orchestrator = new SimpleOrchestrator();
         var boardFactory = services.Resolve<IBoardFactory>();
-        var workflowOrchestrator = new WorkflowOrchestrator();
+        var workflowOrchestrator = new ActionOrchestrator();
+        var workflowRegistry = _workflowRegistry ?? new ActionRegistry();
+        
+        workflowRegistry.Register(new ActionId("StartGame"), () => 
+            Commands.StartGame.Action.StartGameAction.Create(
+                services.Resolve<IBoardFactory>(), 
+                services.Resolve<IEntityApplier>()
+            ));
+            
+        services.RegisterSingleton<IActionRegistry>(workflowRegistry);
 
         // Build runtime
         var runtime = new GameEngineRuntime(
@@ -124,9 +200,39 @@ public class GameEngineFactory
             repository, 
             orchestrator, 
             workflowOrchestrator,
+            workflowRegistry,
             logger,
             boardFactory);
         
+        // AUTO-INITIALIZATION FROM DEFINITIONS
+        // If board definition is provided, create the initial state automatically.
+        if (_boardDefinition != null)
+        {
+            var board = boardFactory.CreateGameBoard(_boardDefinition);
+            var initialState = new Entities.GameState(
+                System.Collections.Immutable.ImmutableDictionary<EntityId, GameEntity>.Empty,
+                System.Collections.Immutable.ImmutableDictionary<PlayerId, Definitions.Actors.Player>.Empty,
+                null,
+                board,
+                null,
+                _turnOrder
+            );
+            
+            // Apply initial entities if any
+            if (_initialEntities != null && _initialEntities.Any())
+            {
+                var overlay = new GameStateOverlay(initialState);
+                foreach (var op in _initialEntities)
+                {
+                    overlay.Record(op);
+                }
+                initialState = overlay.Commit();
+            }
+            
+            repository.SaveGameState(initialState);
+            orchestrator.SetState(initialState);
+        }
+
         // Create and set FSM graph
         var fsmGraph = new FsmGraph(_rootNode, _services ?? services, logger);
         runtime.SetFsmGraph(fsmGraph);

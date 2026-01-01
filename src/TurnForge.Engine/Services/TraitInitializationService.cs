@@ -1,5 +1,6 @@
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
 using TurnForge.Engine.Traits.Interfaces;
 
 
@@ -8,7 +9,7 @@ namespace TurnForge.Engine.Services;
 public class TraitInitializationService
 {
 
-    private  Dictionary<Type,Type> _traitToComponentMap;
+    private Dictionary<Type,Type> _traitToComponentMap = new();
 
     public TraitInitializationService() // CONSTRUCTOR
 {
@@ -36,7 +37,7 @@ public class TraitInitializationService
                 {
                     var parameters = constructor.GetParameters();
                     if (parameters.Length == 1 && 
-                        typeof(IBaseTrait).IsAssignableFrom(parameters[0].ParameterType))
+                        typeof(IDataTrait).IsAssignableFrom(parameters[0].ParameterType))
                     {
                        var traitType = parameters[0].ParameterType; // El tipus del paràmetre (ex: VitalityTrait)
                        map[traitType] = componentType;              // Clau: Trait -> Valor: Component
@@ -57,8 +58,8 @@ public class TraitInitializationService
             if (_traitToComponentMap.TryGetValue(traitType, out var componentType))
             {
                 try {
-                    var component =(IGameEntityComponent) Activator.CreateInstance(componentType, trait);
-                    entity.ReplaceComponent(component);
+                    var component = Activator.CreateInstance(componentType, trait) as IGameEntityComponent;
+                    if (component != null) entity.ReplaceComponent(component);
                 } catch (Exception e) {
                     Console.WriteLine($"Error creating component for trait {traitType.Name}: {e.Message}");
                 }

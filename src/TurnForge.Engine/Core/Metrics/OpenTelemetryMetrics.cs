@@ -14,7 +14,7 @@ public sealed class OpenTelemetryMetrics : IEngineMetrics
     private static readonly Histogram<double> CommandDurationHistogram = 
         Meter.CreateHistogram<double>("turnforge.command.duration_ms", "ms", "Duration of command execution");
 
-    private static readonly Histogram<double> WorkflowDurationHistogram = 
+    private static readonly Histogram<double> ActionDurationHistogram = 
         Meter.CreateHistogram<double>("turnforge.workflow.duration_ms", "ms", "Duration of workflow execution");
 
     private static readonly Counter<long> EventCounter = 
@@ -28,9 +28,9 @@ public sealed class OpenTelemetryMetrics : IEngineMetrics
         CommandDurationHistogram.Record(duration.TotalMilliseconds, new KeyValuePair<string, object?>("command_type", commandType));
     }
 
-    public void RecordWorkflowDuration(WorkflowId workflowId, TimeSpan duration)
+    public void RecordActionDuration(ActionId workflowId, TimeSpan duration)
     {
-        WorkflowDurationHistogram.Record(duration.TotalMilliseconds, new KeyValuePair<string, object?>("workflow_id", workflowId.ToString()));
+        ActionDurationHistogram.Record(duration.TotalMilliseconds, new KeyValuePair<string, object?>("workflow_id", workflowId.ToString()));
     }
 
     public void IncrementEventCount(string eventType)

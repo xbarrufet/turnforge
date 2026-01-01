@@ -1,7 +1,7 @@
 namespace TurnForge.Engine.Core.Interfaces;
 
 /// <summary>
-/// Marker interface for payloads describing an Input Request from the Workflow Engine to the UI/User.
+/// Marker interface for payloads describing an Input Request from the Action Engine to the UI/User.
 /// Examples: DiceRollRequest, SelectionRequest, etc.
 /// </summary>
 public interface IInputRequest

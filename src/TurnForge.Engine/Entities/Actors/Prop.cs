@@ -1,12 +1,9 @@
-// csharp
-using System.Collections.Generic;
-using System.Linq;
 using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Components;
-using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Entities.Actors; // Base Actor
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Actors;
+namespace TurnForge.Engine.Entities.Actors;
 
 public  class Prop(
     EntityId id,

@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TurnForge.Engine\TurnForge.Engine.csproj" />
+    <ProjectReference Include="..\..\src\ParchisLudo.Rules\ParchisLudo.Rules.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities.Actors; // For Actor
 using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Definitions.Interfaces;

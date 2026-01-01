@@ -1,11 +1,14 @@
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Definitions.Descriptors;
-using TurnForge.Engine.Entities.Board.Interfaces;
-using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Commands.Interfaces;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Entities.Actors; // For Actor
+using TurnForge.Engine.Entities.Board.Interfaces; // For IBoardPosition, IBoardDefinition
+using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow.Inputs;
+namespace TurnForge.Engine.Commands.StartGame.Action.Inputs;
 
 /// <summary>
 /// Input for adding a player with their agents to deploy.
@@ -14,7 +17,7 @@ public record AddPlayerInput(
     PlayerId PlayerId,
     string PlayerName,
     List<AgentDeploymentInput> AgentDescriptors
-) : IWorkflowInput;
+) : IActionInput;
 
 /// <summary>
 /// Descriptor for a single agent to deploy.
@@ -25,10 +28,10 @@ public record AgentDeploymentInput(
     IBoardPosition? Position  // null = mission-based, value = explicit
 );
 
-public record ConfirmPlayersInput() : IWorkflowInput;
+public record ConfirmPlayersInput() : IActionInput;
 
 public record SelectMapInput(
     string MapId,
     IBoardDefinition BoardDefinition,
-    MissionData MissionData
-) : IWorkflowInput;
+    MissionDefinition? Mission
+) : IActionInput;

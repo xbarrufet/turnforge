@@ -4,6 +4,12 @@ using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Definitions.Descriptors.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Actors.Descriptors;
+using TurnForge.Engine.Entities.Actors;
+
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces;
+
+
+namespace TurnForge.Engine.Entities.Actors.Descriptors;
 
 public class PropDescriptor(  string definitionId):GameEntityBuildDescriptor(definitionId);

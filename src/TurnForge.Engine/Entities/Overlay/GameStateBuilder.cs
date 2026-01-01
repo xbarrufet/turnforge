@@ -6,6 +6,7 @@ using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Definitions; // For MissionDefinition.Board.Interfaces;
 using TurnForge.Engine.Entities.Overlay;
 using TurnForge.Engine.ValueObjects;
 
@@ -18,7 +19,8 @@ public sealed class GameStateBuilder : IGameStateMutator
     private IGameBoard? _board;
     private readonly ImmutableDictionary<PlayerId, Player> _players;
     private NodeId? _currentStateId;
-    private MissionData? _mission;
+    private MissionDefinition? _mission;
+    private TurnOrderState _turnOrder;
 
     public GameStateBuilder(GameState baseState)
     {
@@ -26,10 +28,16 @@ public sealed class GameStateBuilder : IGameStateMutator
         _players = baseState.Players;
         _currentStateId = baseState.CurrentStateId;
         _mission = baseState.Mission;
+        _turnOrder = baseState.TurnOrder;
 
         // Clone board if exists to allow mutation without affecting base state
         // We assume the board implementation supports cloning via IGameBoard.
         _board = baseState.Board?.Clone();
+    }
+
+    public void SetTurnOrder(TurnOrderState turnOrder)
+    {
+        _turnOrder = turnOrder;
     }
 
     /// <summary>
@@ -41,10 +49,12 @@ public sealed class GameStateBuilder : IGameStateMutator
         return this;
     }
 
-    public void SetMission(MissionData mission)
+    public void SetMission(MissionDefinition mission)
     {
         _mission = mission;
     }
+
+
 
     public void SetBoard(IGameBoard board)
     {
@@ -117,5 +127,5 @@ public sealed class GameStateBuilder : IGameStateMutator
     }
 
     public GameState Build()
-        => new GameState(_entities.ToImmutableDictionary(), _players, _currentStateId, _board, _mission);
+        => new GameState(_entities.ToImmutableDictionary(), _players, _currentStateId, _board, _mission, _turnOrder);
 }

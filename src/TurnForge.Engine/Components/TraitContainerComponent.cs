@@ -2,6 +2,7 @@ using TurnForge.Engine.Traits;
 using TurnForge.Engine.Traits.Interfaces;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
 
 namespace TurnForge.Engine.Components;
 

@@ -1,45 +1,45 @@
 using NUnit.Framework;
-using TurnForge.Engine.Core.Workflow;
-using TurnForge.Engine.Core.Workflow.Interfaces;
+using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Tests.Core.Workflow;
+namespace TurnForge.Engine.Tests.Core.Action;
 
 [TestFixture]
-public class WorkflowSumTests
+public class ActionSumTests
 {
     /// <summary>
     /// Test workflow with 2 nodes expecting numeric inputs.
     /// Result = input1 + input2
     /// </summary>
     [Test]
-    public void Workflow_TwoNumericInputs_ReturnsSumOfBoth()
+    public void Action_TwoNumericInputs_ReturnsSumOfBoth()
     {
         // Arrange
         var node2 = new SumInputNode("Node2", null);
         var node1 = new SumInputNode("Node1", node2);
         
-        var workflow = new SumWorkflow(node1);
-        var context = new SumWorkflowContext();
+        var workflow = new SumAction(node1);
+        var context = new SumActionContext();
         context.InitializeState(GameState.Empty());
         
-        var orchestrator = new WorkflowOrchestrator();
+        var orchestrator = new ActionOrchestrator();
         
         // Act - Start workflow (suspends at node1)
-        orchestrator.StartWorkflow(workflow, context);
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended));
+        orchestrator.StartAction(workflow, context);
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended));
         
         // Submit first input: 5
         var workflowId = Guid.Parse(workflow.Id.Value);
         orchestrator.SubmitInput(workflowId, new NumericInput(5));
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Suspended)); // Waiting at node2
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Suspended)); // Waiting at node2
         
         // Submit second input: 3
         orchestrator.SubmitInput(workflowId, new NumericInput(3));
         
         // Assert
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Completed));
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Completed));
         Assert.That(context.GetResult(), Is.EqualTo(8)); // 5 + 3
     }
     
@@ -48,20 +48,20 @@ public class WorkflowSumTests
     /// Should sum all 3 inputs: initial + extra + expected
     /// </summary>
     [Test]
-    public void Workflow_ExtraInputBeforeExpected_SumsAllThree()
+    public void Action_ExtraInputBeforeExpected_SumsAllThree()
     {
         // Arrange
         var node2 = new SumInputNode("Node2", null);
         var node1 = new SumInputNode("Node1", node2);
         
-        var workflow = new SumWorkflow(node1);
-        var context = new SumWorkflowContext();
+        var workflow = new SumAction(node1);
+        var context = new SumActionContext();
         context.InitializeState(GameState.Empty());
         
-        var orchestrator = new WorkflowOrchestrator();
+        var orchestrator = new ActionOrchestrator();
         
         // Act - Start workflow
-        orchestrator.StartWorkflow(workflow, context);
+        orchestrator.StartAction(workflow, context);
         var workflowId = Guid.Parse(workflow.Id.Value);
         
         // Submit first input: 5
@@ -73,7 +73,7 @@ public class WorkflowSumTests
         orchestrator.SubmitInput(workflowId, new NumericInput(3)); // Expected (this triggers execution)
         
         // Assert - Should have consumed all inputs and summed them
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Completed));
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Completed));
         // The SumInputNode consumes ALL available NumericInputs
         Assert.That(context.GetResult(), Is.EqualTo(18)); // 5 + 10 + 3
     }
@@ -85,7 +85,7 @@ public class WorkflowSumTests
     /// <summary>
     /// Input that carries a numeric value.
     /// </summary>
-    private record NumericInput(int Value) : IWorkflowInput;
+    private record NumericInput(int Value) : IActionInput;
     
     /// <summary>
     /// Node that waits for numeric input and adds it to running sum.
@@ -101,13 +101,13 @@ public class WorkflowSumTests
             NextNode = next;
         }
         
-        public WorkflowStepResult Execute(WorkflowContext context)
+        public ActionStepResult Execute(ActionContext context)
         {
             // Check for inputs
             if (!context.HasInput<NumericInput>())
             {
                 // Suspend and wait for input
-                return WorkflowStepResult.Suspend("Waiting for numeric input", typeof(NumericInput));
+                return ActionStepResult.Suspend("Waiting for numeric input", typeof(NumericInput));
             }
             
             // Consume ALL available NumericInputs
@@ -125,22 +125,22 @@ public class WorkflowSumTests
             var currentSum = context.TryGet<int>("Sum", out var s) ? s : 0;
             context.Set("Sum", currentSum + total);
             
-            return WorkflowStepResult.Success();
+            return ActionStepResult.Success();
         }
     }
     
     /// <summary>
     /// Simple workflow with start node.
     /// </summary>
-    private class SumWorkflow : IWorkflow
+    private class SumAction : IAction
     {
         private readonly INode _startNode;
         
-        public WorkflowId Id { get; } = new WorkflowId(Guid.NewGuid().ToString());
+        public ActionId Id { get; } = new ActionId(Guid.NewGuid().ToString());
         public INode StartNode => _startNode;
         public IReadOnlyCollection<IReaction> GlobalReactions => Array.Empty<IReaction>();
         
-        public SumWorkflow(INode startNode)
+        public SumAction(INode startNode)
         {
             _startNode = startNode;
         }
@@ -160,7 +160,7 @@ public class WorkflowSumTests
     /// <summary>
     /// Context that returns the sum as result.
     /// </summary>
-    private class SumWorkflowContext : WorkflowContext
+    private class SumActionContext : ActionContext
     {
         public override object? GetResult()
         {
@@ -170,33 +170,33 @@ public class WorkflowSumTests
     
     /// <summary>
     /// Test that if both inputs are provided at once, workflow completes without waiting.
-    /// Given: Workflow with 2 steps, each expects 1 numeric input
+    /// Given: Action with 2 steps, each expects 1 numeric input
     /// When: Both numbers are submitted before first execution
-    /// Then: Workflow completes without waiting for second submit
+    /// Then: Action completes without waiting for second submit
     /// </summary>
     [Test]
-    public void Workflow_BothInputsPreloaded_CompletesImmediately()
+    public void Action_BothInputsPreloaded_CompletesImmediately()
     {
         // Arrange - Use SingleInputNode that only consumes ONE input
         var node2 = new SingleInputNode("Node2", null);
         var node1 = new SingleInputNode("Node1", node2);
         
-        var workflow = new SumWorkflow(node1);
-        var context = new SumWorkflowContext();
+        var workflow = new SumAction(node1);
+        var context = new SumActionContext();
         context.InitializeState(GameState.Empty());
         
-        var orchestrator = new WorkflowOrchestrator();
+        var orchestrator = new ActionOrchestrator();
         
         // Pre-load BOTH inputs BEFORE starting
         context.EnqueueInput(new NumericInput(5)); // For node1
         context.EnqueueInput(new NumericInput(3)); // For node2 (pre-loaded)
         
         // Act - Start workflow
-        orchestrator.StartWorkflow(workflow, context);
+        orchestrator.StartAction(workflow, context);
         
         // Assert - Should complete immediately since both inputs are available
-        Assert.That(context.Status, Is.EqualTo(WorkflowStatus.Completed), 
-            "Workflow should complete when all inputs are pre-loaded");
+        Assert.That(context.Status, Is.EqualTo(ActionStatus.Completed), 
+            "Action should complete when all inputs are pre-loaded");
         Assert.That(context.GetResult(), Is.EqualTo(8)); // 5 + 3
     }
     
@@ -215,11 +215,11 @@ public class WorkflowSumTests
             NextNode = next;
         }
         
-        public WorkflowStepResult Execute(WorkflowContext context)
+        public ActionStepResult Execute(ActionContext context)
         {
             if (!context.HasInput<NumericInput>())
             {
-                return WorkflowStepResult.Suspend("Waiting for numeric input", typeof(NumericInput));
+                return ActionStepResult.Suspend("Waiting for numeric input", typeof(NumericInput));
             }
             
             // Consume ONLY ONE input
@@ -230,7 +230,7 @@ public class WorkflowSumTests
                 context.Set("Sum", currentSum + input.Value);
             }
             
-            return WorkflowStepResult.Success();
+            return ActionStepResult.Success();
         }
     }
 }

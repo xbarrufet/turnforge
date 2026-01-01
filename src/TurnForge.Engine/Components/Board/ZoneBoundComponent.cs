@@ -3,6 +3,7 @@ using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
 using TurnForge.Engine.Definitions.Board.Interfaces;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
 
 namespace TurnForge.Engine.Components.Board;
 

@@ -1,7 +1,11 @@
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Definitions.Descriptors;
-using TurnForge.Engine.Definitions.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Board;
+using TurnForge.Engine.Entities; // For GameEntity
+using TurnForge.Engine.Entities.Actors; // For Agent, Prop
+using TurnForge.Engine.Entities.Board; // For ZoneDescriptors;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Descriptors.Interfaces; // UPDATED
 using TurnForge.Engine.Definitions.Factories.Interfaces;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Definitions;

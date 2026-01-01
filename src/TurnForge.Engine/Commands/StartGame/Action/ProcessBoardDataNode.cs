@@ -1,13 +1,14 @@
 using System;
-using TurnForge.Engine.Core.Workflow.Nodes;
-using TurnForge.Engine.Commands.StartGame.Workflow.Inputs;
-using TurnForge.Engine.Commands.StartGame.Workflow.Operations;
+using TurnForge.Engine.Core.Action.Nodes;
+using TurnForge.Engine.Commands.StartGame.Action.Inputs;
+using TurnForge.Engine.Commands.StartGame.Action.Operations;
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Spawn;
 
-namespace TurnForge.Engine.Commands.StartGame.Workflow;
+namespace TurnForge.Engine.Commands.StartGame.Action;
 
-public class ProcessBoardDataNode : InteractionNode<StartGameWorkflowContext>
+public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
 {
     private readonly IBoardFactory _boardFactory;
 
@@ -16,7 +17,7 @@ public class ProcessBoardDataNode : InteractionNode<StartGameWorkflowContext>
         _boardFactory = boardFactory;
     }
 
-    protected override void ProcessNewInputs(StartGameWorkflowContext context)
+    protected override void ProcessNewInputs(StartGameActionContext context)
     {
         if (context.HasInput<SelectMapInput>())
         {
@@ -32,18 +33,18 @@ public class ProcessBoardDataNode : InteractionNode<StartGameWorkflowContext>
                 var board = _boardFactory.CreateGameBoard(input.BoardDefinition);
                 
                 // 2. Record creation operation (Board + Mission)
-                var createOp = new CreateBoardOperation(board, input.MissionData);
+                var createOp = new CreateBoardOperation(board, input.Mission);
                 context.Overlay.Record(createOp);
                 
                 // 3. Resolve agent positions using mission data
-                if (input.MissionData.PlayerSpawnZones != null)
+                if (input.Mission != null && input.Mission.PlayerSpawnZones != null)
                 {
                     foreach (var deployment in context.PendingAgentDeployments)
                     {
                         if (deployment.Position == null)
                         {
                             // Lookup spawn zone from mission for this player
-                            if (input.MissionData.PlayerSpawnZones.TryGetValue(deployment.OwnerId, out var spawnPos))
+                            if (input.Mission.PlayerSpawnZones.TryGetValue(deployment.OwnerId, out var spawnPos))
                             {
                                 deployment.Position = spawnPos;
                             }
@@ -62,16 +63,23 @@ public class ProcessBoardDataNode : InteractionNode<StartGameWorkflowContext>
                         ));
                     }
                 }
+                
+                // 5. Spawn Connection Entities from MissionData
+                if (input.Mission != null && input.Mission.ConnectionRequests != null && input.Mission.ConnectionRequests.Count > 0)
+                {
+                    var connectionSpawner = new ConnectionSpawner();
+                    connectionSpawner.SpawnConnections(input.Mission.ConnectionRequests, context.Overlay);
+                }
             }
         }
     }
 
-    protected override bool IsReadyToComplete(StartGameWorkflowContext context)
+    protected override bool IsReadyToComplete(StartGameActionContext context)
     {
          return !string.IsNullOrEmpty(context.MapId);
     }
 
-    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(StartGameWorkflowContext context)
+    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(StartGameActionContext context)
     {
         return ("Please select a map and mission.", new[] { typeof(SelectMapInput) });
     }

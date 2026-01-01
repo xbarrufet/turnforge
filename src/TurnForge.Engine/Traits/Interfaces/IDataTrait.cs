@@ -1,4 +1,5 @@
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Entities; // For GameEntity
 
 namespace TurnForge.Engine.Traits.Interfaces;
 

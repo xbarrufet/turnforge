@@ -32,7 +32,7 @@ public class GameStateOverlayTests
         var gameState = CreateGameStateWithEntityAtPosition(entity, initialPosition);
         
         // Create overlay and record move operation
-        var overlay = new GameStateOverlay();
+        var overlay = new GameStateOverlay(gameState);
         overlay.Record(new MoveOperation(entityId, newPosition));
         
         // Create view (with overlay applied)
@@ -62,11 +62,11 @@ public class GameStateOverlayTests
         var entity = new Item(entityId, "test-item", "Test Item", "items");
         var gameState = CreateGameStateWithEntityAtPosition(entity, initialPosition);
         
-        var overlay = new GameStateOverlay();
+        var overlay = new GameStateOverlay(gameState);
         overlay.Record(new MoveOperation(entityId, newPosition));
         
         // Act - Commit the overlay
-        var committedState = overlay.Commit(gameState);
+        var committedState = overlay.Commit();
         
         // Assert - Committed state should have new position
         var committedPosition = committedState.Board?.SpatialIndex.GetEntityPosition(entityId);
@@ -93,7 +93,7 @@ public class GameStateOverlayTests
         var entity = new Item(entityId, "test-item", "Test Item", "items");
         var gameState = CreateGameStateWithEntityAtPosition(entity, pos0);
         
-        var overlay = new GameStateOverlay();
+        var overlay = new GameStateOverlay(gameState);
         overlay.Record(new MoveOperation(entityId, pos1));
         overlay.Record(new MoveOperation(entityId, pos2));
         overlay.Record(new MoveOperation(entityId, posFinal));

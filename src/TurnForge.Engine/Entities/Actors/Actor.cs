@@ -1,14 +1,27 @@
 using TurnForge.Engine.Definitions.Actors.Interfaces;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Definitions; // For IGameEntity (Old, referencing Defs interface?) -> No, referencing interface.
+using TurnForge.Engine.Entities; // For GameEntity / IGameEntity
+using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Actors;
+namespace TurnForge.Engine.Entities.Actors;
 
 public abstract class Actor : GameEntity, IActor
 {
     public IPositionComponent PositionComponent { get; protected set; }
     public IHealthComponent HealthComponent { get; protected set; }
+    
+    /// <summary>
+    /// Convenience getter for current board position.
+    /// </summary>
+    public IBoardPosition? CurrentPosition => PositionComponent?.CurrentPosition;
+    
+    /// <summary>
+    /// Convenience getter for current health value.
+    /// </summary>
+    public int CurrentHealth => HealthComponent?.CurrentHealth ?? 0;
 
     protected Actor(
         EntityId id,
