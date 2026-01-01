@@ -1,7 +1,9 @@
 using System.Runtime.InteropServices;
 using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Overlay;
+using TurnForge.Engine.Entities.Overlay.Operations;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities;
@@ -30,6 +32,10 @@ public sealed class GameStateOverlay
     
     // Pending turn order change
     private TurnOrderState? _newTurnOrder;
+    
+    // Pending player AP changes
+    private readonly List<SpendAPOperation> _pendingAPChanges = new();
+    private readonly List<AddPlayerOperation> _pendingPlayerAdditions = new();
     
     public GameStateOverlay(GameState baseState)
     {
@@ -66,6 +72,14 @@ public sealed class GameStateOverlay
 
             case SetTurnOrderOperation setTurnOrder:
                 HandleSetTurnOrder(setTurnOrder);
+                break;
+            
+            case SpendAPOperation spendAP:
+                HandleSpendAP(spendAP);
+                break;
+                
+            case AddPlayerOperation addPlayer:
+                _pendingPlayerAdditions.Add(addPlayer);
                 break;
                 
             default:
@@ -120,7 +134,12 @@ public sealed class GameStateOverlay
 
     private void HandleSetTurnOrder(SetTurnOrderOperation op)
     {
-        _newTurnOrder = op.NewOrder;
+        _newTurnOrder = op.NewTurnOrder;
+    }
+    
+    private void HandleSpendAP(SpendAPOperation op)
+    {
+        _pendingAPChanges.Add(op);
     }
     
     private void ApplyViaBuilder(IGameStateOperation op)
@@ -182,6 +201,18 @@ public sealed class GameStateOverlay
         if (_newTurnOrder != null)
         {
             builder.SetTurnOrder(_newTurnOrder);
+        }
+        
+        // Apply pending AP changes
+        foreach (var apChange in _pendingAPChanges)
+        {
+            builder.SpendPlayerAP(apChange.PlayerId, apChange.Amount, apChange.IsBonusTurn);
+        }
+        
+        // Apply pending Player additions
+        foreach (var addPlayer in _pendingPlayerAdditions)
+        {
+            builder.AddPlayer(addPlayer.Player);
         }
         
         return builder.Build();

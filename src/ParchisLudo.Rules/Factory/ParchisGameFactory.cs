@@ -41,6 +41,7 @@ public class ParchisGame
     /// Creates a fully configured Parchís game using only high-level TurnForge definitions.
     /// Does not instantiate internal engine components manually.
     /// </summary>
+    [Obsolete]
     public static ParchisGame Create(params PlayerId[] players)
     {
         // 1. Prepare Definitions

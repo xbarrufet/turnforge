@@ -38,6 +38,11 @@ public abstract class ActionContext
     /// The ID of the node currently being executed (or where suspension occurred).
     /// </summary>
     public NodeId? CurrentNodeId { get; internal set; }
+    
+    /// <summary>
+    /// Reason for failure if Status is Failed.
+    /// </summary>
+    public string? ErrorMessage { get; internal set; }
 
     protected ActionContext()
     {

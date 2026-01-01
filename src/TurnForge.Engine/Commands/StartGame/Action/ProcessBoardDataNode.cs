@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using TurnForge.Engine.Core.Action; // ADDED
 using TurnForge.Engine.Core.Action.Nodes;
 using TurnForge.Engine.Commands.StartGame.Action.Inputs;
 using TurnForge.Engine.Commands.StartGame.Action.Operations;
@@ -8,7 +10,7 @@ using TurnForge.Engine.Entities.Spawn;
 
 namespace TurnForge.Engine.Commands.StartGame.Action;
 
-public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
+public class ProcessBoardDataNode : InteractionNode<ActionContext>
 {
     private readonly IBoardFactory _boardFactory;
 
@@ -17,19 +19,18 @@ public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
         _boardFactory = boardFactory;
     }
 
-    protected override void ProcessNewInputs(StartGameActionContext context)
+    protected override void ProcessNewInputs(ActionContext context)
     {
+        if (!context.Has("PendingPropDeployments")) context.Set("PendingPropDeployments", new List<PropDeployment>());
+
         if (context.HasInput<SelectMapInput>())
         {
             var input = context.ConsumeInput<SelectMapInput>();
             if (input != null)
             {
-                context.MapId = input.MapId;
+                context.Set("MapId", input.MapId);
                 
-                // 1. Create board using factory (or passed definition if simpler)
-                // Assuming factory creates from definition for now, or just use definiton.
-                // Factory usually takes ID, but input has Definition?
-                // Plan said: boardFactory.Create(input.BoardDefinition)
+                // 1. Create board
                 var board = _boardFactory.CreateGameBoard(input.BoardDefinition);
                 
                 // 2. Record creation operation (Board + Mission)
@@ -39,14 +40,17 @@ public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
                 // 3. Resolve agent positions using mission data
                 if (input.Mission != null && input.Mission.PlayerSpawnZones != null)
                 {
-                    foreach (var deployment in context.PendingAgentDeployments)
+                    if (context.TryGet<List<AgentDeployment>>("PendingAgentDeployments", out var pendingAgents))
                     {
-                        if (deployment.Position == null)
+                        foreach (var deployment in pendingAgents)
                         {
-                            // Lookup spawn zone from mission for this player
-                            if (input.Mission.PlayerSpawnZones.TryGetValue(deployment.OwnerId, out var spawnPos))
+                            if (deployment.Position == null)
                             {
-                                deployment.Position = spawnPos;
+                                // Lookup spawn zone from mission for this player
+                                if (input.Mission.PlayerSpawnZones.TryGetValue(deployment.OwnerId, out var spawnPos))
+                                {
+                                    deployment.Position = spawnPos;
+                                }
                             }
                         }
                     }
@@ -55,9 +59,10 @@ public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
                 // 4. Store props for later deployment (DeployEntitiesNode)
                 if (input.BoardDefinition.Props != null)
                 {
+                    var pendingProps = context.Get<List<PropDeployment>>("PendingPropDeployments");
                     foreach (var prop in input.BoardDefinition.Props)
                     {
-                        context.PendingPropDeployments.Add(new PropDeployment(
+                        pendingProps.Add(new PropDeployment(
                             prop.Definition,
                             prop.FixedPosition
                         ));
@@ -74,12 +79,12 @@ public class ProcessBoardDataNode : InteractionNode<StartGameActionContext>
         }
     }
 
-    protected override bool IsReadyToComplete(StartGameActionContext context)
+    protected override bool IsReadyToComplete(ActionContext context)
     {
-         return !string.IsNullOrEmpty(context.MapId);
+         return context.Has("MapId") && !string.IsNullOrEmpty(context.Get<string>("MapId"));
     }
 
-    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(StartGameActionContext context)
+    protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(ActionContext context)
     {
         return ("Please select a map and mission.", new[] { typeof(SelectMapInput) });
     }

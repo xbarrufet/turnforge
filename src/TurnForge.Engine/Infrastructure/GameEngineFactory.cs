@@ -186,7 +186,7 @@ public class GameEngineFactory
         var workflowOrchestrator = new ActionOrchestrator();
         var workflowRegistry = _workflowRegistry ?? new ActionRegistry();
         
-        workflowRegistry.Register(new ActionId("StartGame"), () => 
+        workflowRegistry.Register(Core.Actions.CoreActions.StartGame, () => 
             Commands.StartGame.Action.StartGameAction.Create(
                 services.Resolve<IBoardFactory>(), 
                 services.Resolve<IEntityApplier>()

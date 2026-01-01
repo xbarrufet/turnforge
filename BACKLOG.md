@@ -4,6 +4,101 @@ Ideas and improvements to implement in the future.
 
 ---
 
+## IDEA: Core Actions Architecture
+
+**Status:** Design Approved  
+**Priority:** High  
+**Context:** Need to distinguish between game-specific actions and engine-provided actions.
+
+**Design Decision:**
+
+All actions follow the same pattern, but with different complexity levels:
+
+| Type | Structure | Example |
+|------|-----------|---------|
+| **Composite Action** | Multiple chained nodes | `StartGame` (ProcessBoard → ProcessPlayers → Deploy → Build) |
+| **Atomic Action** | Single node with one operation | `Spawn` (only SpawnNode) |
+
+**Key Principles:**
+
+1. **Uniform API**: All actions are dispatched the same way
+2. **Uniform Registration**: All actions register the same way
+3. **Composability**: Composite actions can internally call atomic actions (future)
+4. **Simplicity**: No need to differentiate "Actions" vs "Core Operations" at API level
+
+**Core Actions (provided by TurnForge):**
+
+- `StartGame` → Composite: initializes board, players, entities
+- `Spawn` → Atomic: creates a single entity
+
+**Game Actions (provided by game rules):**
+
+- Registered via `IActionRegistry` in game-specific registration class
+- Examples: `Move`, `Attack`, `EndTurn`
+
+**Access Points:**
+
+1. **External**: User/UI via `GameEngineRuntime.Dispatch()`
+2. **FSM Nodes**: Via `OnEntryActions` (already supported)
+3. **Action Nodes**: (Future) Via nested action execution
+
+**Rationale:** This unified model keeps the architecture simple while allowing both simple (atomic) and complex (composite) behaviors under the same abstraction.
+
+---
+
+## IDEA: Action-FSM Notification (AP Consumption)
+
+**Status:** ✅ Implemented  
+**Priority:** High  
+**Context:** Currently, simulations manually access FSM nodes to consume AP:
+```csharp
+// BAD: Simulation manipulates FSM directly
+var turnNode = fsmGraph.GetNode("Turn") as ParchisTurnNode;
+turnNode.ConsumeAction(roll == 6);
+```
+
+**Problem:** Actions don't notify the FSM when they complete. The FSM can't track AP consumption or action completion.
+
+**Design:**
+
+1. **Actions notify FSM** after completion via an event/callback
+2. **FSM TurnNode** observes action results and updates AP accordingly
+3. **Roll 6 = bonus** → Action tells FSM "don't consume AP"
+
+**Proposed Flow:**
+```
+User calls: engine.ExecuteAction(Move, { Roll = 5 })
+   │
+   ├── FSM validates: "Move allowed in TurnNode?" → YES
+   │
+   ├── MoveAction executes
+   │   └── Returns: ActionResult { ConsumedAP = true, BonusTurn = false }
+   │
+   └── FSM receives notification
+       └── TurnNode.OnActionCompleted(result) → Consumes AP
+```
+
+**Implementation Options:**
+
+A) **ActionResult carries metadata** (recommended):
+```csharp
+public record ActionResult
+{
+    public bool ConsumedAP { get; init; } = true;
+    public bool BonusTurn { get; init; } = false;
+}
+```
+
+B) **Events emitted by Action**:
+Actions emit `ActionCompletedEvent` that FSM subscribes to.
+
+**Benefits:**
+- Simulation only calls `ExecuteAction`, no FSM manipulation
+- Clean separation: Action = logic, FSM = flow control
+- AP rules encapsulated in Move action, not spread across codebase
+
+---
+
 ## IDEA: Dynamic Turn Order Structure
 
 **Status:** ✅ Implemented  

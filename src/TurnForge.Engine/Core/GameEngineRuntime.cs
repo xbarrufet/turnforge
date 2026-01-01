@@ -97,7 +97,17 @@ public sealed class GameEngineRuntime : IGameEngine
             {
                 foreach (var kvp in parameters)
                 {
-                    context.Set(kvp.Key, kvp.Value);
+                    if (kvp.Key == "BatchInputs" && kvp.Value is IEnumerable<IActionInput> inputs)
+                    {
+                        foreach (var input in inputs)
+                        {
+                            context.EnqueueInput(input);
+                        }
+                    }
+                    else
+                    {
+                        context.Set(kvp.Key, kvp.Value);
+                    }
                 }
             }
             
@@ -148,7 +158,8 @@ public sealed class GameEngineRuntime : IGameEngine
             }
             else
             {
-                return ActionTransaction.Fail(workflowId, "Action failed or was cancelled.");
+                var msg = context.ErrorMessage ?? "Action failed or was cancelled.";
+                return ActionTransaction.Fail(workflowId, msg);
             }
         }
         catch (Exception ex)

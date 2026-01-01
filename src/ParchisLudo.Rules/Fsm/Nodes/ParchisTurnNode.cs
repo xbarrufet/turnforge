@@ -57,11 +57,16 @@ public class ParchisTurnNode : TurnNode
     }
     
     /// <summary>
-    /// Turn completes when AP = 0.
+    /// Turn completes when current player's AP = 0.
+    /// Reads from GameState (set by SpendAPOperation).
     /// </summary>
     public override bool IsCompleted(GameState state)
     {
-        return _actionPoints <= 0;
+        var currentPlayerId = state.TurnOrder.CurrentPlayer;
+        var player = state.GetPlayerByPlayerId(currentPlayerId);
+        if (player == null) return true; // No player = turn complete
+        
+        return player.ActionPoints <= 0;
     }
     
     /// <summary>
@@ -69,7 +74,7 @@ public class ParchisTurnNode : TurnNode
     /// </summary>
     public override BaseFsmNode? GetNextNode(GameState state)
     {
-        ResetForNewTurn();
+        // Note: AP reset now handled via operations when new turn starts
         return base.GetNextNode(state);
     }
     

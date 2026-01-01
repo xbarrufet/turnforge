@@ -6,11 +6,44 @@ This system is built around the **Opportunity Window Pattern**: logic runs until
 
 ## Core Concepts
 
-### 1. Action vs FSM
+### 1. Core Actions vs Game Actions
+
+TurnForge distinguishes between two types of actions:
+
+| Type | Provider | Registration | Examples |
+|------|----------|--------------|----------|
+| **Core Actions** | TurnForge Engine | Auto-registered | `StartGame`, `Spawn` |
+| **Game Actions** | Game rules | Manual registration | `Move`, `Attack` |
+
+**Core Actions** are provided by the engine and automatically registered. Use them via `CoreActions`:
+
+```csharp
+using TurnForge.Engine.Core.Actions;
+
+// Start a game (core action - no registration needed)
+engine.ExecuteAction(CoreActions.StartGame, parameters);
+```
+
+**Game Actions** are defined by your game rules and registered in your game's `ActionRegistration`:
+
+```csharp
+// Game-specific actions (must be registered)
+public static class ParchisActions
+{
+    public static readonly ActionId Move = new("parchis_move");
+}
+
+// Register in your game's bootstrap
+registry.Register(ParchisActions.Move, ParchisMoveActionFactory.Create);
+```
+
+From the caller's perspective, both types are invoked identically via `ExecuteAction()`.
+
+### 2. Action vs FSM
 - **FSM (Finite State Machine)**: Controls the high-level game flow (Whose turn is it? What phase involved?). It defines *allowed commands*.
 - **Action**: Encapsulates a specific process (e.g., "Attack Sequence", "Start Game Setup"). When a action is running, it **takes over** the engine's focus.
 
-### 2. The Interaction Loop
+### 3. The Interaction Loop
 
 1.  **Execute Node**: The engine runs a action node (e.g., `SelectTargetNode`).
 2.  **Suspend**: If the node needs input, it returns `ActionStatus.Suspended` with a list of `AllowedInputTypes`.

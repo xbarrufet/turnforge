@@ -24,30 +24,31 @@ public class DeployEntitiesNode : INode
     
     public ActionStepResult Execute(ActionContext context)
     {
-        var ctx = (StartGameActionContext)context;
-        
-        // 1. Deploy Props (Definition + Fixed Position)
-        foreach (var prop in ctx.PendingPropDeployments)
+        // 1. Deploy Props
+        if (context.TryGet<List<PropDeployment>>("PendingPropDeployments", out var props))
         {
-            var op = _applier.Apply(prop.Definition, prop.Position);
-            context.Overlay.Record(op);
+            foreach (var prop in props)
+            {
+                var op = _applier.Apply(prop.Definition, prop.Position);
+                context.Overlay.Record(op);
+            }
         }
         
-        // 2. Deploy Agents (Descriptor + Position)
-        //    Position is either:
-        //    - Explicit (Kill Team)
-        //    - Resolved by mission rules (Zombicide)
-        foreach (var agent in ctx.PendingAgentDeployments)
+        // 2. Deploy Agents
+        if (context.TryGet<List<AgentDeployment>>("PendingAgentDeployments", out var agents))
         {
-            if (agent.Position == null)
+            foreach (var agent in agents)
             {
-                throw new InvalidOperationException(
-                    $"Deploy position not set for agent {agent.Descriptor.DefinitionId}. " +
-                    "Position must be provided in input or resolved by mission rules.");
+                if (agent.Position == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Deploy position not set for agent {agent.Descriptor.DefinitionId}. " +
+                        "Position must be provided in input or resolved by mission rules.");
+                }
+                
+                var op = _applier.Apply(agent.Descriptor, agent.Position);
+                context.Overlay.Record(op);
             }
-            
-            var op = _applier.Apply(agent.Descriptor, agent.Position);
-            context.Overlay.Record(op);
         }
         
         return ActionStepResult.Success();

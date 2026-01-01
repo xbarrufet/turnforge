@@ -50,6 +50,15 @@ public interface IGameStateMutator
     // ─────────────────────────────
     // Turn Order
     // ─────────────────────────────
+    // ─────────────────────────────
+    // Turn Order
+    // ─────────────────────────────
     void SetTurnOrder(TurnOrderState turnOrder);
+    
+    // ─────────────────────────────
+    // Players
+    // ─────────────────────────────
+    void AddPlayer(Player player);
+    void SpendPlayerAP(PlayerId playerId, int amount, bool isBonusTurn);
 }
 

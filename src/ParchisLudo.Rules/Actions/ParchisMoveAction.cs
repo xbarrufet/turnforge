@@ -4,12 +4,13 @@ using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Core.Action.Nodes;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Overlay; // MoveOperation is here
-using TurnForge.Engine.Definitions; // For GameEntity
-using TurnForge.Engine.Definitions.Actors; // For Actor
+using TurnForge.Engine.Entities.Overlay;
+using TurnForge.Engine.Entities.Overlay.Operations;
+using TurnForge.Engine.Definitions;
+using TurnForge.Engine.Definitions.Actors;
 using Parchis.Rules.Logic;
 using Parchis.Rules.Board;
-using Parchis.Rules.Extensions; // For ParchisViewExtensions
+using Parchis.Rules.Extensions;
 
 namespace Parchis.Rules.Actions;
 
@@ -34,6 +35,22 @@ public static class ParchisMoveActionFactory
     }
 }
 
+/// <summary>
+/// Helper to get current player - from parameter or TurnOrder.
+/// </summary>
+internal static class MoveActionHelper
+{
+    public static PlayerId GetCurrentPlayer(ActionContext context)
+    {
+        // First try explicit parameter
+        if (context.TryGet<PlayerId>("PlayerId", out var playerId))
+            return playerId;
+            
+        // Fallback to TurnOrder
+        return context.State.TurnOrder.CurrentPlayer;
+    }
+}
+
 public class RuleOfFiveNode : LinkableNode
 {
     public override NodeId Id => new("RuleOfFive_Check");
@@ -42,9 +59,8 @@ public class RuleOfFiveNode : LinkableNode
     {
         if (!context.TryGet<int>("Roll", out var roll))
             return ActionStepResult.Fail("Roll not set");
-            
-        if (!context.TryGet<PlayerId>("PlayerId", out var playerId))
-            return ActionStepResult.Fail("PlayerId not set");
+        
+        var playerId = MoveActionHelper.GetCurrentPlayer(context);
 
         if (roll != 5)
         {
@@ -76,6 +92,10 @@ public class RuleOfFiveNode : LinkableNode
         
         context.Overlay.Record(new MoveOperation(pawnToSpawn.Id, targetPos));
         
+        // Consume AP (roll 5 is not a bonus - roll 6 is)
+        var isBonusTurn = false; // Roll 5 spawn doesn't grant bonus
+        context.Overlay.Record(new SpendAPOperation(playerId, 1, isBonusTurn));
+        
         context.Set("MoveHandled", true);
         
         return ActionStepResult.Success();
@@ -106,7 +126,7 @@ public class SelectPawnNode : LinkableNode
         }
         
         if (!context.TryGet<int>("Roll", out var roll)) return ActionStepResult.Fail("Roll missing");
-        if (!context.TryGet<PlayerId>("PlayerId", out var playerId)) return ActionStepResult.Fail("PlayerId missing");
+        var playerId = MoveActionHelper.GetCurrentPlayer(context);
         
         var view = new GameStateView(context.State, context.Overlay);
         var pawns = view.GetEntitiesForOwner(playerId).ToList();
@@ -142,13 +162,34 @@ public class ExecuteMoveNode : LinkableNode
 
     public override ActionStepResult Execute(ActionContext context)
     {
-        if (context.TryGet<bool>("MoveHandled", out var handled) && handled) return ActionStepResult.Success();
-        if (context.TryGet<bool>("NoMovesPossible", out var noMoves) && noMoves) return ActionStepResult.Success();
+        var playerId = MoveActionHelper.GetCurrentPlayer(context);
+        if (!context.TryGet<int>("Roll", out var roll)) 
+            return ActionStepResult.Fail("Roll missing");
+            
+        // Skip if already handled by RuleOfFiveNode
+        if (context.TryGet<bool>("MoveHandled", out var handled) && handled) 
+            return ActionStepResult.Success();
+            
+        // Skip if no moves possible
+        if (context.TryGet<bool>("NoMovesPossible", out var noMoves) && noMoves)
+        {
+            // Even if no moves possible, still consume AP
+            var bonusNoMove = (roll == 6);
+            context.Overlay.Record(new SpendAPOperation(playerId, 1, bonusNoMove));
+            return ActionStepResult.Success();
+        }
         
-        if (!context.TryGet<EntityId>("SelectedPawnId", out var pawnId)) return ActionStepResult.Success();
-        if (!context.TryGet<TileId>("TargetDestination", out var dest)) return ActionStepResult.Fail("No destination");
+        if (!context.TryGet<EntityId>("SelectedPawnId", out var pawnId)) 
+            return ActionStepResult.Success();
+        if (!context.TryGet<TileId>("TargetDestination", out var dest)) 
+            return ActionStepResult.Fail("No destination");
         
+        // Execute the move
         context.Overlay.Record(new MoveOperation(pawnId, new TilePosition(dest)));
+        
+        // Consume AP (roll 6 = bonus turn, don't consume)
+        var isBonusTurn = (roll == 6);
+        context.Overlay.Record(new SpendAPOperation(playerId, 1, isBonusTurn));
         
         return ActionStepResult.Success();
     }

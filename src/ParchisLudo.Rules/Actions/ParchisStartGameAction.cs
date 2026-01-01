@@ -7,6 +7,7 @@ using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Board.Definitions; // For DiscretBoardDefinition
 using TurnForge.Engine.Entities.Board; // For ConnectionEntity
 using TurnForge.Engine.Entities.Overlay;
+using TurnForge.Engine.Entities.Overlay.Operations;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Components;
 using TurnForge.Engine.Entities;

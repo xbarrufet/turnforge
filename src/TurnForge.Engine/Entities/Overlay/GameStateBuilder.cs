@@ -17,7 +17,7 @@ public sealed class GameStateBuilder : IGameStateMutator
     private readonly Dictionary<EntityId, GameEntity> _entities;
     private readonly HashSet<EntityId> _modifiedEntities = new();
     private IGameBoard? _board;
-    private readonly ImmutableDictionary<PlayerId, Player> _players;
+    private readonly Dictionary<PlayerId, Player> _players;
     private NodeId? _currentStateId;
     private MissionDefinition? _mission;
     private TurnOrderState _turnOrder;
@@ -25,7 +25,7 @@ public sealed class GameStateBuilder : IGameStateMutator
     public GameStateBuilder(GameState baseState)
     {
         _entities = new Dictionary<EntityId, GameEntity>(baseState.Entities);
-        _players = baseState.Players;
+        _players = new Dictionary<PlayerId, Player>(baseState.Players);
         _currentStateId = baseState.CurrentStateId;
         _mission = baseState.Mission;
         _turnOrder = baseState.TurnOrder;
@@ -126,6 +126,30 @@ public sealed class GameStateBuilder : IGameStateMutator
         RemoveEntity(entityId);
     }
 
+    /// <summary>
+    /// Modify a player's action points.
+    /// </summary>
+    public void SpendPlayerAP(PlayerId playerId, int amount, bool isBonusTurn)
+    {
+        if (isBonusTurn) return; // Bonus turns don't consume AP
+        
+        if (!_players.TryGetValue(playerId, out var player))
+            throw new InvalidOperationException($"Player {playerId} not found");
+        
+        // Clone player if not already modified
+        var modifiedPlayer = player.Clone();
+        modifiedPlayer.ActionPoints = Math.Max(0, modifiedPlayer.ActionPoints - amount);
+        _players[playerId] = modifiedPlayer;
+    }
+
+    public void AddPlayer(Player player)
+    {
+        if (_players.ContainsKey(player.PlayerId))
+            throw new InvalidOperationException($"Player {player.PlayerId} already exists.");
+            
+        _players[player.PlayerId] = player;
+    }
+
     public GameState Build()
-        => new GameState(_entities.ToImmutableDictionary(), _players, _currentStateId, _board, _mission, _turnOrder);
+        => new GameState(_entities.ToImmutableDictionary(), _players.ToImmutableDictionary(), _currentStateId, _board, _mission, _turnOrder);
 }

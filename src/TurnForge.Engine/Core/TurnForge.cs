@@ -20,11 +20,11 @@ public sealed class TurnForge
     }
 
     // Facade Methods for convenience
-    public ActionTransaction ExecuteAction(ActionId workflowId, Dictionary<string, object>? parameters = null)
+    public ActionTransaction ExecuteAction(ActionId actionId, Dictionary<string, object>? parameters = null)
     {
         parameters ??= new Dictionary<string, object>();
         parameters["System.GameCatalogApi"] = GameCatalog;
-        return Runtime.ExecuteAction(workflowId, parameters);
+        return Runtime.ExecuteAction(actionId, parameters);
     }
 
     public CommandTransaction ExecuteCommand(ICommand command)

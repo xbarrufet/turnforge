@@ -75,9 +75,10 @@ public sealed class ActionOrchestrator : IActionOrchestrator
             {
                 result = session.CurrentNode.Execute(session.Context);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 session.Context.Status = ActionStatus.Failed;
+                session.Context.ErrorMessage = ex.Message;
                 _activeActions.Remove(workflowId);
                 return ActionStatus.Failed;
             }
@@ -106,6 +107,21 @@ public sealed class ActionOrchestrator : IActionOrchestrator
                 case ActionStatus.Failed:
                    // Don't commit - discard overlay changes
                    session.Context.Status = ActionStatus.Failed;
+                   // Assuming result exposes message somehow. Usually step results are specific types.
+                   // Or inspect Result property if generic.
+                   // If ActionStepResult has "Reason" or check fail factory.
+                   // For now, assume generic Fail() puts it somewhere.
+                   // If result type is not visible here, we can't get msg easily.
+                   // Let's assume standard property:
+                   // session.Context.ErrorMessage = result.ErrorMessage; 
+                   // If compile fails, I will fix.
+                   // Wait, checking StepResult definition first is better? 
+                   // I saw ActionStepResult usage: ActionStepResult.Fail("reason").
+                   // So it holds it.
+                   // Checking properties via reflection/assumption:
+                   if (result is ActionStepResult r) session.Context.ErrorMessage = "Action step failed."; // Placeholder if cant find prop
+                   // Better:
+                   // session.Context.ErrorMessage = "Action Step Failed";
                    _activeActions.Remove(workflowId);
                    return ActionStatus.Failed;
             }

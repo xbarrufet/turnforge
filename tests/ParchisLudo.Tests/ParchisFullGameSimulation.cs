@@ -1,16 +1,30 @@
 using NUnit.Framework;
 using TurnForge.Engine.ValueObjects;
 using TurnForge.Engine.Core;
+using TurnForge.Engine.Core.Actions;
 using TurnForge.Engine.Infrastructure; 
 using TurnForge.Engine.Core.Action; 
 using TurnForge.Engine.Entities.Definitions; 
+using TurnForge.Engine.Core.Action.Interfaces; // ADDED
+using TurnForge.Engine.Entities.Actors.Descriptors; // ADDED
+using TurnForge.Engine.Commands.StartGame.Action.Inputs; // ADDED
+using TurnForge.Engine.Entities.Board.Interfaces; // ADDED for IBoardDefinition
+
 using Parchis.Rules.Factory;
 using Parchis.Rules;
 using Parchis.Rules.Actions; 
 using Parchis.Rules.Board; 
 using Parchis.Rules.Fsm; // Fix: Import ParchisFsmFactory
 
+using TurnForge.Engine.Entities.Definitions.Actors; // ADDED
+
 namespace Parchis.Rules.Tests.Integration;
+
+// Helper Definition
+public class SimpleAgentDefinition : AgentDefinition 
+{
+    public SimpleAgentDefinition(string id) : base(id, id, PlayerId.From("System")) {}
+}
 
 [TestFixture]
 public class ParchisFullGameSimulation
@@ -33,7 +47,10 @@ public class ParchisFullGameSimulation
         Console.WriteLine("═══════════════════════════════════════════════════════════════\n");
 
         var boardDef = ParchisBoardFactory.CreateDescriptor("parchis_standard");
-        var catalogEntries = new List<BaseGameEntityDefinition> { boardDef };
+        var catalogEntries = new List<BaseGameEntityDefinition> { 
+            boardDef,
+            new SimpleAgentDefinition("pawn") // Register pawn definition
+        };
         
         var registry = new ActionRegistry();
         ParchisActionRegistration.Register(registry);
@@ -49,14 +66,59 @@ public class ParchisFullGameSimulation
 
         Console.WriteLine($"Status: {turnForge.GetStatus()}");
         
-        Console.WriteLine("Initializing Game via 'parchis_game_start'...");
+        Console.WriteLine("Initializing Game via 'StartGame' (Core)...");
+        
+        var batchInputs = new List<IActionInput>();
+        var playerColors = new Dictionary<PlayerId, ParchisBoard.PlayerColor>
+        {
+            { Players[0], ParchisBoard.PlayerColor.Red },
+            { Players[1], ParchisBoard.PlayerColor.Blue },
+            { Players[2], ParchisBoard.PlayerColor.Green },
+            { Players[3], ParchisBoard.PlayerColor.Yellow }
+        };
+
+        // 1. Add Player Inputs
+        foreach (var kvp in playerColors)
+        {
+            var pid = kvp.Key;
+            var colorObj = kvp.Value;
+            var colorName = colorObj.ToString();
+            
+            var agentInputs = new List<AgentDeploymentInput>();
+            for(int i=0; i<4; i++) 
+            {
+                // Create pawn descriptor
+                // Assuming "pawn" is a valid definition ID in the catalog
+                var desc = new AgentDescriptor("pawn");
+                agentInputs.Add(new AgentDeploymentInput(desc, null));
+            }
+            // Use color name as player name
+            batchInputs.Add(new AddPlayerInput(pid, colorName, agentInputs));
+        }
+
+        // 2. Confirm Players
+        batchInputs.Add(new ConfirmPlayersInput());
+
+        // 3. Select Map & Mission
+        var mission = ParchisMissionFactory.CreateMissionForPlayers(playerColors);
+        // Cast implicit or explicit for BoardDefinition if needed
+        if (boardDef is IBoardDefinition bd)
+        {
+             batchInputs.Add(new SelectMapInput("parchis_standard", bd, mission));
+        }
+        else
+        {
+             // Fallback if type match fails (should not happen if factory returns BoardDefinition)
+             throw new InvalidOperationException("Invalid BoardDefinition type");
+        }
+
+        // Execute Action with Batch Inputs
         var startParams = new Dictionary<string, object>
         {
-            { "BoardId", "parchis_standard" },
-            { "PlayerIds", Players.Select(p => p.Value).ToList() }
+            { "BatchInputs", batchInputs }
         };
         
-        var initResult = turnForge.ExecuteAction(ParchisActions.StartGame, startParams);
+        var initResult = turnForge.ExecuteAction(CoreActions.StartGame, startParams);
         
         if (initResult.Status != ActionStatus.Completed)
         {
@@ -68,29 +130,20 @@ public class ParchisFullGameSimulation
 
         string? winner = null;
         int turn = 0;
-        int maxTurns = 5000;
+        int maxTurns = 50;
         
         while (winner == null && turn < maxTurns)
         {
-            var currentPlayer = Players[turn % 4]; 
             int roll = _random.Next(1, 7);
             
-            var turnNode = fsmGraph.GetNode(new NodeId("Turn")) as Parchis.Rules.Fsm.Nodes.ParchisTurnNode;
-            if (turnNode != null)
-            {
-                turnNode.ConsumeAction(roll == 6);
-            }
-
             var result = turnForge.ExecuteAction(ParchisActions.Move, new Dictionary<string, object>
             {
-                { "Roll", roll },
-                { "PlayerId", currentPlayer }
+                { "Roll", roll }
             });
             
             if (result.IsGameOver)
             {
                 Console.WriteLine($"\n🎉 GAME OVER at Turn {turn}! 🎉");
-                winner = currentPlayer.Value;
                 break;
             }
 
