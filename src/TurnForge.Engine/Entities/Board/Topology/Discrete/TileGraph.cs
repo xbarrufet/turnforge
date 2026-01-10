@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
+using TurnForge.Engine.Entities.Board.Enums;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Board.Topology.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board.Topology.Discrete;
 
-public sealed class TileGraph : IDiscreteTopology
+public sealed class TileGraph : IDiscreteZoneTopology
 {
 
+    
     private readonly Dictionary<TileId, HashSet<TileId>> _adjacency;
     private readonly HashSet<TileId> _nodes;
     
@@ -33,32 +35,30 @@ public sealed class TileGraph : IDiscreteTopology
     }
 
     // IBoardTopology Implementation
-    public bool IsValidPosition(IBoardPosition position)
+    public bool IsInsideZone(IBoardPositionId positionId)
     {
-        return position is TilePosition tp && _nodes.Contains(tp.TileId);
+        return positionId is TileId tp && _nodes.Contains(tp);
     }
 
-    public bool CanTraverse(IBoardPosition from, IBoardPosition to)
+    public bool CanTraverse(IBoardPositionId from, IBoardPositionId to)
     {
-        if (from is TilePosition tFrom && to is TilePosition tTo)
+        if (from is TileId tFrom && to is TileId tTo)
         {
             return IsConnected(tFrom, tTo);
         }
         return false;
     }
 
-    public int Distance(IBoardPosition from, IBoardPosition to)
+    public int Distance(IBoardPositionId from, IBoardPositionId to)
     {
-        if (from is TilePosition tFrom && to is TilePosition tTo)
+        if (from is TileId tFrom && to is TileId tTo)
         {
             return GetDistance(tFrom, tTo);
         }
         return -1;
     }
-   
 
-
-   
+    public TopologyKind Kind  => TopologyKind.Discrete;
 
     private void AddConnection(TileId a, TileId b)
     {
@@ -69,31 +69,31 @@ public sealed class TileGraph : IDiscreteTopology
         _adjacency[b].Add(a);
     }
 
-    public IEnumerable<TileId> GetAdjacents(TilePosition tile)
+    public IEnumerable<TileId> GetAdjacents(TileId tile)
     {
-        if (_adjacency.TryGetValue(tile.TileId, out var neighbors))
+        if (_adjacency.TryGetValue(tile, out var neighbors))
         {
             return neighbors;
         }
         return Enumerable.Empty<TileId>();
     }
 
-    public int GetDistance(TilePosition start, TilePosition end)
+    public int GetDistance(TileId start, TileId end)
     {
-        if (start.TileId == end.TileId) return 0;
-        if (!_adjacency.ContainsKey(start.TileId) || !_adjacency.ContainsKey(end.TileId)) return -1;
+        if (start == end) return 0;
+        if (!_adjacency.ContainsKey(start) || !_adjacency.ContainsKey(end)) return -1;
 
         var visited = new HashSet<TileId>();
         var queue = new Queue<(TileId Id, int Dist)>();
         
-        queue.Enqueue((start.TileId, 0));
-        visited.Add(start.TileId);
+        queue.Enqueue((start, 0));
+        visited.Add(start);
 
         while (queue.Count > 0)
         {
             var (current, dist) = queue.Dequeue();
             
-            if (current == end.TileId) return dist;
+            if (current == end) return dist;
 
             if (_adjacency.TryGetValue(current, out var neighbors))
             {
@@ -110,7 +110,9 @@ public sealed class TileGraph : IDiscreteTopology
         return -1; // Not connected
     }
 
-    public bool IsConnected(TilePosition a, TilePosition b)
+   
+
+    public bool IsConnected(TileId a, TileId b)
     {
         return GetDistance(a, b) != -1;
     }

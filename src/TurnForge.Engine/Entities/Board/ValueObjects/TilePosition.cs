@@ -1,12 +1,15 @@
+using System.Diagnostics;
 using TurnForge.Engine.Entities.Board.Enums;
 using TurnForge.Engine.Entities.Board.Interfaces;
 
 namespace TurnForge.Engine.ValueObjects;
 
-public readonly record  struct TilePosition(TileId tileId) : IBoardPosition
+[DebuggerDisplay("Tile: {tileId.Value}")]
+public readonly record struct TilePosition(TileId tileId) : IBoardPosition
 {
     public TileId TileId => tileId;
     public BoardPositionKind Kind => BoardPositionKind.Tile;
+    public IBoardPositionId Id { get => tileId; }
 
     public override string ToString() => $"TilePosition({TileId})";
 

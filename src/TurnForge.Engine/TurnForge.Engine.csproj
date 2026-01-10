@@ -20,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\InitializeGame\Descriptors\" />
-    <Folder Include="Commands\Player\" />
-    <Folder Include="Entities\Actors\Descriptors\" />
+    <Folder Include="Commands\StartGame\Action\" />
+    <Folder Include="Commands\ValueObjects\" />
+    <Folder Include="Entities\Queries\" />
     <Folder Include="Results\" />
   </ItemGroup>
 

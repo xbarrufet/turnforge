@@ -1,11 +1,13 @@
 using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Definitions;
-using TurnForge.Engine.Commands.Interfaces;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
-using TurnForge.Engine.Entities.Actors; // For Actor
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Board; // For Actor
 using TurnForge.Engine.Entities.Board.Interfaces; // For IBoardPosition, IBoardDefinition
+using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Players;
+using TurnForge.Engine.Entities.Players.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.StartGame.Action.Inputs;
@@ -15,6 +17,8 @@ namespace TurnForge.Engine.Commands.StartGame.Action.Inputs;
 /// </summary>
 public record AddPlayerInput(
     PlayerId PlayerId,
+    PlayerControllerType PlayerController,
+    string Team,
     string PlayerName,
     string ActionPoolType,
     int MaxActions,
@@ -26,14 +30,24 @@ public record AddPlayerInput(
 /// Position is optional - if null, will be resolved by mission rules.
 /// </summary>
 public record AgentDeploymentInput(
-    IGameEntityBuildDescriptor Descriptor,
+    AgentDescriptor Descriptor,
+    IBoardPosition? Position  // null = mission-based, value = explicit
+);
+
+public record PropDeploymentInput(
+    PropDescriptor Descriptor,
     IBoardPosition? Position  // null = mission-based, value = explicit
 );
 
 public record ConfirmPlayersInput() : IActionInput;
 
-public record SelectMapInput(
+public record MissionDataInput(
+    string MissionName
+) : IActionInput;
+
+public record BoardDataInput(
     string MapId,
-    IBoardDefinition BoardDefinition,
-    MissionDefinition? Mission
+    BoardDescriptor BoardDescriptor,
+    IReadOnlyList<ZoneDeployment> Zones,
+    IReadOnlyList<ConnectionDeployment> Connections
 ) : IActionInput;

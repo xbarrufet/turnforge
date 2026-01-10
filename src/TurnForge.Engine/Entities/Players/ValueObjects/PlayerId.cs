@@ -1,4 +1,4 @@
-namespace TurnForge.Engine.ValueObjects;
+namespace TurnForge.Engine.Entities.Players.ValueObjects;
 
 /// <summary>
 /// Custom player identifier defined by the user.

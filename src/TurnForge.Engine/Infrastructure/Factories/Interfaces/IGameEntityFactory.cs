@@ -1,18 +1,29 @@
-using TurnForge.Engine.Definitions.Actors;
-using TurnForge.Engine.Entities.Actors.Descriptors;
-using TurnForge.Engine.Entities.Descriptors;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
-using TurnForge.Engine.Definitions.Factories.Interfaces;
-using TurnForge.Engine.Entities.Board.Descriptors; // UPDATED
 using TurnForge.Engine.Definitions.Board;
-using TurnForge.Engine.Entities.Actors; // For Prop, Agent
-using TurnForge.Engine.Entities.Board; // For Zone
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Board;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
+using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Factories.Interfaces;
+// UPDATED
+// For Prop, Agent
+
+// For Zone
+
+namespace TurnForge.Engine.Infrastructure.Factories.Interfaces;
 
 public interface IGameEntityFactory
 {
     Prop BuildProp(PropDescriptor descriptor);
     Agent BuildAgent(AgentDescriptor descriptor);
-    TurnForge.Engine.Entities.Board.Zone BuildZone(ZoneDescriptor descriptor);
+    Prop BuilProp(string definitionId, IBoardPositionId startPosition,IReadOnlyList<IGameEntityComponent>? components=null,  IReadOnlyList<ITrait>? traits=null);
+
+    Agent BuildAgent(string definitionId, string teamId, string controllerId, IBoardPositionId startPosition,IReadOnlyList<IGameEntityComponent>? components=null,  IReadOnlyList<ITrait>? traits=null);
+
+    Zone BuildZone(ZoneDescriptor descriptor);
+    Connection BuildConnection(ConnectionDescriptor descriptor);
+    
+    
+
+
 }

@@ -1,8 +1,6 @@
-using TurnForge.Engine.Entities.Descriptors;
 using TurnForge.Engine.Entities.Players.ValueObjects;
-using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Actors.Descriptors;
+namespace TurnForge.Engine.Entities.Descriptors;
 
 /// <summary>
 /// Descriptor for spawning Player entities.
@@ -14,7 +12,12 @@ public class PlayerDescriptor : GameEntityBuildDescriptor
     /// </summary>
     public PlayerId PlayerId { get; init; }
 
-    public PlayerDescriptor(string definitionId, PlayerId playerId) : base(definitionId)
+    public PlayerDescriptor(string definitionId, PlayerId playerId, string name) : base(definitionId,name)
+    {
+        PlayerId = playerId;
+    }
+    
+    public PlayerDescriptor(string definitionId, PlayerId playerId) : base(definitionId,playerId)
     {
         PlayerId = playerId;
     }

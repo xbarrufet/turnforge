@@ -13,28 +13,41 @@ TurnForge distinguishes between two types of actions:
 | Type | Provider | Registration | Examples |
 |------|----------|--------------|----------|
 | **Core Actions** | TurnForge Engine | Auto-registered | `StartGame`, `Spawn` |
-| **Game Actions** | Game rules | Manual registration | `Move`, `Attack` |
+| **Game Actions** | Game rules | Factory Implementation | `Move`, `Attack` |
 
-**Core Actions** are provided by the engine and automatically registered. Use them via `CoreActions`:
+**Core Actions** are provided by the engine.
 
-```csharp
-using TurnForge.Engine.Core.Actions;
-
-// Start a game (core action - no registration needed)
-engine.ExecuteAction(CoreActions.StartGame, parameters);
-```
-
-**Game Actions** are defined by your game rules and registered in your game's `ActionRegistration`:
+**Game Actions** are defined by your game rules and provided via an implementation of `IActionFactory`.
 
 ```csharp
-// Game-specific actions (must be registered)
+// 1. Define Action IDs
 public static class ParchisActions
 {
     public static readonly ActionId Move = new("parchis_move");
 }
 
-// Register in your game's bootstrap
-registry.Register(ParchisActions.Move, ParchisMoveActionFactory.Create);
+// 2. Implement Factory
+public class ParchisActionFactory : IActionFactory
+{
+    public IAction BuildAction(ActionId actionId)
+    {
+        if (actionId == ParchisActions.Move)
+        {
+            return ParchisMoveAction.Create();
+        }
+        throw new NotImplementedException($"Action {actionId} not implemented.");
+    }
+
+    public IReadOnlyList<ActionId> GetRegisteredActionIds()
+    {
+        return new List<ActionId> { ParchisActions.Move };
+    }
+}
+
+// 3. Register in Engine
+GameEngineFactory.Create(rootNode)
+    .WithActionFactory(new ParchisActionFactory())
+    .Build();
 ```
 
 From the caller's perspective, both types are invoked identically via `ExecuteAction()`.
@@ -128,13 +141,13 @@ Actions operate on **GameState** using a transactional overlay pattern to ensure
 
 ```
 ActionOrchestrator.StartAction()
-├─ 1. InitializeState(baseState) → Creates GameStateOverlay
-├─ 2. Execute nodes (all use context.Overlay)
-│  ├─ Node 1 records operations to overlay
-│  ├─ Node 2 records more operations (same overlay)
-│  └─ Node N continues using shared overlay
+├─ 1. Creates GameStateView (wraps State)
+├─ 2. Execute nodes
+│  ├─ Node 1 calls state.RecordOperation(op1) → Overlay in GameState
+│  ├─ Node 2 calls state.RecordOperation(op2)
+│  └─ Node N sees updated state via GameStateView
 └─ 3. Action completes
-   ├─ Success → overlay.Commit(baseState) → New GameState
+   ├─ Success → state.CommitOverlayChanges() → New GameState persistence
    ├─ Suspend → Keep overlay (resume will continue)
    └─ Fail → Discard overlay (rollback)
 ```
@@ -143,59 +156,148 @@ ActionOrchestrator.StartAction()
 
 | Component | Responsibility |
 |-----------|----------------|
-| **GameState** | Immutable game state snapshot |
-| **GameStateOverlay** | Mutable transaction log of operations |
-| **ActionContext** | Holds both State + Overlay |
-| **ActionOrchestrator** | Manages overlay lifecycle (create/commit) |
+| **GameState** | Source of truth. Manages `GameStateOverlay` internally. |
+| **GameStateView** | Read/Write view passed to nodes. Delegates recording to `GameState`. |
+| **ActionContext** | Holds **workflow data** (inputs, variables) only. No state. |
+| **ActionOrchestrator** | Manages execution flow and triggers final commit. |
 
 ### How Nodes Use Overlay
 
+Nodes interact with the state via `GameStateView`. They do not access `ActionContext.Overlay` anymore.
+
 ```csharp
-public ActionStepResult Execute(ActionContext context)
+public ActionStepResult Execute(ActionContext context, GameStateView state)
 {
-    // 1. Read current state
-    var state = context.State;
+    // 1. Read projected state (includes previous operations)
+    var entity = state.GetEntity(entityId); 
     
-    // 2. Create view with overlay for reading "projected" state
-    var view = new GameStateView(state, context.Overlay);
-    
-    // 3. Record operations to the overlay
+    // 2. Record new operations
     var moveOp = new MoveOperation(entityId, newPosition);
-    context.Overlay.Record(moveOp);
+    state.RecordOperation(moveOp);
     
-    // 4. Continue to next node (overlay persists!)
+    // 3. Continue to next node
     return ActionStepResult.Success();
     
     // NOTE: Do NOT commit here! Orchestrator does it at the end.
 }
 ```
 
-### Why This Matters
+### Typed Contexts & Action Creation
 
-**Atomicity**: All operations in a action succeed or fail together. If a action suspends or fails, the overlay is discarded—no partial state mutations.
+Actions often need to store temporary data specific to their workflow (e.g., dice rolls, selected targets). You should define a custom `ActionContext`.
 
-**Consistency**: `GameStateView` shows the "projected" state (base + overlay), so nodes see pending changes from previous nodes in the same action.
+#### 1. Define Context
+```csharp
+public class MoveActionContext : ActionContext 
+{
+    // Workflow-scoped data, not game state
+    public int RollResult { get; set; }
+    public bool HasBounced { get; set; }
+}
+```
 
-**Isolation**: Each action has its own overlay. Multiple concurrent actions don't interfere.
-
-**Multi-Node Operations**: All nodes share the same overlay, building up a complete transaction that commits at the end.
-
-### Example: Attack Action
+#### 2. Create Action with Typed Context
+Use `.WithContext()` in the `ActionBuilder` to factory the correct context type.
 
 ```csharp
-// Node 1: Select Target (records selection)
-context.Overlay.Record(new SelectionOperation(targetId));
+public static IAction Create()
+{
+    return ActionBuilder.Create("MoveAction")
+        .WithContext(() => new MoveActionContext()) // <--- Creates specific context
+        .AddNode(new RuleOfFiveNode())
+        .AddNode(new SelectPawnNode())
+        .Build();
+}
+```
 
-// Node 2: Calculate Damage (uses view to see selection)
-var view = new GameStateView(context.State, context.Overlay);
-var target = view.GetEntity(targetId); // Sees selection from Node 1!
-context.Overlay.Record(new DamageOperation(targetId, damage));
+### 3. Use in Nodes
+Use the helper method `GetTypedContext<T>` to safely access your custom properties.
 
-// Node 3: Apply Effects
-context.Overlay.Record(new EffectOperation(...));
+```csharp
+public override ActionStepResult Execute(ActionContext context, GameStateView state)
+{
+    // Safe cast with error handling
+    var ctx = GetTypedContext<MoveActionContext>(context);
+    
+    // Read/Write workflow data
+    if (ctx.RollResult == 0) return ActionStepResult.Failed("No roll");
+    
+    ctx.HasBounced = true;
+    
+    return ActionStepResult.Success();
+}
 
-// Orchestrator commits ALL operations when action completes
-var newState = context.Overlay.Commit(context.State);
+### 4. Parameter Injection from Start
+
+You can pass initial parameters when starting an action using `ExecuteAction(id, parameters)`. To support this, your context properties must be backed by the underlying `ActionContext` data store.
+
+#### Implementing Injectable Properties
+Refactor your context properties to use `Get/Set` (or `TryGet`) methods. This maps the dictionary keys from the injection to your strongly-typed properties.
+
+```csharp
+public class MyContext : ActionContext
+{
+    // This property will automatically receive value from parameters["TargetId"]
+    public string TargetId 
+    {
+        get => Get<string>("TargetId");
+        set => Set("TargetId", value);
+    }
+}
+```
+
+#### Passing Parameters
+Pass a dictionary matching the property names:
+
+```csharp
+var params = new Dictionary<string, object> 
+{
+    { "TargetId", "Entity_123" }
+};
+engine.ExecuteAction(MyActionId, params);
+```
+```
+
+## Semantic API via Extensions
+
+Directly using `GameStateView` can lead to verbose and low-level code. It is highly recommended to create **Extension Methods** for your specific game rules to provide a clean, semantic API.
+
+### 1. Create Extensions Class
+
+```csharp
+public static class ParchisViewExtensions
+{
+    // Retrieve typed entities directly
+    public static IEnumerable<Actor> GetPawns(this GameStateView view, PlayerId owner)
+        => view.GetEntitiesForOwner(owner).OfType<Actor>();
+
+    // Semantic queries
+    public static bool IsSafeTile(this GameStateView view, TileId tile)
+    {
+        return tile.Value == "center" || tile.Value.EndsWith("_entry");
+    }
+}
+```
+
+### 2. Use in Nodes
+
+The node code becomes much more readable and "speaks" the language of the game design.
+
+```csharp
+public override ActionStepResult Execute(ActionContext context, GameStateView state)
+{
+    // BEFORE (Generic)
+    var entities = state.GetEntitiesForOwner(pid);
+    var pawns = entities.OfType<Actor>();
+    
+    // AFTER (Semantic)
+    var pawns = state.GetPawns(pid);
+    
+    if (state.IsSafeTile(targetTile))
+    {
+        // ...
+    }
+}
 ```
 
 ## Batch Input Preloading

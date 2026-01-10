@@ -1,4 +1,5 @@
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.APIs.Interfaces;
 
@@ -8,5 +9,5 @@ public interface IGameCatalogApi
     T GetDefinition<T>(string definitionId) where T : BaseGameEntityDefinition;
     bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition;
     IEnumerable<T> GetAllDefinitions<T>() where T : BaseGameEntityDefinition;
-    void RegisterDefinition(string definitionId, string category);
+    void RegisterDefinition(string definitionId, Category category);
 }

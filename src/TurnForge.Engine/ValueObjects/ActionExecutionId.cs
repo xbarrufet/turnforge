@@ -9,5 +9,7 @@ namespace TurnForge.Engine.ValueObjects;
         public static ActionExecutionId New()
             => new(Guid.NewGuid());
 
+        public static ActionExecutionId Empty => new(Guid.Empty);
+
         public override string ToString() => Value.ToString();
     }

@@ -1,9 +1,8 @@
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Core.Fsm.Nodes;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.ValueObjects;
 
-namespace Parchis.Rules.Fsm.Nodes;
+namespace ParchisLudo.Rules.Fsm.Nodes;
 
 /// <summary>
 /// Parchís-specific StartRound node.
@@ -11,10 +10,21 @@ namespace Parchis.Rules.Fsm.Nodes;
 /// 
 /// OnEntry workflows can advance turn order, reset AP, etc.
 /// </summary>
-public class ParchisStartRoundNode : StartRoundNode
+public class ParchisStartRoundNode : ChekEndTurnAndResetApStartRoundNode
 {
-    public ParchisStartRoundNode() : base() { }
-    
+
+    public override BaseFsmNode? GetNextNode(GameStateView state)
+    {
+        // Log turn information before transitioning
+        var turnOrder = state.TurnOrder;
+        var currentPlayer = turnOrder.CurrentPlayer;
+        var roundNumber = turnOrder.RoundNumber;
+
+        Console.WriteLine($"StartRound: Round={roundNumber}, Player={currentPlayer}");
+
+        return base.GetNextNode(state);
+    }
+
     /// <summary>
     /// Fluent builder for chaining.
     /// </summary>

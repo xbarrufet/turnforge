@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using TurnForge.Engine.Commands.StartGame.Action.Inputs;
 using TurnForge.Engine.Core.Action; // ADDED
 using TurnForge.Engine.Core.Action.Nodes;
-using TurnForge.Engine.Commands.StartGame.Action.Inputs;
+using TurnForge.Engine.Entities; // ADDED for GameStateView
 using TurnForge.Engine.Entities.Board;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Overlay.Operations;
@@ -14,78 +15,89 @@ public class ProcessBoardDataNode : InteractionNode<ActionContext>
 {
     private readonly IBoardFactory _boardFactory;
 
-    public ProcessBoardDataNode(IBoardFactory boardFactory) : base("StartGame.ProcessBoardData") 
+    public ProcessBoardDataNode(IBoardFactory boardFactory) : base("StartGame.ProcessBoardData")
     {
         _boardFactory = boardFactory;
     }
 
-    protected override void ProcessNewInputs(ActionContext context)
+    protected override void ProcessNewInputs(ActionContext context, GameStateView state)
     {
-        if (!context.Has("PendingPropDeployments")) context.Set("PendingPropDeployments", new List<PropDeployment>());
-
-        if (context.HasInput<SelectMapInput>())
+        // Use typed context for all operations
+        if (context is not StartGameActionContext typedContext)
         {
-            var input = context.ConsumeInput<SelectMapInput>();
+            throw new InvalidOperationException("ProcessBoardDataNode requires StartGameActionContext");
+        }
+
+        // Check typed MapInput property first
+        if (typedContext.BoardData != null)
+        {
+            ProcessMapInput(typedContext.BoardData, typedContext, state);
+            typedContext.BoardData = null; // Handled
+            return;
+        }
+
+        // Check input queue
+        if (context.HasInput<BoardDataInput>())
+        {
+            var input = context.ConsumeInput<BoardDataInput>();
             if (input != null)
             {
-                context.Set("MapId", input.MapId);
-                
-                // 1. Create board
-                var board = _boardFactory.CreateGameBoard(input.BoardDefinition);
-                
-                // 2. Record creation operation (Board + Mission)
-                var createOp = new CreateBoardOperation(board, input.Mission);
-                context.Overlay.Record(createOp);
-                
-                // 3. Resolve agent positions using mission data
-                if (input.Mission != null && input.Mission.PlayerSpawnZones != null)
-                {
-                    if (context.TryGet<List<AgentDeployment>>("PendingAgentDeployments", out var pendingAgents))
-                    {
-                        foreach (var deployment in pendingAgents)
-                        {
-                            if (deployment.Position == null)
-                            {
-                                // Lookup spawn zone from mission for this player
-                                if (input.Mission.PlayerSpawnZones.TryGetValue(deployment.OwnerId, out var spawnPos))
-                                {
-                                    deployment.Position = spawnPos;
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // 4. Store props for later deployment (DeployEntitiesNode)
-                if (input.BoardDefinition.Props != null)
-                {
-                    var pendingProps = context.Get<List<PropDeployment>>("PendingPropDeployments");
-                    foreach (var prop in input.BoardDefinition.Props)
-                    {
-                        pendingProps.Add(new PropDeployment(
-                            prop.Definition,
-                            prop.FixedPosition
-                        ));
-                    }
-                }
-                
-                // 5. Spawn Connection Entities from MissionData
-                if (input.Mission != null && input.Mission.ConnectionRequests != null && input.Mission.ConnectionRequests.Count > 0)
-                {
-                    var connectionSpawner = new ConnectionSpawner();
-                    connectionSpawner.SpawnConnections(input.Mission.ConnectionRequests, context.Overlay);
-                }
+                ProcessMapInput(input, typedContext, state);
             }
+        }
+    }
+
+    private void ProcessMapInput(BoardDataInput input, StartGameActionContext context, GameStateView state)
+    {
+        if (input != null)
+        {
+            // Use typed property instead of string key
+            context.MapId = input.MapId;
+
+            // 1. Create board
+            var board = _boardFactory.CreateGameBoard(input.BoardDescriptor);
+            context.GameBoard = board;
+
+            // 2. Store zones for later deployment (BuildInitialStateNode)
+            foreach (var zoneDeploy in input.Zones)
+            {
+                context.PendingZoneDeployments.Add(zoneDeploy);
+            }
+
+            // 3. Store connections for later deployment (BuildInitialStateNode)
+            foreach (var connDeploy in input.Connections)
+            {
+                context.PendingConnectionDeployments.Add(connDeploy);
+            }
+
+            // 5. Store props for later deployment (DeployEntitiesNode)
+           /* if (input.BoardDefinition.Props != null)
+            {
+                // Use typed property for pending props
+                foreach (var prop in input.BoardDefinition.Props)
+                {
+                    context.PendingPropDeployments.Add(new PropDeployment(
+                        prop.Definition,
+                        prop.FixedPosition
+                    ));
+                }
+            }*/
+
+
         }
     }
 
     protected override bool IsReadyToComplete(ActionContext context)
     {
-         return context.Has("MapId") && !string.IsNullOrEmpty(context.Get<string>("MapId"));
+        if (context is StartGameActionContext typedContext)
+        {
+            return !string.IsNullOrEmpty(typedContext.MapId);
+        }
+        return false;
     }
 
     protected override (string Reason, Type[] AllowedInputs) GetRequiredInteractions(ActionContext context)
     {
-        return ("Please select a map and mission.", new[] { typeof(SelectMapInput) });
+        return ("Please select a map and mission.", new[] { typeof(BoardDataInput) });
     }
 }

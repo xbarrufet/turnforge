@@ -1,58 +1,35 @@
-using TurnForge.Engine.Domain.Board.Spatial.Interfaces;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Entities.Board.Enums;
-using TurnForge.Engine.Entities.Board.Topology.Interfaces;
+using TurnForge.Engine.Entities.Board.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board.Interfaces;
 
-    public interface IGameBoard
-    {
+public interface IGameBoard
+{
+
+
     /// <summary>
-    /// Identificador del board (útil para escenarios multi-board).
+    /// Tipo de board (discrete, continuous, hybrid…).
     /// </summary>
-    EntityId Id { get; }
+    TopologyKind Kind { get; }
 
-        /// <summary>
-        /// Tipo de board (discrete, continuous, hybrid…).
-        /// </summary>
-        BoardKind Kind { get; }
-
-        /// <summary>
-        /// Topología del board (reglas de conexión y traversal).
-        /// </summary>
-        IBoardTopology Topology { get; }
-
-        /// <summary>
-        /// Índice espacial para queries eficientes.
-        /// </summary>
-        ISpatialIndex SpatialIndex { get; }
-
-        /// <summary>
-        /// Valida si una posición pertenece al board.
-        /// </summary>
-        bool IsValidPosition(IBoardPosition position);
-
-        /// <summary>
-        /// Evalúa si se puede atravesar de una posición a otra
-        /// bajo un contexto determinado (movimiento, LOS, etc.).
-        /// </summary>
-       /* TraversalResult CanTraverse(
-            IBoardPosition from,
-            IBoardPosition to,
-            TraversalContext context);*/
-
-        /// <summary>
-        /// Devuelve todas las entidades localizadas en una posición.
-        /// </summary>
-        IReadOnlyList<Engine.ValueObjects.EntityId> GetEntitiesAt(IBoardPosition position);
-
-        /// <summary>
-        /// Devuelve entidades que intersectan un área.
-        /// Útil para AoE, auras, trampas, continuos.
-        /// </summary>
-        //IReadOnlyList<EntityId> QueryArea(BoardArea area);
-        
-        IGameBoard Clone();
-    }
+    /// <summary>
+    /// Topología del board (reglas de conexión y traversal).
+    /// </summary>
+    IReadOnlyDictionary<ZoneId, Zone> Zones { get; }
+    IReadOnlyList<Connection> Connections { get; }
+    
+    Zone GetZoneByPosition(IBoardPosition position);
+    bool IsValidPosition(IBoardPosition position);
+    IEnumerable<Connection> GetConnectionsFrom(ZoneId zoneId);
+    IEnumerable<Connection> GetConnectionsTo(ZoneId zoneId);
+    (IEnumerable<Connection>, IEnumerable<Connection>) GetConnections(IEnumerable<ZoneId> zoneIds);
+    
+    
+    IGameBoard Clone();
+    
+    
+}
 
 

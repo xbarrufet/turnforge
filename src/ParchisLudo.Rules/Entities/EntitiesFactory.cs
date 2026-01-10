@@ -1,4 +1,4 @@
-namespace Parchis.Rules.Entities;
+namespace ParchisLudo.Rules.Entities;
 
 public static class EntitiesFactory
 {

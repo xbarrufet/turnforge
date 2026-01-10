@@ -1,26 +1,22 @@
 using TurnForge.Engine.Definitions.Board.Interfaces;
-using TurnForge.Engine.Entities.Descriptors.Interfaces;
+using TurnForge.Engine.Definitions.Descriptors;
 using TurnForge.Engine.Entities.Board.Interfaces;
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities.Descriptors;
+using TurnForge.Engine.Entities.Players.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.StartGame.Action;
 
 /// <summary>
-/// Represents a pending agent deployment with descriptor and optional position.
-/// Position is mutable to allow mission rules to resolve it.
+/// Represents a pending agent deployment with descriptor and position.
 /// </summary>
 public class AgentDeployment
 {
     public required IGameEntityBuildDescriptor Descriptor { get; init; }
     public required PlayerId OwnerId { get; init; }
-    
-    /// <summary>
-    /// Deploy position. Can be:
-    /// - Explicit (Kill Team style)
-    /// - Null initially, resolved by mission rules (Zombicide style)
-    /// </summary>
-    public IBoardPosition? Position { get; set; }
+    public required string Team { get; init; }
+    public required IBoardPosition Position { get; init; }
 }
 
 /// <summary>
@@ -28,5 +24,15 @@ public class AgentDeployment
 /// </summary>
 public record PropDeployment(
     BaseGameEntityDefinition Definition,
+    IBoardPosition Position
+);
+
+public record ZoneDeployment(
+    ZoneDescriptor Zone,
+    IBoardPosition Position
+);
+
+public record ConnectionDeployment(
+    ConnectionDescriptor Descriptor,
     IBoardPosition Position
 );

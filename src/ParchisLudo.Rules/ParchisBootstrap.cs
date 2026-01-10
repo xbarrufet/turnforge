@@ -1,8 +1,6 @@
-using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using Parchis.Rules.Actions;
 
-namespace Parchis.Rules;
+namespace ParchisLudo.Rules;
 
 /// <summary>
 /// Action IDs for Parchis game-specific actions.

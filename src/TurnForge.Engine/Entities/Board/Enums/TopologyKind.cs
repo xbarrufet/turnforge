@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.Entities.Board.Enums;
 
-public enum BoardKind
+public enum TopologyKind
 {
     Discrete,
     Continuous

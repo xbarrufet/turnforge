@@ -1,27 +1,30 @@
 using TurnForge.Engine.Core.Action;
+using TurnForge.Engine.Core.Action.Builders;
 using TurnForge.Engine.Core.Action.Interfaces;
-using TurnForge.Engine.Commands.StartGame.Action.Inputs;
+using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Spawn;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Commands.StartGame.Action;
 
-using TurnForge.Engine.Core.Action.Builders;
-using TurnForge.Engine.Core.Action.Interfaces;
-using TurnForge.Engine.Entities.Appliers;
-using TurnForge.Engine.Entities.Board.Interfaces;
-using TurnForge.Engine.ValueObjects;
-
+/// <summary>
+/// Factory for creating the StartGame action.
+/// </summary>
 public static class StartGameAction
 {
-    public static IAction Create(IBoardFactory boardFactory, IEntityApplier entityApplier)
+    public const string ActionId = "Core.StartGame";
+
+    public static IAction Create(IBoardFactory boardFactory, ISpawnService spawnService)
     {
         var processPlayer = new ProcessPlayerDataNode();
         var processBoard = new ProcessBoardDataNode(boardFactory);
-        var deployEntities = new DeployEntitiesNode(new NodeId("StartGame.DeployEntities"), entityApplier);
+        var buildInitialState = new BuildInitialStateNode(new NodeId("BuildInitialState"), spawnService);
 
-        return ActionBuilder.Create("StartGame")
+        return ActionBuilder.Create(ActionId)
+                .WithContext(() => new StartGameActionContext())
                 .AddNode(processPlayer)
                 .AddNode(processBoard)
-                .AddNode(deployEntities)
+                .AddNode(buildInitialState)
                 .Build();
     }
 }

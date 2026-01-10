@@ -3,7 +3,26 @@
 ## Overview
 TurnForge is a generic engine for turn-based games. This guide explains how to use the public API to build and run games.
 
+## Table of Contents
+
+### Core Concepts
+1. [FSM 2.0](FSM_2.0.md) - Finite State Machine architecture
+2. [Generic FSM Nodes](Generic_FSM_Nodes.md) - Reusable nodes and core actions
+3. [Actions Catalog](Actions_Catalog.md) - Creating and registering actions
+4. [Interactive Actions](Interactive_Actions.md) - User input and interactive workflows
+
+### State Management
+5. [GameState View](GameState_View.md) - Read-only access to game state
+6. [GameState Transactions](GameState_Transactions.md) - Overlay pattern for state changes
+7. [Querying GameState](Querying_GameState.md) - LINQ-style queries for filtering entities
+
+### Systems
+8. [Spawn System](Spawn_System.md) - Entity creation and spawning
+9. [Board Management](Board_Management.md) - Board topology and spatial queries
+10. [Event System](Event_System_Architecture.md) - Event-driven architecture
+
 ---
+
 
 ## Core API: IGameEngine
 
@@ -39,23 +58,31 @@ TurnForge provides a high-level **Fluent API** to configure and initialize the e
 The recommended way to start a game is to build an "empty" engine (loaded with definitions) and then execute the built-in `StartGame` action.
 
 ```csharp
-// 1. Prepare Definitions (Board, Mission, Entity Definitions)
-var boardDef = ParchisBoardFactory.CreateDescriptor();
-var missionDef = ParchisMissionFactory.CreateMissionForPlayers(playerColors);
-var definitions = new List<BaseGameEntityDefinition> { boardDef, missionDef };
-
-// 2. Build Engine (StartGame is pre-registered)
+// 1. Build Engine with definitions
 var engine = GameEngineFactory.Create(fsmRootNode)
-    .WithDefinitions(definitions)
+    .WithDefinitions(catalogDefinitions)
     .Build();
 
-// 3. Start Game - Single Call Mode
-var transaction = engine.ExecuteAction(new ActionId("StartGame"), new Dictionary<string, object>
-{
-    { "BoardId", boardDef.DefinitionId },
-    { "MissionId", missionDef.DefinitionId },
-    { "PlayerIds", new List<string> { "P1", "P2" } }
-});
+// 2. Prepare StartGame Parameters
+var startParams = new StartGameParams(
+    PlayerInputs: playerInputs,           // List<AddPlayerInput>
+    PropInputs: propInputs,               // List<PropDeploymentInput>
+    BoardData: boardDataInput,            // BoardDataInput
+    MissionData: missionDataInput         // MissionDataInput
+);
+
+// 3. Execute StartGame
+var result = GameEngineExtensions.ExecuteAction(
+    engine,
+    CoreActions.StartGameActionId,
+    startParams
+);
+
+// StartGameParams Structure:
+// - PlayerInputs: List of players with their agents
+// - PropInputs: List of props to deploy on the board
+// - BoardData: Board topology + zones + connections
+// - MissionData: Mission configuration
 ```
 
 ### 3.1 Interactive Mode (Optional)
@@ -72,13 +99,7 @@ engine.ProvideInput(new SelectMapInput("map_1", boardDef, missionDef));
 engine.ProvideInput(new ConfirmPlayersInput());
 ```
 
-### 4. Legacy Customization (Obsolete)
-Previously, you could set specific components directly during factory build. This is now deprecated in favor of the action-driven approach.
-```csharp
-// DEPRECATED
-.WithBoardDefinition(board)
-.WithInitialEntities(entities)
-```
+
 
 ### TurnForge Facade
 

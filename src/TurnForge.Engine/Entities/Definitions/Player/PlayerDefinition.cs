@@ -1,7 +1,8 @@
+using TurnForge.Engine.Entities.Players.ValueObjects;
 using TurnForge.Engine.Traits.Standard;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Entities.Definitions;
+namespace TurnForge.Engine.Entities.Definitions.Player;
 
 /// <summary>
 /// Base definition for Player entities.
@@ -15,26 +16,20 @@ public abstract class PlayerDefinition : BaseGameEntityDefinition
     /// </summary>
     public PlayerId PlayerId { get; }
 
-    protected PlayerDefinition(string definitionId, string category, PlayerId playerId) 
-        : base(definitionId, category)
+    protected static Category PlayerCategory = new("Player");
+    
+    protected PlayerDefinition(string definitionId, PlayerId playerId) 
+        : base(definitionId, PlayerCategory)
     {
         PlayerId = playerId;
         // Player has ActionPoolTrait for managing actions
         // Default: 1 action per turn, fixed mode
         AddTrait(new ActionPoolTrait(1));
     }
-
-    protected PlayerDefinition(string definitionId, PlayerId playerId) 
-        : base(definitionId, "Player")
-    {
-        PlayerId = playerId;
-        // Player has ActionPoolTrait for managing actions
-        // Default: 1 action per turn, fixed mode
-        AddTrait(new ActionPoolTrait());
-    }
+    
 
 
-    protected PlayerDefinition(string definitionId, string category, PlayerId playerId, ActionPoolTrait actionPool) 
+    protected PlayerDefinition(string definitionId, Category category, PlayerId playerId, ActionPoolTrait actionPool) 
         : base(definitionId, category)
     {
         PlayerId = playerId;
@@ -42,7 +37,7 @@ public abstract class PlayerDefinition : BaseGameEntityDefinition
     }
 
     protected PlayerDefinition(string definitionId, PlayerId playerId, ActionPoolTrait actionPool) 
-        : base(definitionId, "Player")
+        : base(definitionId, PlayerCategory)
     {
         PlayerId = playerId;
         AddTrait(actionPool);

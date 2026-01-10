@@ -1,6 +1,7 @@
 using System;
 using TurnForge.Engine.Core.Action.Builders;
 using TurnForge.Engine.Core.Action.Interfaces;
+using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Action.Nodes;
@@ -8,45 +9,42 @@ namespace TurnForge.Engine.Core.Action.Nodes;
 /// <summary>
 /// Base class for nodes that require external interaction/input.
 /// Implements the suspend/resume loop pattern.
+/// 
+/// Generic parameter TContext allows subclasses to work with typed contexts
+/// while implementing the non-generic INode interface.
 /// </summary>
-public abstract class InteractionNode<TContext> : ILinkableNode 
+public abstract class InteractionNode<TContext> : LinkableNode
     where TContext : ActionContext
 {
-    public NodeId Id { get; }
-    public INode? NextNode { get; set; }
+    public override NodeId Id { get; }
 
     protected InteractionNode(string id) => Id = new NodeId(id);
-    
-    public void SetNextNode(INode? next) => NextNode = next;
 
-    public ActionStepResult Execute(ActionContext baseContext)
+    public override ActionStepResult Execute(ActionContext context, GameStateView state)
     {
-        // Safety cast
-        if (baseContext is not TContext context)
-        {
-            return ActionStepResult.Fail($"Invalid context type. Expected {typeof(TContext).Name}, got {baseContext.GetType().Name}");
-        }
+        // Cast to typed context
+        var typedContext = GetTypedContext<TContext>(context);
 
         // 1. Hook to process new inputs received since last pause
-        ProcessNewInputs(context);
+        ProcessNewInputs(typedContext, state);
 
         // 2. Check if we are done
-        if (IsReadyToComplete(context))
+        if (IsReadyToComplete(typedContext))
         {
-            OnComplete(context);
+            OnComplete(typedContext, state);
             return ActionStepResult.Success();
         }
 
         // 3. If not, generate options and suspend
-        var (reason, allowedInputs) = GetRequiredInteractions(context);
+        var (reason, allowedInputs) = GetRequiredInteractions(typedContext);
         return ActionStepResult.Suspend(reason, allowedInputs);
     }
 
     /// <summary>
     /// Consume inputs from queue and modify local state.
-    /// Ex: "Ah, you sent 'ConfirmDefense', so I set 'DefenseConfirmed = true'"
+    /// Use state.RecordOperation() to record changes.
     /// </summary>
-    protected abstract void ProcessNewInputs(TContext context);
+    protected abstract void ProcessNewInputs(TContext context, GameStateView state);
 
     /// <summary>
     /// Returns true if the node has fulfilled its purpose and can proceed to NextNode.
@@ -61,5 +59,5 @@ public abstract class InteractionNode<TContext> : ILinkableNode
     /// <summary>
     /// (Optional) Final logic just before exiting, like committing temp values to main context.
     /// </summary>
-    protected virtual void OnComplete(TContext context) { }
+    protected virtual void OnComplete(TContext context, GameStateView state) { }
 }

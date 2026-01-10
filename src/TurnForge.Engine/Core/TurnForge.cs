@@ -1,8 +1,6 @@
 using TurnForge.Engine.APIs.Interfaces;
 using TurnForge.Engine.Core.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Commands;
-using TurnForge.Engine.Commands.Interfaces;
 
 namespace TurnForge.Engine.Core;
 
@@ -27,10 +25,13 @@ public sealed class TurnForge
         return Runtime.ExecuteAction(actionId, parameters);
     }
 
-    public CommandTransaction ExecuteCommand(ICommand command)
+    /*public CommandTransaction ExecuteCommand(ICommand command)
         => Runtime.ExecuteCommand(command);
-
+*/
+    
     public GameStatus GetStatus() => Runtime.GetStatus();
+
+    public global::TurnForge.Engine.Entities.GameState CurrentState => Runtime.CurrentState;
 
     public void ResetGame() => Runtime.ResetGame();
 }

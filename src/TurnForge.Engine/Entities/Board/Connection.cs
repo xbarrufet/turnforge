@@ -1,20 +1,40 @@
 using TurnForge.Engine.Definitions.Board.Interfaces;
+using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.Board.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Definitions.Board;
 
-public sealed class Connection
+public sealed class Connection : GameEntity
 {
-    public ConnectionId Id { get; }
-    public TileId FromAreaId { get; init; }
-    public TileId ToAreaId { get; init; }
-    public bool IsOpen { get; set; }
+    public static Category ConnectionCategory = new("ConnectionCategory");
 
-    public Connection(ConnectionId id, TileId fromAreaId, TileId toAreaId, bool isOpen = true)
+    // Direct properties (structural data)
+    public ZoneId From { get; init; }
+    public ZoneId To { get; init; }
+    public IZoneConnectionPosition ConnectionPosition { get; init; }
+
+    // Constructor for Builder (with all properties)
+    public Connection(
+        EntityId id,
+        string definitionId,
+        string name,
+        Category category,
+        ZoneId from,
+        ZoneId to,
+        IZoneConnectionPosition connectionPosition)
+        : base(id, name, category, definitionId)
     {
-        Id = id;
-        FromAreaId = fromAreaId;
-        ToAreaId = toAreaId;
-        IsOpen = isOpen;
+        From = from;
+        To = to;
+        ConnectionPosition = connectionPosition;
+    }
+
+    public Connection(EntityId id, string definitionId, string name, Category category)
+        : base(id, name, category, definitionId)
+    {
+        // ConnectionTrait removed - From, To, ConnectionPosition are direct properties
+        // These will be set by the Builder from the Descriptor
     }
 }

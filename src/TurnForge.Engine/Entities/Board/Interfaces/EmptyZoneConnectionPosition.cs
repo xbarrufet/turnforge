@@ -3,22 +3,28 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board.Interfaces;
 
-public class EmptyZoneConnectionPoint:IZoneConnectionPoint
+public class EmptyZoneConnectionPosition:IZoneConnectionPosition
 {
-    public bool InConnectionPoint(IBoardPosition position, out ZoneId zoneId)
+    
+    public bool InConnectionPoint(IBoardPosition position)
     {
         throw new NotImplementedException();
     }
 
-    public ZoneId From { get; }
-    public ZoneId To { get; }
     public bool InConnectionPoint(IBoardPositionId position)
     {
         throw new NotImplementedException();
     }
 
-    public IEnumerable<IBoardPositionId> GetConnectedPositionsId(IBoardPositionId position)
+    public IEnumerable<IBoardPositionId> GetZoneToConnectedPositionsByPositionId(IBoardPositionId position)
     {
         throw new NotImplementedException();
     }
+
+    public IEnumerable<IBoardPositionId> GetZoneFromConnectionPoint()
+    {
+        throw new NotImplementedException();
+    }
+
+    public int NumberOfConnections => 0;
 }

@@ -1,4 +1,6 @@
-using TurnForge.Engine.Traits.Standard;
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.Entities.Players.ValueObjects;
+using TurnForge.Engine.Entities.TraitsComponents.Traits;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Definitions.Actors;
@@ -9,23 +11,17 @@ namespace TurnForge.Engine.Entities.Definitions.Actors;
 /// </summary>
 public abstract class AgentDefinition : ActorDefinition
 {
-    /// <summary>
-    /// The PlayerId of the player that owns/controls this agent.
-    /// </summary>
-    public PlayerId OwnerId { get; }
 
-    protected AgentDefinition(string definitionId, PlayerId ownerId) 
-        : base(definitionId, "Agent")
+    protected AgentDefinition(string definitionId)
+        : base(definitionId, Agent.AgentDefaultCategory)
     {
-        OwnerId = ownerId;
-        AddTrait(new ActionableByPlayerTrait(ownerId));
+        // MembershipTrait removed - Team is now a direct property on Agent
     }
 
 
-    protected AgentDefinition(string definitionId, string category, PlayerId ownerId) 
+    protected AgentDefinition(string definitionId, Category category)
         : base(definitionId, category)
     {
-        OwnerId = ownerId;
-        AddTrait(new ActionableByPlayerTrait(ownerId));
+        // MembershipTrait removed - Team is now a direct property on Agent
     }
 }

@@ -1,3 +1,4 @@
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 
@@ -18,7 +19,9 @@ public class EndRoundNode : BaseFsmNode
     private BaseFsmNode? _startRoundNode;
     private BaseFsmNode? _endGameNode;
     
-    public EndRoundNode() : base("EndRound") { }
+    public EndRoundNode(
+        // add the NextPlayerAction in OnEntry to advance turn order
+        ) : base("EndRound") { }
     
     /// <summary>
     /// Configure where to go for next player's turn.
@@ -37,14 +40,15 @@ public class EndRoundNode : BaseFsmNode
         _endGameNode = endGame;
         return this;
     }
-    
-    public override bool IsCompleted(GameState state)
+
+   
+    public override bool IsCompleted(GameStateView state)
     {
         // Always complete immediately
         return true;
     }
     
-    public override BaseFsmNode? GetNextNode(GameState state)
+    public override BaseFsmNode? GetNextNode(GameStateView state)
     {
         // Check if all players have played this round
         if (state.TurnOrder.IsRoundComplete)
@@ -66,11 +70,14 @@ public class EndRoundNode : BaseFsmNode
     /// <summary>
     /// Override in subclass to check for game over condition.
     /// </summary>
-    protected virtual bool CheckGameOver(GameState state)
+    protected virtual bool CheckGameOver(GameStateView state)
     {
         return false; // Default: game never ends
     }
     
     protected BaseFsmNode? StartRoundNode => _startRoundNode;
     protected BaseFsmNode? EndGameNode => _endGameNode;
+    
+   
+    
 }

@@ -1,23 +1,19 @@
 using TurnForge.Engine.Definitions.Actors.Interfaces;
-using TurnForge.Engine.Components;
-using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Definitions; // For IGameEntity (Old, referencing Defs interface?) -> No, referencing interface.
-using TurnForge.Engine.Entities; // For GameEntity / IGameEntity
 using TurnForge.Engine.Entities.Board.Interfaces;
+using TurnForge.Engine.Entities.TraitsComponents.Components;
+using TurnForge.Engine.Entities.TraitsComponents.Traits;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Actors;
 
 public abstract class Actor : GameEntity, IActor
 {
-    public IPositionComponent PositionComponent { get; protected set; }
-    public IHealthComponent HealthComponent { get; protected set; }
-    
-    /// <summary>
-    /// Convenience getter for current board position.
-    /// </summary>
-    public IBoardPosition? CurrentPosition => PositionComponent?.CurrentPosition;
-    
+    // Direct properties (structural data)
+    public IBoardPositionId CurrentPosition { get; set; } = IBoardPositionId.Limbo;
+
+    // Component references for optional behaviors
+    public HealthComponent HealthComponent { get; protected set; }
+
     /// <summary>
     /// Convenience getter for current health value.
     /// </summary>
@@ -25,47 +21,55 @@ public abstract class Actor : GameEntity, IActor
 
     protected Actor(
         EntityId id,
+        string definitionId,
         string name,
-        string category,
-        string definitionId) : base(id, name, category, definitionId)
+        Category category
+        ) : base(id, name, category, definitionId)
+    {
+        _initializeComponents();
+    }
+
+    // Constructor for Builder (with startPosition)
+    protected Actor(
+        EntityId id,
+        string definitionId,
+        string name,
+        Category category,
+        IBoardPositionId startPosition
+        ) : base(id, name, category, definitionId)
+    {
+        CurrentPosition = startPosition;
+        _initializeComponents();
+    }
+
+    private void _initializeComponents()
     {
         // Register empty components in GameEntity's component dictionary
-        AddComponent(IPositionComponent.Empty());
-        AddComponent(IHealthComponent.Empty());
-        
+        AddComponent(HealthComponent.Empty);
+
         // Keep direct references for convenience and performance
-        PositionComponent = GetRequiredComponent<IPositionComponent>();
-        HealthComponent = GetRequiredComponent<IHealthComponent>();
+        HealthComponent = GetRequiredComponent<HealthComponent>();
     }
 
-    public new bool HasTrait<T>() where T : IActorTrait
+    public override bool RemoveComponent<T>()
     {
-        return GetTraitComponent().HasTrait<T>();
+        if (typeof(T) == typeof(HealthComponent))
+        {
+            throw new InvalidOperationException("Cannot remove health components from the actor.");
+        }
+        return base.RemoveComponent<T>();
     }
 
-    public override void AddComponent<T>(T component)
-    {
-        base.AddComponent(component);
-        if (component is IPositionComponent pc) PositionComponent = pc;
-        if (component is IHealthComponent hc) HealthComponent = hc;
-    }
-
-    public override void ReplaceComponent<T>(T component)
-    {
-        base.ReplaceComponent(component);
-        if (component is IPositionComponent pc) PositionComponent = pc;
-        if (component is IHealthComponent hc) HealthComponent = hc;
-    }
-
-    public void SetPositionComponent(IPositionComponent positionComponent)
-    {
-        ReplaceComponent(positionComponent);
-    }
-
-    public void SetHealthComponent(IHealthComponent healthComponent)
+    public void SetHealthComponent(HealthComponent healthComponent)
     {
         ReplaceComponent(healthComponent);
     }
 
- 
+
+    public Actor CloneWithNewPosition(IBoardPositionId position)
+    {
+        var clone = (Actor)this.Clone();
+        clone.CurrentPosition = position;
+        return clone;
+    }
 }

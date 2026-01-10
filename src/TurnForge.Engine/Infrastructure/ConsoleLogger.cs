@@ -12,18 +12,8 @@ public sealed class ConsoleLogger : IGameLogger
     {
         if (level < MinimumLevel) return;
 
-        var levelTag = level switch
-        {
-            LogLevel.Debug => "[DEBUG]",
-            LogLevel.Info => "[INFO]",
-            LogLevel.Warning => "[WARN]",
-            LogLevel.Error => "[ERROR]",
-            _ => "[LOG]"
-        };
-
-        var contextStr = context?.ToString() ?? "";
-        var separator = string.IsNullOrEmpty(contextStr) ? "" : " ";
-        Console.WriteLine($"{levelTag}{separator}{contextStr} {message}");
+        // Plain output without tags or context
+        Console.WriteLine(message);
     }
 
     public void LogError(string message, Exception? exception = null, LogContext? context = null)

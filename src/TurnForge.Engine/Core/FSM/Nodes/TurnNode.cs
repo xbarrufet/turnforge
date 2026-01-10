@@ -1,4 +1,5 @@
 using TurnForge.Engine.Entities;
+using TurnForge.Engine.Entities.Players.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Fsm.Nodes;
@@ -30,7 +31,7 @@ public class TurnNode : BaseFsmNode
     /// Override in subclass to define when turn is complete.
     /// Default: always complete immediately.
     /// </summary>
-    public override bool IsCompleted(GameState state)
+    public override bool IsCompleted(GameStateView state)
     {
         return true;
     }
@@ -39,7 +40,7 @@ public class TurnNode : BaseFsmNode
     /// Always transition to EndRound.
     /// EndRound will decide if round is complete or continue.
     /// </summary>
-    public override BaseFsmNode? GetNextNode(GameState state)
+    public override BaseFsmNode? GetNextNode(GameStateView state)
     {
         return _endRoundNode;
     }
@@ -47,7 +48,7 @@ public class TurnNode : BaseFsmNode
     /// <summary>
     /// Get current player from state.
     /// </summary>
-    public PlayerId GetCurrentPlayer(GameState state) => state.TurnOrder.CurrentPlayer;
+    public PlayerId GetCurrentPlayer(GameStateView state) => state.TurnOrder.CurrentPlayer;
     
     protected BaseFsmNode? EndRoundNode => _endRoundNode;
 }

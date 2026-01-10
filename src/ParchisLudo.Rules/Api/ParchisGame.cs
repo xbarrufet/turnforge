@@ -4,15 +4,15 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Parchis.Rules;
+using ParchisLudo.Rules;
 using TurnForge.Engine.Core;
 using TurnForge.Engine.Definitions;
 using TurnForge.Engine.ValueObjects;
-using Parchis.Rules.Entities;
-using Parchis.Rules.Board;
+using ParchisLudo.Rules.Entities;
+using ParchisLudo.Rules.Board;
 using TurnForge.Engine.Entities.Board.Descriptors;
 
-namespace Parchis.Rules.Api;
+namespace ParchisLudo.Rules.Api;
 
 public class ParchisGame
 {

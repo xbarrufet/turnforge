@@ -1,6 +1,3 @@
 namespace TurnForge.Engine.Entities.Board.ValueObjects;
 
-public class ConnectedZones
-{
-    
-}
+public record struct ConnectedZones(ZoneId From, ZoneId To);

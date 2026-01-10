@@ -1,14 +1,15 @@
-using TurnForge.Engine.Definitions;
-using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
 using TurnForge.Engine.APIs.Interfaces;
+using TurnForge.Engine.Definitions;
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.APIs;
 
 public class GameCatalogApi : IGameCatalogApi
 {
     IGameCatalog _catalog;
-    
+
     public GameCatalogApi(IGameCatalog catalog)
     {
         _catalog = catalog;
@@ -19,14 +20,14 @@ public class GameCatalogApi : IGameCatalogApi
         return _catalog.GetDefinition<T>(definitionId);
     }
 
-    
-    public void RegisterDefinition<T>(T definition) where T:BaseGameEntityDefinition
+
+    public void RegisterDefinition<T>(T definition) where T : BaseGameEntityDefinition
     {
-        _catalog.RegisterDefinition( definition);
+        _catalog.RegisterDefinition(definition);
     }
 
 
-    public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition
+    public bool TryGetDefinition<T>(string definitionId, out T definition) where T : BaseGameEntityDefinition
     {
         return _catalog.TryGetDefinition(definitionId, out definition);
     }
@@ -36,9 +37,9 @@ public class GameCatalogApi : IGameCatalogApi
         return _catalog.GetAllDefinitions<T>();
     }
 
-    public void RegisterDefinition(string definitionId, string category)
+    public void RegisterDefinition(string definitionId, Category category)
     {
-        _catalog.RegisterDefinition(definitionId, category);
+        _catalog.RegisterDefinition<BaseGameEntityDefinition>(definitionId, category);
     }
 }
 

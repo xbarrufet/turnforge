@@ -3,10 +3,9 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board.Topology.Discrete;
 
-public interface IDiscreteTopology : IZoneTopology
+public interface IDiscreteZoneTopology : IZoneTopology
 {
-    IEnumerable<TileId> GetAdjacents(TilePosition tile);
-    int GetDistance(TilePosition start, TilePosition end);
-    bool IsConnected(TilePosition a, TilePosition b);
+    IEnumerable<TileId> GetAdjacents(TileId tileid);
+    bool IsConnected(TileId a, TileId b);
     
 }

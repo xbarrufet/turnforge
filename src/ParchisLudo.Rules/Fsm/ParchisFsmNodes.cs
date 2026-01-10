@@ -1,10 +1,10 @@
-using Parchis.Rules.Fsm.Nodes;
-using Parchis.Rules.Actions;
+using ParchisLudo.Rules.Actions;
+using ParchisLudo.Rules.Fsm.Nodes;
 using TurnForge.Engine.Core.Fsm;
 using TurnForge.Engine.Entities;
-using TurnForge.Engine.ValueObjects;
+using TurnForge.Engine.Entities.Players.ValueObjects;
 
-namespace Parchis.Rules.Fsm;
+namespace ParchisLudo.Rules.Fsm;
 
 /// <summary>
 /// Factory for creating Parchís FSM components.
@@ -26,31 +26,46 @@ public static class ParchisFsmFactory
     /// <summary>
     /// Creates the complete Parchís FSM graph.
     /// Uses TurnOrderState for dynamic player tracking (supports 2-6 players).
+    /// 
+    /// New architecture with EndTurnNode:
+    /// RoundNode → TurnNode → EndTurnNode → [TurnNode (next player) | EndRoundNode]
+    ///                                                                      ↓
+    ///                                                          [EndGameNode | RoundNode]
     /// </summary>
     public static FsmGraph CreateFsmGraph(params PlayerId[] players)
     {
         // Create nodes
         var startRound = new ParchisStartRoundNode();
         var turn = new ParchisTurnNode();
+        var endTurn = new TurnForge.Engine.Core.Fsm.Nodes.EndTurnNode();
         var endRound = new ParchisEndRoundNode();
         var endGame = new ParchisEndGameNode();
-        
+
         // Wire up the graph:
-        // StartRound → Turn → EndRound → StartRound (loop) or EndGame
+        // RoundNode (reset AP) → TurnNode → EndTurnNode (advance player) → [TurnNode | EndRoundNode]
         startRound.WithTurnNode(turn);
-        turn.WithEndRound(endRound);
-        endRound.WithStartRound(startRound).WithEndGame(endGame);
-        
+
+        turn.WithEndRound(endTurn);  // Turn completes → EndTurn
+
+        endTurn
+            .WithTurnNode(turn)      // Next player's turn
+            .WithEndRound(endRound); // All players done → EndRound
+
+        endRound
+            .WithStartRound(startRound)  // New round
+            .WithEndGame(endGame);       // Game over
+
         // Build graph
         var builder = FsmBuilder.Create()
             .WithRoot(startRound)
             .WithNode(turn)
+            .WithNode(endTurn)
             .WithNode(endRound)
             .WithNode(endGame);
-        
+
         return builder.Build();
     }
-    
+
     /// <summary>
     /// Creates initial TurnOrderState from player list.
     /// </summary>
@@ -58,14 +73,8 @@ public static class ParchisFsmFactory
     {
         return TurnOrderState.Create(players);
     }
-    
-    /// <summary>
-    /// Creates the Move Action for Parchís.
-    /// </summary>
-    public static TurnForge.Engine.Core.Action.Interfaces.IAction CreateMoveAction()
-    {
-        return ParchisMoveActionFactory.Create();
-    }
+
+    // TODO: Fix - ParchisMoveAction does not have Create method
 }
 
 /// <summary>
@@ -74,7 +83,7 @@ public static class ParchisFsmFactory
 public class ParchisEndGameNode : BaseFsmNode
 {
     public ParchisEndGameNode() : base("EndGame") { }
-    
-    public override bool IsCompleted(GameState state) => false;  // Terminal
-    public override BaseFsmNode? GetNextNode(GameState state) => null;  // No next
+
+    public override bool IsCompleted(GameStateView state) => false;  // Terminal
+    public override BaseFsmNode? GetNextNode(GameStateView state) => null;  // No next
 }

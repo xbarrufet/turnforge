@@ -1,4 +1,4 @@
-namespace Parchis.Rules.Fsm.Phases;
+namespace ParchisLudo.Rules.Fsm.Phases;
 
 /// <summary>
 /// DEPRECATED: This class represented the old FSM-based turn phase.

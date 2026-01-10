@@ -6,26 +6,27 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Action.CoreActions;
 
-public class NextTurnResetActions
+public class NextTurnResetAction
 {
-    public const string ActionId = "Core.ResetActionPoints";
+    public const string ActionId = "Core.NextTurnResetAction";
     public static IAction Create()
     {
-        var resetActionPointsNode = new ResetActionPointsNode();
+        var nextTurnResetActionNode = new NextTurnResetActionNode();
 
         return ActionBuilder.Create(ActionId)
             .WithContext(() => new SystemActionContext())
-            .AddNode(resetActionPointsNode)
+            .AddNode(nextTurnResetActionNode)
             .Build();
     }
 }
 
-public class ResetActionPointsNode : LinkableNode
+public class NextTurnResetActionNode : LinkableNode
 {
     public override NodeId Id => new("Reset_Action_Points_Node");
     public override ActionStepResult Execute(ActionContext context, GameStateView state)
     {
-        state.RecordOperation(new SetTurnOrderOperation(state.TurnOrder.NextPlayer()));
+        if(state.IsEndTurn) 
+            state.RecordOperation(new NextTurnResetApOperation());
         return ActionStepResult.Success();
     }
 }

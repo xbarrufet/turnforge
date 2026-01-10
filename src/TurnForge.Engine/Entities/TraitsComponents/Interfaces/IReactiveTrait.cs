@@ -1,6 +1,6 @@
 using TurnForge.Engine.Core.Action.Interfaces;
 
-namespace TurnForge.Engine.Entities.Traits.Interfaces;
+namespace TurnForge.Engine.Entities.TraitsComponents.Interfaces;
 
 /// <summary>
 /// Interface for traits that react to workflow events.

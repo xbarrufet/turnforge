@@ -1,39 +1,48 @@
+using System.Diagnostics;
+using TurnForge.Engine.Entities.Players.ValueObjects;
 using TurnForge.Engine.ValueObjects;
 
-namespace TurnForge.Engine.Definitions.Actors;
+namespace TurnForge.Engine.Entities.Players;
 
 /// <summary>
 /// A Player entity that controls agents.
 /// Players are top-level controllers, not GameEntities.
 /// </summary>
+[DebuggerDisplay("{Name} ({Team}) - {PlayerController}")]
 public class Player
 {
     /// <summary>
     /// Custom player identifier used for agent binding.
     /// </summary>
     public PlayerId PlayerId { get; }
-    
-    public string Name { get; }
-    
-    public int ActionPoints { get; set; }
-    public int MaxActionPoints { get; set; }
+    public IActionPool ActionPool { get; set; }
 
-    // TODO: Add ActionPool property or logic if needed, previously handled by Traits.
+    public PlayerControllerType PlayerController { get; }
+    public string Name { get; }
+    public string Team { get; }
     
-    public Player(PlayerId playerId, string name)
+    // TODO: Add ActionPool property or logic if needed, previously handled by Traits.
+
+    public Player(PlayerId playerId, PlayerControllerType playerController, string name, string team, IActionPool actionPool)
     {
         PlayerId = playerId;
+        PlayerController = playerController;
         Name = name;
-        MaxActionPoints = 0; // Default, expected to be configured or loaded
-        ActionPoints = 0;
+        Team = team;
+        ActionPool = actionPool;
     }
 
     public Player Clone()
     {
-        return new Player(PlayerId, Name)
+        return new Player(PlayerId, PlayerController, Name, Team, ActionPool)
         {
-            ActionPoints = this.ActionPoints,
-            MaxActionPoints = this.MaxActionPoints
+            ActionPool = this.ActionPool // Assuming IActionPool is immutable or handled appropriately
         };
     }
+}
+
+public enum PlayerControllerType
+{
+    Human,
+    AI
 }

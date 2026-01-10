@@ -1,28 +1,38 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using TurnForge.Engine.Core.Action.Interfaces;
+using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Core.Action;
 
 /// <summary>
-/// Core engine component responsible for executing workflows.
-/// Manages execution, suspension, resumption and nested workflows.
+/// Core engine component responsible for executing Actions.
+/// Manages execution, suspension, resumption and nested actions.
+/// 
+/// Design: Works with non-generic IAction/INode interfaces.
+/// Type-safety for context is handled internally by each Action implementation.
 /// </summary>
 public sealed class ActionOrchestrator : IActionOrchestrator
 {
-    private class ActionSession
+    /// <summary>
+    /// Tracks an active action's execution state.
+    /// </summary>
+    private sealed class ActionSession
     {
         public IAction Action { get; }
-        public ActionContext Context { get; }
         public INode? CurrentNode { get; set; }
+        public GameStateView GameStateView { get; }
 
-        public ActionSession(IAction workflow, ActionContext context)
+        public ActionSession(IAction action, GameStateView gameStateView)
         {
-            Action = workflow;
-            Context = context;
-            CurrentNode = workflow.StartNode;
+            Action = action;
+            CurrentNode = action.StartNode;
+            GameStateView = gameStateView;
         }
+
+        public bool IsComplete => CurrentNode == null;
 
         public void Advance()
         {
@@ -30,7 +40,7 @@ public sealed class ActionOrchestrator : IActionOrchestrator
         }
     }
 
-    // Use string keys to support both GUID and named workflows
+    // Active actions indexed by their ID
     private readonly Dictionary<string, ActionSession> _activeActions = new();
     private const int MAX_STEPS_SAFETY_LIMIT = 1000;
     private readonly Microsoft.Extensions.Logging.ILogger<ActionOrchestrator>? _logger;
@@ -41,45 +51,52 @@ public sealed class ActionOrchestrator : IActionOrchestrator
     }
 
     /// <summary>
-    /// Start a new workflow.
+    /// Start executing an action.
     /// </summary>
-    public void StartAction(IAction workflow, ActionContext context)
+    public ActionStatus StartAction(IAction action, GameStateView gameStateView)
     {
-        var session = new ActionSession(workflow, context);
-        var workflowKey = workflow.Id.Value;
-        _activeActions[workflowKey] = session;
-        ExecuteAction(workflowKey);
+        // 1. Assign unique Execution ID to this run
+        action.Context.SetExecutionId(ActionExecutionId.New());
+        
+        var session = new ActionSession(action, gameStateView);
+        var actionKey = action.Id.Value;
+        
+        _activeActions[actionKey] = session;
+        action.Context.UpdateStatus(ActionStatus.Running);
+        
+        return ExecuteAction(actionKey);
     }
 
     /// <summary>
-    /// Execute workflow by its string ID.
+    /// Continue executing an action by its ID.
     /// </summary>
-    public ActionStatus ExecuteAction(string workflowId)
+    private ActionStatus ExecuteAction(string actionId)
     {
-        if (!_activeActions.TryGetValue(workflowId, out var session))
+        if (!_activeActions.TryGetValue(actionId, out var session))
         {
-            throw new ArgumentException($"Action {workflowId} not found");
+            throw new ArgumentException($"Action {actionId} not found");
         }
 
         int steps = 0;
-        while (session.CurrentNode != null)
+        while (!session.IsComplete)
         {
             if (++steps > MAX_STEPS_SAFETY_LIMIT)
             {
-                throw new InvalidOperationException($"Action {workflowId} exceeded step limit.");
+                throw new InvalidOperationException($"Action {actionId} exceeded step limit ({MAX_STEPS_SAFETY_LIMIT}).");
             }
 
-            // Execute the current node
+            // Execute current node
             ActionStepResult result;
             try 
             {
-                result = session.CurrentNode.Execute(session.Context);
+                result = session.CurrentNode!.Execute(session.Action.Context, session.GameStateView);
             }
             catch (Exception ex)
             {
-                session.Context.Status = ActionStatus.Failed;
-                session.Context.ErrorMessage = ex.Message;
-                _activeActions.Remove(workflowId);
+                session.Action.Context.UpdateStatus(ActionStatus.Failed);
+                session.Action.Context.UpdateError(ex.Message);
+                _activeActions.Remove(actionId);
+                _logger?.LogError(ex, "Action {ActionId} failed with exception", actionId);
                 return ActionStatus.Failed;
             }
 
@@ -87,86 +104,54 @@ public sealed class ActionOrchestrator : IActionOrchestrator
             {
                 case ActionStatus.Completed:
                     session.Advance();
-                    if (session.CurrentNode == null)
+                    if (session.IsComplete)
                     {
-                        // Action completed - commit overlay to get new state
-                        var newState = session.Context.Overlay.Commit();
-                        session.Context.UpdateState(newState);
-                        
-                        session.Context.Status = ActionStatus.Completed;
-                        _activeActions.Remove(workflowId);
+                        session.Action.Context.UpdateStatus(ActionStatus.Completed);
+                        _activeActions.Remove(actionId);
                         return ActionStatus.Completed;
                     }
                     break;
 
                 case ActionStatus.Suspended:
-                    // Don't commit - overlay will be reused when workflow resumes
-                    session.Context.Status = ActionStatus.Suspended;
+                    session.Action.Context.UpdateStatus(ActionStatus.Suspended);
                     return ActionStatus.Suspended;
 
                 case ActionStatus.Failed:
-                   // Don't commit - discard overlay changes
-                   session.Context.Status = ActionStatus.Failed;
-                   // Assuming result exposes message somehow. Usually step results are specific types.
-                   // Or inspect Result property if generic.
-                   // If ActionStepResult has "Reason" or check fail factory.
-                   // For now, assume generic Fail() puts it somewhere.
-                   // If result type is not visible here, we can't get msg easily.
-                   // Let's assume standard property:
-                   // session.Context.ErrorMessage = result.ErrorMessage; 
-                   // If compile fails, I will fix.
-                   // Wait, checking StepResult definition first is better? 
-                   // I saw ActionStepResult usage: ActionStepResult.Fail("reason").
-                   // So it holds it.
-                   // Checking properties via reflection/assumption:
-                   if (result is ActionStepResult r) session.Context.ErrorMessage = "Action step failed."; // Placeholder if cant find prop
-                   // Better:
-                   // session.Context.ErrorMessage = "Action Step Failed";
-                   _activeActions.Remove(workflowId);
-                   return ActionStatus.Failed;
+                    session.Action.Context.UpdateStatus(ActionStatus.Failed);
+                    session.Action.Context.UpdateError(result.ErrorMessage ?? "Action step failed.");
+                    _activeActions.Remove(actionId);
+                    return ActionStatus.Failed;
             }
         }
 
-        // All nodes executed - commit and complete
-        var finalState = session.Context.Overlay.Commit();
-        session.Context.UpdateState(finalState);
-        
-        session.Context.Status = ActionStatus.Completed;
-        _activeActions.Remove(workflowId);
+        // All nodes executed
+        session.Action.Context.UpdateStatus(ActionStatus.Completed);
         return ActionStatus.Completed;
     }
 
     /// <summary>
-    /// Execute workflow by GUID (for backward compatibility).
+    /// Submit input to a suspended action by string ID.
     /// </summary>
-    public ActionStatus ExecuteAction(Guid workflowId)
+    public void SubmitInput(string actionId, IActionInput input)
     {
-        return ExecuteAction(workflowId.ToString());
-    }
-
-    /// <summary>
-    /// Submit input to workflow by string ID.
-    /// </summary>
-    public void SubmitInput(string workflowId, IActionInput input)
-    {
-        if (!_activeActions.TryGetValue(workflowId, out var session))
+        if (!_activeActions.TryGetValue(actionId, out var session))
         {
-             throw new ArgumentException($"Action {workflowId} not found or not active.");
+            throw new ArgumentException($"Action {actionId} not found or not active.");
         }
         
-        // 1. Inject input into context
-        session.Context.EnqueueInput(input);
+        // Inject input into context
+        session.Action.Context.EnqueueInput(input);
         
-        // 2. Resume execution (re-run the current node loop)
-        session.Context.Status = ActionStatus.Running;
-        ExecuteAction(workflowId);
+        // Resume execution
+        session.Action.Context.UpdateStatus(ActionStatus.Running);
+        ExecuteAction(actionId);
     }
 
     /// <summary>
-    /// Submit input to workflow by GUID (for backward compatibility).
+    /// Submit input by GUID.
     /// </summary>
-    public void SubmitInput(Guid workflowId, IActionInput input)
+    public void SubmitInput(Guid actionId, IActionInput input)
     {
-        SubmitInput(workflowId.ToString(), input);
+        SubmitInput(actionId.ToString(), input);
     }
 }

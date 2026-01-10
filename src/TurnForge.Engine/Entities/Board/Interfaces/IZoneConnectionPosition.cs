@@ -3,11 +3,12 @@ using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Board.Interfaces;
 
-public interface IZoneConnectionPoint
+public interface IZoneConnectionPosition
 {
-    ZoneId From { get; }
-    ZoneId To { get; }
+    
     bool InConnectionPoint(IBoardPositionId position);
-    IEnumerable<IBoardPositionId> GetConnectedPositionsId(IBoardPositionId position);
-    public static IZoneConnectionPoint Empty => new EmptyZoneConnectionPoint();
+    IEnumerable<IBoardPositionId> GetZoneToConnectedPositionsByPositionId(IBoardPositionId position);
+    IEnumerable<IBoardPositionId> GetZoneFromConnectionPoint();
+    public static IZoneConnectionPosition Empty => new EmptyZoneConnectionPosition();
+    public int NumberOfConnections { get; }
 }

@@ -1,35 +1,29 @@
-using TurnForge.Engine.Components.Interfaces;
-using TurnForge.Engine.Entities.Traits.Standard;
-using TurnForge.Engine.Traits.Standard;
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
+using TurnForge.Engine.Entities.TraitsComponents.Traits;
 
-namespace TurnForge.Engine.Components;
+namespace TurnForge.Engine.Entities.TraitsComponents.Components;
 
-public sealed class HealthComponent: IGameEntityComponent
+public sealed class HealthComponent : IGameEntityComponent
 {
     public int CurrentHealth { get; set; }
-    public int MaxHealth { get; set; }
+    public VitalityTrait Trait { get; set; }
 
     public bool IsAlive => CurrentHealth > 0;
-    
-    // Default constructor for AutoMapper/Factory
+    public bool IsInitialized { get; init; }
+
+    // empty constructor needed for automapper
     public HealthComponent()
     {
-        MaxHealth = 1;
-        CurrentHealth = 1;
+        VitalityTrait vitalityTrait = new VitalityTrait();
+        IsInitialized = false;
     }
+    public static HealthComponent Empty = new HealthComponent();
 
     public HealthComponent(VitalityTrait trait)
-{
-    MaxHealth = trait.BaseMaxHp;
-    CurrentHealth = trait.BaseMaxHp;
-    // Si tinguéssim propietat IsImmortal al component, l'assignaríem aquí també.
-}
-
-    public HealthComponent(int maxHealth)
     {
-        if (maxHealth <= 0) throw new ArgumentOutOfRangeException(nameof(maxHealth));
-        MaxHealth = maxHealth;
-        CurrentHealth = maxHealth;
+        Trait = trait;
+        CurrentHealth = trait.BaseMaxHp;
+        IsInitialized = true;
     }
 
     public void TakeDamage(int amount)
@@ -41,6 +35,7 @@ public sealed class HealthComponent: IGameEntityComponent
     public void Heal(int amount)
     {
         if (amount <= 0) return;
-        CurrentHealth = Math.Min(MaxHealth, CurrentHealth + amount);
+        CurrentHealth = Math.Min(Trait!.BaseMaxHp, CurrentHealth + amount);
     }
+
 }

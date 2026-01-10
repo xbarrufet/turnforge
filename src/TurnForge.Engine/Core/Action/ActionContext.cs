@@ -1,8 +1,5 @@
 using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.ValueObjects;
-using TurnForge.Engine.Definitions;
-using TurnForge.Engine.Entities;
-using TurnForge.Engine.Entities.Decisions;
 
 namespace TurnForge.Engine.Core.Action;
 
@@ -12,125 +9,76 @@ namespace TurnForge.Engine.Core.Action;
 
 /// <summary>
 /// ActionContext is a temporary, mutable container that exists
-/// only during the execution of a workflow.
+/// only during the execution of an action.
 ///
 /// It is NOT the game state.
 /// It is NOT persisted.
-/// It is NOT shared between workflows.
+/// It is NOT shared between actions.
 ///
 /// Its purpose is to:
 /// - hold execution-scoped data
 /// - carry information between nodes
 /// - support suspension and resumption
-/// - maintain a WORKING COPY of the state that decisions apply to immediately
+/// 
+/// Note: State changes are recorded via GameState.RecordOverlayOperation(),
+/// not via ActionContext. The context only holds workflow-scoped data.
 /// </summary>
-public abstract class ActionContext
+public class ActionContext
 {
-    // --------------------------------------------------------------------
-    // Execution metadata
-    // --------------------------------------------------------------------
+    private readonly Queue<IActionInput> _inputQueue = new();
+    private readonly List<IActionInput> _history = new();
+    private readonly Dictionary<string, object> _data = new();
 
-    public ActionExecutionId ExecutionId { get; }
-
-    public ActionStatus Status { get; internal set; }
-
-    /// <summary>
-    /// The ID of the node currently being executed (or where suspension occurred).
-    /// </summary>
-    public NodeId? CurrentNodeId { get; internal set; }
-    
-    /// <summary>
-    /// Reason for failure if Status is Failed.
-    /// </summary>
-    public string? ErrorMessage { get; internal set; }
-
-    protected ActionContext()
+    public ActionContext()
     {
-        ExecutionId = ActionExecutionId.New();
+        ExecutionId = ActionExecutionId.Empty;
         Status = ActionStatus.NotStarted;
     }
 
-    // --------------------------------------------------------------------
-    // Arbitrary workflow-scoped data
-    // --------------------------------------------------------------------
-
-    private readonly Dictionary<string, object> _data = new();
-
-    public bool Has(string key)
-        => _data.ContainsKey(key);
-
-    public T Get<T>(string key)
-    {
-        if (!_data.TryGetValue(key, out var value))
-            throw new KeyNotFoundException($"ActionContext key '{key}' not found.");
-
-        return (T)value;
-    }
-
-    public void Set<T>(string key, T value)
-    {
-        _data[key] = value!;
-    }
-
-    public bool TryGet<T>(string key, out T value)
-    {
-        if (_data.TryGetValue(key, out var obj) && obj is T typed)
-        {
-            value = typed;
-            return true;
-        }
-
-        value = default!;
-        return false;
-    }
-
-    public void Remove(string key)
-        => _data.Remove(key);
-    
-    // --------------------------------------------------------------------
-    // Typed workflow data (IActionData)
-    // --------------------------------------------------------------------
-    
-    private readonly Dictionary<Type, Interfaces.IActionData> _typedData = new();
-    
     /// <summary>
-    /// Set typed workflow data. Only one instance per type is stored.
+    /// Unique identifier for this action execution instance.
+    /// Assigned by ActionOrchestrator when starting the action.
     /// </summary>
-    public void SetTypedData<T>(T data) where T : Interfaces.IActionData
+    public ActionExecutionId ExecutionId { get; private set; }
+
+    internal void SetExecutionId(ActionExecutionId executionId)
     {
-        _typedData[typeof(T)] = data;
+        ExecutionId = executionId;
     }
-    
+
     /// <summary>
-    /// Get typed workflow data. Throws if not found.
+    /// Current execution status.
     /// </summary>
-    public T GetTypedData<T>() where T : Interfaces.IActionData
+    public ActionStatus Status { get; protected set; }
+
+    /// <summary>
+    /// Reason for failure if Status is Failed.
+    /// </summary>
+    public string? ErrorMessage { get; protected set; }
+
+    // --------------------------------------------------------------------
+    // Status Management (internal, called by orchestrator)
+    // --------------------------------------------------------------------
+
+    /// <summary>
+    /// Updates the action status. Called by the orchestrator during execution.
+    /// </summary>
+    internal void UpdateStatus(ActionStatus status)
     {
-        if (!_typedData.TryGetValue(typeof(T), out var data))
-            throw new KeyNotFoundException($"ActionContext typed data '{typeof(T).Name}' not found.");
-        return (T)data;
+        Status = status;
     }
-    
+
     /// <summary>
-    /// Try to get typed workflow data.
+    /// Updates the error message. Called by the orchestrator on failure.
     /// </summary>
-    public bool TryGetTypedData<T>(out T data) where T : Interfaces.IActionData
+    internal void UpdateError(string message)
     {
-        if (_typedData.TryGetValue(typeof(T), out var obj))
-        {
-            data = (T)obj;
-            return true;
-        }
-        data = default!;
-        return false;
+        ErrorMessage = message;
     }
 
     // --------------------------------------------------------------------
     // Input Management
     // --------------------------------------------------------------------
-    
-    private readonly Queue<IActionInput> _inputQueue = new();
-    private readonly List<IActionInput> _history = new();
 
     public void EnqueueInput(IActionInput input)
     {
@@ -145,13 +93,6 @@ public abstract class ActionContext
 
     public T? ConsumeInput<T>() where T : IActionInput
     {
-        // We look for the first matching input in the queue
-        // Note: This is a simplified queue. In complex interactions, we might need random access removal.
-        // For now, let's assume strict sequential processing or peek.
-        
-        // To properly consume from a Queue in order is tricky if we skip types.
-        // Let's iterate and extract.
-        
         int count = _inputQueue.Count;
         for (int i = 0; i < count; i++)
         {
@@ -160,158 +101,73 @@ public abstract class ActionContext
             {
                 return typedItem;
             }
-            _inputQueue.Enqueue(item); // Rotate back if not matching
+            _inputQueue.Enqueue(item);
         }
         return default;
     }
 
     public IEnumerable<IActionInput> GetAllInputs() => _history;
-    
-    public abstract object? GetResult();
 
     // --------------------------------------------------------------------
-    // Diagnostics / tracing support
+    // Typed Data Storage (key-value store for node communication)
     // --------------------------------------------------------------------
 
-    private readonly List<NodeTransition> _transitions = new();
-
-    public IReadOnlyList<NodeTransition> Transitions => _transitions;
-
-    internal void RecordTransition(NodeId from, NodeId to)
-        => _transitions.Add(new NodeTransition(from, to));
-
-    // --------------------------------------------------------------------
-    // Navigation Stack (Nested Actions)
-    // --------------------------------------------------------------------
-
-    private readonly Stack<ActionFrame> _navigationStack = new();
-
-    public IReadOnlyCollection<ActionFrame> NavigationStack => _navigationStack;
-
-    internal void PushFrame(ActionId workflowId, NodeId startNodeId, ReactionId? causingReactionId = null)
+    /// <summary>
+    /// Store a value by string key.
+    /// </summary>
+    public void Set<T>(string key, T value) where T : notnull
     {
-        _navigationStack.Push(new ActionFrame(workflowId, startNodeId, causingReactionId));
-        CurrentNodeId = startNodeId;
+        _data[key] = value;
     }
 
-    public ActionFrame PeekFrame() => _navigationStack.Peek();
-
-    internal void PopFrame()
+    /// <summary>
+    /// Retrieve a value by key.
+    /// </summary>
+    public T Get<T>(string key)
     {
-        if (_navigationStack.Count > 0)
+        if (_data.TryGetValue(key, out var value) && value is T typed)
+            return typed;
+        throw new KeyNotFoundException($"Key '{key}' not found or wrong type");
+    }
+
+    /// <summary>
+    /// Try to retrieve a value by key.
+    /// </summary>
+    public bool TryGet<T>(string key, out T value)
+    {
+        if (_data.TryGetValue(key, out var obj) && obj is T typed)
         {
-            _navigationStack.Pop();
-            if (_navigationStack.Count > 0)
-            {
-                CurrentNodeId = _navigationStack.Peek().CurrentNodeId;
-            }
-            else
-            {
-                CurrentNodeId = null;
-            }
+            value = typed;
+            return true;
         }
-    }
-
-    internal void UpdateCurrentNode(NodeId nodeId)
-    {
-        CurrentNodeId = nodeId;
-        if (_navigationStack.Count > 0)
-        {
-            var currentFrame = _navigationStack.Pop();
-            _navigationStack.Push(currentFrame with { CurrentNodeId = nodeId });
-        }
-    }
-
-    // --------------------------------------------------------------------
-    // Working State (Immediate Apply)
-    // --------------------------------------------------------------------
-    
-    private GameState? _workingState;
-    private readonly List<IDecision> _appliedDecisions = new();
-    private GameStateOverlay? _overlay;
-
-    /// <summary>
-    /// The overlay for recording state mutations during workflow execution.
-    /// All operations should be recorded to this overlay.
-    /// </summary>
-    public GameStateOverlay Overlay => _overlay ?? throw new InvalidOperationException("Overlay not initialized.");
-
-    /// <summary>
-    /// The current working state. Decisions are applied immediately to this.
-    /// </summary>
-    public GameState State => _workingState ?? throw new InvalidOperationException("Working state not initialized.");
-
-    /// <summary>
-    /// History of all decisions applied during this workflow execution.
-    /// Used for logging, debugging, and UI animation sequencing.
-    /// </summary>
-    public IReadOnlyList<IDecision> Decisions => _appliedDecisions.AsReadOnly();
-
-    /// <summary>
-    /// Initialize the working state from a base state copy.
-    /// </summary>
-    protected internal void InitializeState(GameState baseState)
-    {
-        _workingState = baseState;
-        _overlay = new GameStateOverlay(baseState);
+        value = default!;
+        return false;
     }
 
     /// <summary>
-    /// Record and immediately apply a decision to the working state.
+    /// Check if a key exists.
     /// </summary>
-    public void RecordDecision(IDecision decision)
+    public bool Has(string key)
     {
-        ArgumentNullException.ThrowIfNull(decision);
-        
-        // Log the decision for later application by Orchestrator
-        _appliedDecisions.Add(decision);
-        
-        // NOTE: Decisions are now data-only objects.
-        // They will be applied by the Orchestrator when the workflow completes.
-        // This ensures transactional integrity and allows for undo/replay.
+        return _data.ContainsKey(key);
     }
 
     /// <summary>
-    /// Update the working state (called by orchestrator after overlay commit).
+    /// Remove a value by key.
     /// </summary>
-    internal void UpdateState(GameState newState)
+    public void Remove(string key)
     {
-        _workingState = newState;
-    }
-
-    /// <summary>
-    /// Get the current state (same as State property).
-    /// Kept for backward compatibility during migration.
-    /// </summary>
-    public GameState GetProjectedState() => State;
-
-    // --------------------------------------------------------------------
-    // Events
-    // --------------------------------------------------------------------
-    
-    private readonly Queue<IActionEvent> _pendingEvents = new();
-
-    public bool HasPendingEvents => _pendingEvents.Count > 0;
-    public IEnumerable<IActionEvent> PendingEvents => _pendingEvents;
-    
-    public void AddEvent(IActionEvent domainEvent)
-    {
-        ArgumentNullException.ThrowIfNull(domainEvent);
-        _pendingEvents.Enqueue(domainEvent);
-    }
-
-    public IActionEvent DequeueEvent()
-    {
-        return _pendingEvents.Dequeue();
-    }
-    
-    internal void ClearEvents()
-    {
-        _pendingEvents.Clear();
+        _data.Remove(key);
     }
 }
 
 /// <summary>
-/// Represents a snapshot of execution pointer within a specific workflow.
+/// Simple context for system actions (FSM workflows).
+/// These complete immediately without suspension.
 /// </summary>
-public readonly record struct ActionFrame(ActionId ActionId, NodeId CurrentNodeId, ReactionId? CausingReactionId = null);
+public sealed class SystemActionContext : ActionContext
+{
+    public SystemActionContext()
+    {
+    }
+}

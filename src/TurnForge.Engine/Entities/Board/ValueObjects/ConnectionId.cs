@@ -1,17 +1,21 @@
 namespace TurnForge.Engine.ValueObjects;
 
-public readonly record struct ConnectionId(Guid Value)
+public readonly record struct ConnectionId(Guid Id) : IBoardPositionId
 {
     public static ConnectionId New()
         => new(Guid.NewGuid());
 
     public override string ToString()
-        => Value.ToString();
+        => Id.ToString();
 
-    internal bool IsEmpty()
-    {
-        return Value == Guid.Empty;
-    }
+    public bool IsEmpty()
+        => Id == Guid.Empty;
 
     public static ConnectionId Empty => new(Guid.Empty);
+
+    // IBoardPositionId implementation
+    string IBoardPositionId.Value => Id.ToString();
+
+    bool IEquatable<IBoardPositionId>.Equals(IBoardPositionId? other)
+        => other is ConnectionId connectionId && Equals(connectionId);
 }

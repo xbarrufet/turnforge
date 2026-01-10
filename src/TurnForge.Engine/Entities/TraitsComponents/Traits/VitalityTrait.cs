@@ -2,11 +2,24 @@
 
 // Namespace nou
 
-using TurnForge.Engine.Entities.Traits.Interfaces;
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
 
-namespace TurnForge.Engine.Entities.Traits.Standard;
-public class VitalityTrait(int maxHp = 1, bool immortal = false) : ITrait
+namespace TurnForge.Engine.Entities.TraitsComponents.Traits;
+public class VitalityTrait : BaseTrait
 {
-    public readonly int BaseMaxHp = maxHp;
-    public bool IsImmortal { get; set; } = immortal;
+    public int BaseMaxHp { get; init; }
+    public bool IsImmortal { get; init; }
+
+    public VitalityTrait()
+    {
+        BaseMaxHp = 1;
+        IsImmortal = false;
+    }
+    
+    public VitalityTrait(int baseMaxHp, bool isImmortal = false)
+    {
+        BaseMaxHp = baseMaxHp;
+        IsImmortal = isImmortal;
+        IsInitialized = true;
+    }
 }

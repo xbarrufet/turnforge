@@ -1,90 +1,94 @@
-using TurnForge.Engine.Traits.Interfaces;
-using TurnForge.Engine.Traits.Standard;
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Definitions;
 
 /// <summary>
 /// Base definition for all game entities.
-/// Uses Dictionary with List to support multiple traits of the same type.
-/// Provides O(1) trait lookup by type.
+/// Definitions contain only Traits (configuration). Components (runtime state) are created by the Factory.
 /// </summary>
-public class BaseGameEntityDefinition
+public class BaseGameEntityDefinition : IGameEntityDefinition
 {
-    private readonly Dictionary<Type, List<IDataTrait>> _traitsByType = new();
-    
+    private readonly EntityItemCollection<ITrait> _traits = new();
+
     public string DefinitionId { get; set; } = string.Empty;
-    
+    public string Name { get; set; } = string.Empty;
+    public Category Category { get; set; } = Category.Empty;
+
+    // ─────────────────────────────────────────────────────────────
+    // Constructors
+    // ─────────────────────────────────────────────────────────────
+
     public BaseGameEntityDefinition() { }
-    
+
     public BaseGameEntityDefinition(string definitionId)
     {
         DefinitionId = definitionId;
     }
-    
-    public BaseGameEntityDefinition(string definitionId, string category)
+
+    public BaseGameEntityDefinition(string definitionId, Category category)
     {
         DefinitionId = definitionId;
-        AddTrait(new IdentityTrait(category));
+        Category = category;
     }
-    
+
     // ─────────────────────────────────────────────────────────────
-    // Trait Access (O(1) by Type)
+    // Trait Management
     // ─────────────────────────────────────────────────────────────
-    
+
+    public void AddTrait<TTrait>(TTrait trait, bool isRequired = false) where TTrait : class
+    {
+        if (trait is not ITrait iTrait)
+            throw new ArgumentException($"Trait must implement ITrait interface", nameof(trait));
+
+        var type = typeof(TTrait);
+        _traits.AddWithStackValidation(type, iTrait, iTrait.StackAllowed, isRequired);
+    }
+
+    public IEnumerable<TTrait> GetTraits<TTrait>() where TTrait : ITrait
+        => _traits.GetAll<TTrait>();
+
+    public IEnumerable<TTrait> GetRequiredTraits<TTrait>() where TTrait : ITrait
+        => _traits.GetAllRequired<TTrait>();
+
+    public TTrait? GetTrait<TTrait>() where TTrait : ITrait
+        => _traits.GetFirst<TTrait>();
+
+    public bool HasTrait<TTrait>() where TTrait : ITrait
+        => _traits.Has<TTrait>();
+
+    public void RemoveTrait<TTrait>() where TTrait : ITrait
+        => _traits.Remove(typeof(TTrait));
+
     /// <summary>
     /// All traits across all types.
     /// </summary>
-    public IEnumerable<IDataTrait> Traits => _traitsByType.Values.SelectMany(x => x);
-    
-    /// <summary>
-    /// Gets ALL traits of the specified type.
-    /// </summary>
-    public IEnumerable<T> GetTraits<T>() where T : IDataTrait 
-        => _traitsByType.TryGetValue(typeof(T), out var list) 
-            ? list.Cast<T>() 
-            : Enumerable.Empty<T>();
-    
-    /// <summary>
-    /// Gets the FIRST trait of the specified type, or null.
-    /// </summary>
-    public T? GetTrait<T>() where T : IDataTrait 
-        => GetTraits<T>().FirstOrDefault();
-    
-    /// <summary>
-    /// Checks if this definition has at least one trait of the specified type.
-    /// </summary>
-    public bool HasTrait<T>() where T : IDataTrait 
-        => _traitsByType.ContainsKey(typeof(T));
-    
+    public IEnumerable<ITrait> Traits => _traits.GetAllItems();
+
     /// <summary>
     /// Gets the count of traits of the specified type.
     /// </summary>
-    public int TraitCount<T>() where T : IDataTrait
-        => _traitsByType.TryGetValue(typeof(T), out var list) ? list.Count : 0;
-    
+    public int TraitCount<T>() where T : ITrait
+        => _traits.Count<T>();
+
     // ─────────────────────────────────────────────────────────────
-    // Trait Modification
+    // Legacy Fluent API (for backward compatibility)
     // ─────────────────────────────────────────────────────────────
-    
+
     /// <summary>
-    /// Adds a trait. Supports multiple traits of the same type.
+    /// Adds a trait. Supports multiple traits of the same type if StackAllowed.
     /// </summary>
-    public BaseGameEntityDefinition AddTrait(IDataTrait trait)
+    public BaseGameEntityDefinition AddTrait(ITrait trait)
     {
         var type = trait.GetType();
-        if (!_traitsByType.TryGetValue(type, out var list))
-        {
-            list = new List<IDataTrait>();
-            _traitsByType[type] = list;
-        }
-        list.Add(trait);
+        _traits.AddWithStackValidation(type, trait, trait.StackAllowed, isRequired: false);
         return this; // Fluent
     }
-    
+
     /// <summary>
     /// Adds multiple traits.
     /// </summary>
-    public BaseGameEntityDefinition AddTraits(params IDataTrait[] traits)
+    public BaseGameEntityDefinition AddTraits(params ITrait[] traits)
     {
         foreach (var trait in traits)
         {
@@ -92,22 +96,23 @@ public class BaseGameEntityDefinition
         }
         return this;
     }
-    
+
     /// <summary>
     /// Replaces ALL traits of the given type with the new trait.
     /// </summary>
-    public BaseGameEntityDefinition ReplaceTrait<T>(T trait) where T : IDataTrait
+    public BaseGameEntityDefinition ReplaceTrait<T>(T trait) where T : ITrait
     {
-        _traitsByType[typeof(T)] = new List<IDataTrait> { trait };
+        _traits.Remove(typeof(T));
+        _traits.Add(typeof(T), trait, isRequired: false);
         return this;
     }
-    
+
     /// <summary>
     /// Removes all traits of the specified type.
     /// </summary>
-    public BaseGameEntityDefinition RemoveTraits<T>() where T : IDataTrait
+    public BaseGameEntityDefinition RemoveTraits<T>() where T : ITrait
     {
-        _traitsByType.Remove(typeof(T));
+        _traits.Remove(typeof(T));
         return this;
     }
 }

@@ -1,6 +1,4 @@
-using TurnForge.Engine.Components.Interfaces;
-
-namespace TurnForge.Engine.Entities.Traits.Interfaces;
+namespace TurnForge.Engine.Entities.TraitsComponents.Interfaces;
 
 public interface IComponentTrait<out TGameEntityComponent> : ITrait 
     where TGameEntityComponent : IGameEntityComponent

@@ -1,6 +1,9 @@
+using TurnForge.Engine.Entities;
+
 namespace TurnForge.Engine.Core.Action.Interfaces;
 
-public class IActionContextFactory
+public interface IActionContextFactory
 {
+    TActionContext BuildActioContrxt<TActionContext>(GameState baseState) where TActionContext : ActionContext;
     
 }

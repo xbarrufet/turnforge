@@ -1,4 +1,6 @@
-using TurnForge.Engine.Traits.Standard;
+
+using TurnForge.Engine.Entities.Actors;
+using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Definitions.Actors;
 
@@ -8,8 +10,13 @@ namespace TurnForge.Engine.Entities.Definitions.Actors;
 /// </summary>
 public abstract class PropDefinition : ActorDefinition
 {
-    protected PropDefinition(string definitionId, string category) : base(definitionId, category)
+    protected PropDefinition(string definitionId, Category category) : base(definitionId, category)
     {
-        AddTrait(new ActionableTrait());
+       
+    }
+    
+    protected PropDefinition(string definitionId) : base(definitionId, Prop.PropDefaultCategory)
+    {
+       
     }
 }

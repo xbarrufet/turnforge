@@ -1,10 +1,15 @@
-using TurnForge.Engine.Components.Interfaces;
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
 
-namespace TurnForge.Engine.Entities.Descriptors.Interfaces;
+namespace TurnForge.Engine.Entities.Descriptors;
 
 public interface IGameEntityBuildDescriptor
 {
-    public    string DefinitionId { get; }
+    string DefinitionId { get; }
+    string Name { get; }
     List<IGameEntityComponent> ExtraComponents { get; }
-    List<TurnForge.Engine.Traits.Interfaces.IDataTrait> RequestedTraits { get; }
+    void AddExtraComponent(IGameEntityComponent component);
+    List<ITrait> DefinitionTraitValues { get; }
+    bool TryGetTraitValue(Type traitType, out ITrait? trait);
+    bool TryGetExtraComponent(Type componentType, out IGameEntityComponent? component);
+    void AddDefinitionTraitValue(ITrait trait);
 }

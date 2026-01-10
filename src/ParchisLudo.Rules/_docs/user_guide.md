@@ -98,15 +98,180 @@ var spatialModel = new ConnectedGraphSpatialModel(graph);
 return spatialModel;
 ```
 
-### 3. Creates Spawn Strategy
-*InitGame* and *StartGame* are the system commands we have to use to create and start the game
-- **InitGame** is used to create the game and initialize the board
+### 3. Create StartGame Parameters
+
+`StartGame` is the core action to initialize a game session with players, board, zones, connections, and mission data.
+
+#### StartGameParams Structure
+
 ```csharp
-public sealed record InitGameCommand(
-    BoardDescriptor Board,
-    IReadOnlyList<SpawnRequest> Players,
-    IReadOnlyList<SpawnRequest>? Props = null
-) : ICommand
+public record StartGameParams(
+    List<AddPlayerInput> PlayerInputs,      // Player configuration
+    List<PropDeploymentInput> PropInputs,   // Props to deploy
+    BoardDataInput BoardData,                // Board topology + zones + connections
+    MissionDataInput MissionData             // Mission configuration
+) : IActionParameters;
 ```
-- **StartGame** is used to start the game and initialize the players
+
+#### BoardDataInput Components
+
+```csharp
+public record BoardDataInput(
+    string MapId,                                          // Map identifier
+    IBoardDefinition BoardDefinition,                      // Board topology (graph)
+    IReadOnlyList<BoardZoneDefinition> Zones,             // Zones with traits
+    IReadOnlyList<BoardConnectionDefinition> Connections  // Connection props
+) : IActionInput;
+```
+
+#### Creating Board Data for Parchis
+
+**1. Board Topology (Graph)**:
+```csharp
+var boardDef = ParchisBoardFactory.CreateDescriptor();
+// Creates:
+// - Main circuit connections (bidirectional)
+// - Finish lane connections
+// - Spawn to entry connections
+```
+
+**2. Zones with Traits**:
+```csharp
+var zones = ParchisZoneFactory.CreateZones();
+// Creates:
+// - 4 Spawn zones (ColorTrait + SpawnZoneTrait)
+// - 4 Entry cells (SafeZoneTrait)
+// - 8 Safety zones (SafeZoneTrait)
+// - 1 Center zone (CenterTrait)
+```
+
+**3. Connection Props**:
+```csharp
+var connections = ParchisConnectionFactory.CreateConnections();
+// Creates:
+// - 4 Finish entry connections with color restrictions
+```
+
+#### Complete Parchis StartGame Example
+
+```csharp
+// 1. Create player inputs
+var playerInputs = new List<AddPlayerInput>();
+foreach (var (playerId, color) in playerColors)
+{
+    var agentInputs = new List<AgentDeploymentInput>();
+    for (int i = 0; i < 4; i++)
+    {
+        var desc = new AgentDescriptor("pawn", color, color);
+        agentInputs.Add(new AgentDeploymentInput(desc, null));
+    }
+    playerInputs.Add(new AddPlayerInput(
+        playerId, 
+        PlayerControllerType.AI, 
+        color, 
+        color, 
+        IActionPool.FixAmount, 
+        1, 
+        agentInputs
+    ));
+}
+
+// 2. Create board data
+var boardDef = ParchisBoardFactory.CreateDescriptor();
+var zones = ParchisZoneFactory.CreateZones();
+var connections = ParchisConnectionFactory.CreateConnections();
+
+var boardInput = new BoardDataInput(
+    "parchis_standard",
+    boardDef,
+    zones,
+    connections
+);
+
+// 3. Create mission data
+var missionData = new MissionDataInput("parchis_standard");
+
+// 4. Execute StartGame
+var startParams = new StartGameParams(
+    playerInputs,
+    new List<PropDeploymentInput>(),  // No props in Parchis
+    boardInput,
+    missionData
+);
+
+var result = GameEngineExtensions.ExecuteAction(
+    engine, 
+    CoreActions.StartGameActionId, 
+    startParams
+);
+```
+
+#### Zone and Connection Factory Patterns
+
+**Zone Factory Example**:
+```csharp
+public static class ParchisZoneFactory
+{
+    public static List<BoardZoneDefinition> CreateZones()
+    {
+        var zones = new List<BoardZoneDefinition>();
         
+        // Spawn zones with traits
+        zones.Add(CreateSpawnZone(PlayerColor.Red, "spawn_red"));
+        
+        // Safe zones
+        zones.Add(CreateSafeZone("red_entry", "track_39"));
+        
+        // Center zone
+        zones.Add(CreateCenterZone());
+        
+        return zones;
+    }
+    
+    private static BoardZoneDefinition CreateSpawnZone(PlayerColor color, string tileId)
+    {
+        var descriptor = new ZoneDescriptor(
+            $"zone_spawn_{color.ToString().ToLowerInvariant()}",
+            extraComponents: null,
+            requestedTraits: new IDataTrait[]
+            {
+                new ColorTrait(color),
+                new SpawnZoneTrait()
+            }
+        );
+        return new BoardZoneDefinition(descriptor, new TilePosition(new TileId(tileId)));
+    }
+}
+```
+
+**Connection Factory Example**:
+```csharp
+public static class ParchisConnectionFactory
+{
+    public static List<BoardConnectionDefinition> CreateConnections()
+    {
+        var connections = new List<BoardConnectionDefinition>();
+        
+        // Finish entry connections with color restrictions
+        connections.Add(CreateFinishEntryConnection("red", "track_50", "red_finish_1"));
+        
+        return connections;
+    }
+    
+    private static BoardConnectionDefinition CreateFinishEntryConnection(
+        string color, 
+        string fromTile, 
+        string toTile)
+    {
+        var descriptor = new ConnectionDescriptor(
+            new TileId(fromTile),
+            new TileId(toTile),
+            $"finish_entry_{color}",  // Category
+            color  // RestrictedToTeam
+        );
+        
+        var position = new TilePosition(new TileId(fromTile));
+        return new BoardConnectionDefinition(descriptor, position);
+    }
+}
+```

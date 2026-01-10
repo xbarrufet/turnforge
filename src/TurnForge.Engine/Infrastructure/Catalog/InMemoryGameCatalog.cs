@@ -1,60 +1,59 @@
-using BarelyAlive.Rules.Registration;
 using TurnForge.Engine.Entities.Definitions;
+using TurnForge.Engine.Entities.TraitsComponents.Traits;
 using TurnForge.Engine.Infrastructure.Catalog.Interfaces;
+using TurnForge.Engine.Infrastructure.Registration;
 using TurnForge.Engine.Registration;
+using TurnForge.Engine.ValueObjects;
 
-    namespace TurnForge.Engine.Infrastructure.Catalog;
+namespace TurnForge.Engine.Infrastructure.Catalog;
 
-    public sealed class InMemoryGameCatalog : IGameCatalog
+public sealed class InMemoryGameCatalog : IGameCatalog
+{
+    public IDefinitionRegistry<string, BaseGameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, BaseGameEntityDefinition>();
+
+
+
+
+    public override T GetDefinition<T>(string definitionId)
     {
-        public IDefinitionRegistry<string, BaseGameEntityDefinition> Entities { get; } = new InMemoryDefinitionRegistry<string, BaseGameEntityDefinition>();
-
-        
-
-        public T GetDefinition<T>(string definitionId) where T : BaseGameEntityDefinition
-        {
-            return (Entities.Get(definitionId) as T)!;
-        }
-
-        public bool TryGetDefinition<T>(string definitionId, out T? definition) where T : BaseGameEntityDefinition
-        {
-            try
-            {
-                var entity = Entities.Get(definitionId);
-                if (entity is T typedEntity)
-                {
-                    definition = typedEntity;
-                    return true;
-                }
-                definition = null;
-                return false;
-            }
-            catch
-            {
-                definition = null;
-                return false;
-            }
-        }
-
-        public IEnumerable<T> GetAllDefinitions<T>() where T : BaseGameEntityDefinition
-        {
-            return Entities.GetAll().OfType<T>();
-        }
-
-        public void RegisterDefinition<T>( T definition) where T : BaseGameEntityDefinition
-        {
-            Entities.Register(definition.DefinitionId, definition);
-        }
-
-        public void RegisterDefinition(string definitionId, string category)
-        {
-            var def = new BaseGameEntityDefinition(definitionId, category);
-            def.AddTrait(new TurnForge.Engine.Traits.Standard.IdentityTrait(category));
-            Entities.Register(definitionId, def);
-        }
-
-        public InMemoryGameCatalog()
-        {
-        }
-
+        return (Entities.Get(definitionId) as T)!;
     }
+
+
+
+    public override bool TryGetDefinition<T>(string definitionId, out T definition)
+    {
+        try
+        {
+            var entity = Entities.Get(definitionId);
+            if (entity is T typedEntity)
+            {
+                definition = typedEntity;
+                return true;
+            }
+            definition = null!;
+            return false;
+        }
+        catch
+        {
+            definition = null!;
+            return false;
+        }
+    }
+
+    public override IEnumerable<T> GetAllDefinitions<T>()
+    {
+        return Entities.GetAll().OfType<T>();
+    }
+
+    public override void RegisterDefinition<T>(T definition)
+    {
+        Entities.Register(definition.DefinitionId, definition);
+    }
+
+    public InMemoryGameCatalog() : base()
+    {
+    }
+
+
+}

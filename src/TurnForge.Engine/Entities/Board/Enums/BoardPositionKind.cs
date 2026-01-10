@@ -5,18 +5,19 @@ public enum BoardPositionKind
     Tile,
     Vector,
     Connection,
-    Area
+    Area,
+    Limbo
 
 }
 
 public static class BoardPositionKindExtensions
 {
-    public static BoardPositionKind ToPositionKind(this BoardKind boardKind)
+    public static BoardPositionKind ToPositionKind(this TopologyKind topologyKind)
     {
-        return boardKind switch
+        return topologyKind switch
         {
-            BoardKind.Discrete => BoardPositionKind.Tile,
-            BoardKind.Continuous => BoardPositionKind.Vector,
+            TopologyKind.Discrete => BoardPositionKind.Tile,
+            TopologyKind.Continuous => BoardPositionKind.Vector,
             _ => throw new NotImplementedException()
         };
     }

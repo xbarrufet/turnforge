@@ -17,5 +17,5 @@ public sealed class ActionOperationEvent : IGameEvent
         Operation = operation;
     }
     
-    public override string ToString() => $"ActionEvent: {EventType} on {Operation.Target}";
+    public override string ToString() => $"ActionEvent: {EventType} on {Operation.EntityId}";
 }

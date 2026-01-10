@@ -1,3 +1,4 @@
+using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Entities;
 using TurnForge.Engine.ValueObjects;
 
@@ -11,8 +12,8 @@ public interface IFsmNode
     NodeId Id { get; }
     string Name { get; }
     
-    bool IsCommandAllowed(Type commandType);
-    IReadOnlyList<Type> GetAllowedCommands();
-    bool IsCompleted(GameState state);
-    BaseFsmNode? GetNextNode(GameState state);
+    bool IsActionAllowed(ActionId actionId);
+    IReadOnlyList<ActionId> GetAllowedActions();
+    bool IsCompleted(GameStateView state);
+    BaseFsmNode? GetNextNode(GameStateView state);
 }

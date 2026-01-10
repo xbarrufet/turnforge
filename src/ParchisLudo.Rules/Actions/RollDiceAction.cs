@@ -6,7 +6,7 @@ using TurnForge.Engine.Core.Action.Interfaces;
 using TurnForge.Engine.Core.Action;
 using TurnForge.Engine.ValueObjects;
 
-namespace Parchis.Rules.Actions;
+namespace ParchisLudo.Rules.Actions;
 
 // ...
 */

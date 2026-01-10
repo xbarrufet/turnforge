@@ -6,8 +6,8 @@ namespace TurnForge.Engine.Entities.TraitsComponents.Traits;
 /// Base class for Traits that are backed by a Runtime Component.
 /// T is the Component type that handles this trait's logic.
 /// </summary>
-public abstract class BaseComponentTrait<T> : ITrait 
+public abstract class BaseComponentTrait<T> : BaseTrait 
     where T : IGameEntityComponent
 {
-    
+    public Type SupportedComponentType => typeof(T);   
 }

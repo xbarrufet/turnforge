@@ -1,26 +1,48 @@
+using TurnForge.Engine.Entities.TraitsComponents.Interfaces;
 using TurnForge.Engine.ValueObjects;
 
 namespace TurnForge.Engine.Entities.Definitions;
 
-public interface IEntityDefinition
+public interface IGameEntityDefinition
 {
     public string DefinitionId { get; set; }
     public string Name { get; set; }
     public Category Category { get; set; }
-    
-    public void AddRequiredTrait<TTrait>(TTrait trait) where TTrait : class;
-    public void AddRequiredComponent<TComponent>(TComponent component) where TComponent : class;
-    
-    public IEnumerable<TComponent> GetRequiredComponents<TComponent>() where TComponent : class;
-    public IEnumerable<TTrait> GetRequiredTraits<TTrait>() where TTrait : class;
-    
-    public bool TryGetTrait<TTrait>(out TTrait trait) where TTrait : class;
-    public bool TryGetComponent<TComponent>(out TComponent component) where TComponent : class;
-    
-    public bool HasTrait<TTrait>() where TTrait : class;
-    public bool HasComponent<TComponent>() where TComponent : class;
-    
-    public void AddTrait<TTrait>(TTrait trait) where TTrait : class;
-    public void AddComponent<TComponent>(TComponent component) where TComponent : class;
-    
+
+    // ─────────────────────────────────────────────────────────────
+    // Trait Management
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Adds a trait to the definition.
+    /// If isRequired is true, the trait cannot be removed later.
+    /// If the trait's StackAllowed is false and a trait of this type exists, it will be replaced.
+    /// </summary>
+    void AddTrait<TTrait>(TTrait trait, bool isRequired = false) where TTrait : class;
+
+    /// <summary>
+    /// Gets all traits of the specified type (required and non-required).
+    /// </summary>
+    IEnumerable<TTrait> GetTraits<TTrait>() where TTrait : ITrait;
+
+    /// <summary>
+    /// Gets only traits of the specified type that are marked as required.
+    /// </summary>
+    IEnumerable<TTrait> GetRequiredTraits<TTrait>() where TTrait : ITrait;
+
+    /// <summary>
+    /// Gets the first trait of the specified type, or null.
+    /// </summary>
+    TTrait? GetTrait<TTrait>() where TTrait : ITrait;
+
+    /// <summary>
+    /// Checks if any traits of the specified type exist.
+    /// </summary>
+    bool HasTrait<TTrait>() where TTrait : ITrait;
+
+    /// <summary>
+    /// Removes all traits of the specified type.
+    /// Throws InvalidOperationException if the trait type is marked as required.
+    /// </summary>
+    void RemoveTrait<TTrait>() where TTrait : ITrait;
 }

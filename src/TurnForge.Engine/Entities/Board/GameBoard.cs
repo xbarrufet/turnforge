@@ -1,105 +1,102 @@
-using TurnForge.Engine.Domain.Board.Spatial.Interfaces;
+using TurnForge.Engine.Definitions.Board;
 using TurnForge.Engine.Entities.Board.Enums;
 using TurnForge.Engine.Entities.Board.Interfaces;
-using TurnForge.Engine.Entities.Board.Topology.Interfaces;
+using TurnForge.Engine.Entities.Board.ValueObjects;
 using TurnForge.Engine.ValueObjects;
-using EntityId = TurnForge.Engine.ValueObjects.EntityId;
 
 namespace TurnForge.Engine.Entities.Board;
 
 
-    /// <summary>
-    /// Implementación base de un board de juego.
-    /// Coordina Topology y SpatialIndex para responder queries espaciales.
-    /// </summary>
-    public sealed class GameBoard : IGameBoard
+/// <summary>
+/// Implementación base de un board de juego.
+/// Coordina Topology y SpatialIndex para responder queries espaciales.
+/// </summary>
+public sealed class GameBoard(
+    TopologyKind kind,
+    IReadOnlyDictionary<ZoneId, Zone> zones,
+    IReadOnlyList<Connection> connections)
+    : IGameBoard
+{
+    public TopologyKind Kind { get; } = kind;
+    public IReadOnlyDictionary<ZoneId, Zone> Zones => zones;
+    public IReadOnlyList<Connection> Connections => connections;
+
+    public Zone GetZoneByPosition(IBoardPosition position)
     {
-        public EntityId Id { get; }
-        public BoardKind Kind { get; }
-
-        public IBoardTopology Topology { get; }
-        public ISpatialIndex SpatialIndex { get; }
-
-        public GameBoard(
-            ValueObjects.EntityId id,
-            BoardKind kind,
-            IBoardTopology topology,
-            ISpatialIndex spatialIndex)
+        if (position.IsLimbo())
         {
-            Id = id;
-            Kind = kind;
-            Topology = topology ?? throw new ArgumentNullException(nameof(topology));
-            SpatialIndex = spatialIndex ?? throw new ArgumentNullException(nameof(spatialIndex));
+            throw new InvalidOperationException("Cannot get zone for Limbo position");
         }
 
-        public GameBoard(GameBoard other, ISpatialIndex? emptyIndex = null)
+        // Intentamos obtener el ZoneId desde el IBoardPositionId
+        if (position.Id is ZoneId zoneId)
         {
-            Id = other.Id;
-            Kind = other.Kind;
-            Topology = other.Topology; 
-            // Reuse cloned index or create a fresh one if provided
-            SpatialIndex = emptyIndex ?? other.SpatialIndex.Clone();
-        }
-
-        public IGameBoard Clone() => new GameBoard(this);
-
-        public IGameBoard CloneWithNewIndex() => new GameBoard(this, new SpatialIndex());
-
-        public bool IsValidPosition(IBoardPosition position)
-        {
-            return Topology.IsValidPosition(position);
-        }
-
-    
-
-        public IReadOnlyList<Engine.ValueObjects.EntityId> GetEntitiesAt(IBoardPosition position)
-        {
-            if (!IsValidPosition(position))
-                return Array.Empty<Engine.ValueObjects.EntityId>();
-
-            return [.. SpatialIndex.QueryAt(position)];
-        }
-
-
- /*   public TraversalResult CanTraverse(
-            IBoardPosition from,
-            IBoardPosition to,
-            TraversalContext context)
-        {
-            if (!IsValidPosition(from) || !IsValidPosition(to))
-                return TraversalResult.Blocked("Position not on this board");
-
-            // 1️⃣ Regla base de topología
-            var topologyResult = Topology.CanTraverse(from, to, context);
-            if (!topologyResult.IsAllowed)
-                return topologyResult;
-
-            // 2️⃣ Conexiones explícitas (puertas, muros, etc.)
-            var connections = SpatialIndex.GetConnectionsBetween(from, to);
-
-            foreach (var connectionId in connections)
+            if (zones.TryGetValue(zoneId, out var zone))
             {
-                // El Board NO conoce entidades.
-                // El Action / Reaction resolverá esto usando el GameState.
-                var result = context.ConnectionResolver.Evaluate(
-                    connectionId,
-                    from,
-                    to,
-                    context);
-
-                if (!result.IsAllowed)
-                    return result;
+                return zone;
             }
-
-            return TraversalResult.Allowed();
         }
-        public IReadOnlyList<EntityId> QueryArea(BoardArea area)
-        {
-            if (area == null || area.BoardId != Id)
-                return Array.Empty<EntityId>();
 
-            return SpatialIndex.QueryArea(area);
-        }
-        */
+        throw new KeyNotFoundException($"Zone not found for position: {position.Id}");
     }
+
+    public bool IsValidPosition(IBoardPosition position)
+    {
+        if (position.IsLimbo())
+        {
+            return true; // Limbo is always valid
+        }
+
+        if (position.Id is ZoneId zoneId)
+        {
+            return zones.ContainsKey(zoneId);
+        }
+
+        return false;
+    }
+
+    public IEnumerable<Connection> GetConnectionsFrom(ZoneId zoneId)
+    {
+        // TODO: Las conexiones deberían tener propiedades From/To para filtrar correctamente
+        // Por ahora devolvemos todas las conexiones hasta que se implemente la estructura completa
+        return connections.Where(c => IsConnectionFromZone(c, zoneId));
+    }
+
+    public IEnumerable<Connection> GetConnectionsTo(ZoneId zoneId)
+    {
+        // TODO: Las conexiones deberían tener propiedades From/To para filtrar correctamente
+        return connections.Where(c => IsConnectionToZone(c, zoneId));
+    }
+
+    public (IEnumerable<Connection>, IEnumerable<Connection>) GetConnections(IEnumerable<ZoneId> zoneIds)
+    {
+        var zoneIdSet = zoneIds.ToHashSet();
+        var fromConnections = connections.Where(c => zoneIdSet.Any(zId => IsConnectionFromZone(c, zId)));
+        var toConnections = connections.Where(c => zoneIdSet.Any(zId => IsConnectionToZone(c, zId)));
+        
+        return (fromConnections, toConnections);
+    }
+
+    public IGameBoard Clone()
+    {
+        var clonedZones = new Dictionary<ZoneId, Zone>(zones);
+        var clonedConnections = new List<Connection>(connections);
+        
+        return new GameBoard( Kind, clonedZones, clonedConnections);
+    }
+
+    private bool IsConnectionFromZone(Connection _, ZoneId __)
+    {
+        // TODO: Implementar cuando Connection tenga propiedades From/To
+        // Por ahora retornamos false como placeholder
+        return false;
+    }
+
+    private bool IsConnectionToZone(Connection _, ZoneId __)
+    {
+        // TODO: Implementar cuando Connection tenga propiedades From/To
+        // Por ahora retornamos false como placeholder
+        return false;
+    }
+}
 

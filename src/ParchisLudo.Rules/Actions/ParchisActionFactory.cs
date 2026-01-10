@@ -1,15 +1,26 @@
-using TurnForge.Engine.Core.Action.Interfaces;
-using TurnForge.Engine.ValueObjects;
-using Parchis.Rules.Actions;
 
-namespace Parchis.Rules.Factory; 
 
-public static class ParchisActionRegistration
+namespace ParchisLudo.Rules.Actions;
+/*
+public class ParchisActionFactory: IActionFactory
 {
-    public static void Register(IActionRegistry registry)
-    {
-        // Gameplay Actions
-        registry.Register(ParchisActions.Move, ParchisMoveAction.Create);
-        
-    }
+
+ public IAction BuildAction(ActionId actionId)
+ {
+     if (actionId == ParchisActions.Move)
+     {
+         return  ParchisMoveAction.Create();
+     }
+     throw new NotImplementedException($"Action with ID {actionId} is not implemented in ParchisActionFactory.");
+ }
+
+ public IReadOnlyList<ActionId> GetRegisteredActionIds()
+ {
+     return new List<ActionId>
+     {
+         ParchisActions.Move
+     };
+ }
+
 }
+ */

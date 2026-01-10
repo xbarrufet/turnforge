@@ -8,4 +8,6 @@ public readonly record struct NodeId(string Value)
 
     public override string ToString()
         => Value.ToString();
+    
+    public static NodeId Empty => new(string.Empty);
 }
