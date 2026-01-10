@@ -1,6 +1,6 @@
 namespace TurnForge.Engine.Entities.Board.Topology.Discrete;
 
-public class DiscreteZoneConnectionPoint
+public class TileGraphFactory
 {
     
 }
